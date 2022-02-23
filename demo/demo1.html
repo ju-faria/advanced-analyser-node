@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  
+</body>
+<script src="../dist/bundle.js"></script>
+<script>
+  try {
+    const canvas = document.createElement('canvas')
+    const context2d =  canvas.getContext('2d')
+    
+    document.body.appendChild(canvas)
+    
+    navigator.mediaDevices.getUserMedia({
+      audio: true,
+      video: false
+    }).then((stream) => {
+      
+      
+      const FFT_SIZE = 1024
+      const SAMPLE_RATE = 44100
+      canvas.height = 300
+      canvas.width = FFT_SIZE / 2 
+      const context = new AudioContext({ sampleRate: SAMPLE_RATE })
+      
+      const audioSource = context.createMediaStreamSource(stream);
+      
+      const bottomMargin = 30
+      advancedAnalyserNode.createAdvancedAnalyserNode(context, {
+        fftSize: FFT_SIZE,
+        samplesPerAnalysis: SAMPLE_RATE / 10,
+        onData: (data) => {
+          context2d.clearRect(0, 0, canvas.width, canvas.height)
+          context2d.beginPath()
+          context2d.moveTo(0,  canvas.height - bottomMargin)
+          for(let i = 0; i < data.length; i ++) {
+            context2d.lineTo(i, canvas.height -  bottomMargin - data[i] ) 
+          }
+          context2d.stroke()
+        }
+      }).then((advancedAnalyser) => {
+        audioSource.connect(advancedAnalyser)
+      })
+      
+    });
+    
+  } catch(err) {
+    console.log(err)
+  }
+</script>
+</html>
