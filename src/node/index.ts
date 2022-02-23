@@ -1,4 +1,4 @@
-import { Message, MessageTypes } from "../types";
+import { Message, MessageTypes, ProcessorParameters } from "../types";
 /**
 * The path below is not an external module. It's an alias (defined in tsconfig.json) to ./dist/processor.worklet.js
 * The AudioWorkletProcessor is bundled first, and later imported here to be bundled as a base64 string, 
@@ -8,8 +8,7 @@ import processor from 'processor';
 
 type AdvancedAnalyserNodeProperties = {
   onData: (data: Uint8Array) => void,
-  samplesPerAnalysis: number, 
-  fftSize: number, 
+  fftSize?: number, 
   samplesBetweenTransforms?: number
 }
 
@@ -22,21 +21,18 @@ export class AdvancedAnalyserNode extends AudioWorkletNode {
     context: BaseAudioContext,
     {
       onData, 
-      fftSize, 
+      fftSize = 1024, 
       samplesBetweenTransforms,
     }:AudioWorkletNodeOptions & AdvancedAnalyserNodeProperties
   ) {
-    super(context, 'AdvancedAnalyserProcessor');
+    super(context, 'AdvancedAnalyserProcessor', {
+      processorOptions: {
+        [ProcessorParameters.fftSize]: fftSize,
+        [ProcessorParameters.samplesBetweenTransforms]: samplesBetweenTransforms || fftSize
+      }
+    });
     this.port.onmessage = (event) => this.onmessage(event.data);
     this.onData = onData;
-    this.fftSize = fftSize;
-    this.samplesBetweenTransforms = samplesBetweenTransforms || fftSize;
-    this.port.postMessage({
-      type: MessageTypes.initFftAnalyser,
-      sampleRate: this.context.sampleRate,
-      fftSize: this.fftSize,
-      samplesBetweenTransforms: this.samplesBetweenTransforms,
-    });
   }
   
   onprocessorerror = (err: Event)  => {
@@ -63,4 +59,3 @@ export const createAdvancedAnalyserNode = async (context: BaseAudioContext, opti
   return advancedAnalyser;
 };
   
-

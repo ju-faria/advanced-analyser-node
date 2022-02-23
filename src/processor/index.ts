@@ -1,5 +1,5 @@
 import FFT from 'fft.js';
-import { Message, MessageTypes } from 'src/types';
+import { MessageTypes } from 'src/types';
 
 const linearToDb = (x: number) => {
   return 20.0 * Math.log10(x);
@@ -29,29 +29,25 @@ class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
       {
         name: "isRecording",
         defaultValue: 1
-      }
+      },
+      
     ];
   }
-  constructor () {
+  constructor (options: { processorOptions: { fftSize: number, samplesBetweenTransforms: number } }) {
     super();
-    
-    this.port.onmessage = (event) => this.onmessage(event.data);
-  }
-  onmessage(event:Message) {
-    if (event.type === MessageTypes.initFftAnalyser) {
-      const { fftSize, samplesBetweenTransforms } = event;
+    const { fftSize, samplesBetweenTransforms } = options.processorOptions;
 
-      this._fftAnalyser = new FFT(fftSize);
-      this._fftOutput = this._fftAnalyser.createComplexArray();
-      this._lastTransform = new Float32Array(fftSize / 2);
-      this._lastTransformAsBytes = new Uint8Array(fftSize / 2);
-      this._fftSize = fftSize;
-      this._samplesBetweenTransforms = samplesBetweenTransforms;
-      this._buffer = new Float32Array(this._fftSize);
+    this._fftAnalyser = new FFT(fftSize);
+    this._fftOutput = this._fftAnalyser.createComplexArray();
+    this._lastTransform = new Float32Array(fftSize / 2);
+    this._lastTransformAsBytes = new Uint8Array(fftSize / 2);
+    this._fftSize = fftSize;
+    this._samplesBetweenTransforms = samplesBetweenTransforms;
+    this._buffer = new Float32Array(this._fftSize);
 
-      this._initBuffer();
-    }
+    this._initBuffer();
   }
+  
   _initBuffer() {
     for (let i = this._samplesBetweenTransforms; i < this._fftSize; i++) {
       this._buffer[i - this._samplesBetweenTransforms] = this._buffer[i];
@@ -94,6 +90,7 @@ class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
   }
 
   _flush() {
+
     this._doFft();
     this.port.postMessage({
       type: MessageTypes.dataAvailable,
@@ -115,7 +112,6 @@ class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _: Float32Array[][],
     parameters: Record<string, Float32Array>
   ) {
-    if (!this._buffer) return true;
     const isRecordingValues = parameters.isRecording;
     for (let dataIndex = 0; dataIndex < inputs.length; dataIndex++) {
       const shouldRecord = isRecordingValues[dataIndex] === 1 && inputs[0][0];

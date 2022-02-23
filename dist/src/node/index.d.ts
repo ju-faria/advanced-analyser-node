@@ -1,8 +1,7 @@
 import { Message } from "../types";
 declare type AdvancedAnalyserNodeProperties = {
     onData: (data: Uint8Array) => void;
-    samplesPerAnalysis: number;
-    fftSize: number;
+    fftSize?: number;
     samplesBetweenTransforms?: number;
 };
 export declare class AdvancedAnalyserNode extends AudioWorkletNode {

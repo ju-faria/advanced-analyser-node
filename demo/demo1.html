@@ -34,7 +34,7 @@
       const bottomMargin = 30
       advancedAnalyserNode.createAdvancedAnalyserNode(context, {
         fftSize: FFT_SIZE,
-        samplesPerAnalysis: SAMPLE_RATE / 10,
+        samplesBetweenTransforms: FFT_SIZE,
         onData: (data) => {
           context2d.clearRect(0, 0, canvas.width, canvas.height)
           context2d.beginPath()
