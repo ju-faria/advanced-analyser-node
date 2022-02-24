@@ -13,44 +13,49 @@ const mainBundlePlugins = [
   base64({ include: "dist/processor.worklet.js" }),
   typescript(),
 ]
-export default [
-  {
-    input: 'src/processor/index.ts',
-    output: {
-      file: 'dist/processor.worklet.js',
-      format: "umd" ,
-      name: 'advancedAnalyserProcessor',
 
+
+export default (commandLineArgs) => {
+
+  return [
+    {
+      input: 'src/processor/index.ts',
+      output: {
+        file: 'dist/processor.worklet.js',
+        format: "umd" ,
+        name: 'advancedAnalyserProcessor',
+
+      },
+      plugins: [
+        del({ targets: 'dist/*' }),
+        eslint({ fix: true }),
+        resolve(),
+        commonjs(),
+        typescript(),
+        terser(),
+      ]
     },
-    plugins: [
-      del({ targets: 'dist/*' }),
-      eslint({ fix: true }),
-      resolve(),
-      commonjs(),
-      typescript(),
-      terser(),
-    ]
-  },
-  {
-    input: 'src/node/index.ts',
-    output: {
-      file: 'dist/bundle.js',
-      format: "umd",
-      name: 'advancedAnalyserNode',
+    {
+      input: 'src/node/index.ts',
+      output: {
+        file: 'dist/bundle.js',
+        format: "umd",
+        name: 'advancedAnalyserNode',
+      },
+      plugins: mainBundlePlugins
     },
-    plugins: mainBundlePlugins
-  },
-  {
-    input: 'src/node/index.ts',
-    output: {
-      file: 'dist/bundle.min.js',
-      format: "umd",
-      name: 'advancedAnalyserNode',
+    {
+      input: 'src/node/index.ts',
+      output: {
+        file: 'dist/bundle.min.js',
+        format: "umd",
+        name: 'advancedAnalyserNode',
+      },
+      plugins: [
+        ...mainBundlePlugins,
+        terser(), 
+        ...(commandLineArgs.environment === 'dev' ? [serve('./')] : [])
+      ]
     },
-    plugins: [
-      ...mainBundlePlugins,
-      terser(), 
-      // serve('./')
-    ]
-  },
-]
+  ]
+}

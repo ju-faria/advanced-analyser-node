@@ -1,7 +1,6 @@
 import FFT from 'fft.js';
 export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _samplesCount: number;
-    _indexOffset: number;
     _count: number;
     _first: boolean;
     _fftAnalyser: FFT;
@@ -10,9 +9,19 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _fftOutput: number[];
     _lastTransform: Float32Array;
     _samplesBetweenTransforms: number;
+    /**
+     * The W3C spec for the analyser node states that:
+     * "...increasing fftSize does mean that the current time-domain data must be expanded to include past frames that it previously did not.
+     * This means that the AnalyserNode effectively MUST keep around the last 32768 sample-frames and the current time-domain data
+     * is the most recent fftSize sample-frames out of that."
+     * - https://webaudio.github.io/web-audio-api/#AnalyserNode-attributes
+     *
+     * We're trying to match the W3C spec for the analyser node as close as possible, for that reason we do the same here.
+     */
     _buffer: Float32Array;
     _minDecibels: number;
     _maxDecibels: number;
+    _smoothingTimeConstant: number;
     static get parameterDescriptors(): {
         name: string;
         defaultValue: number;
@@ -44,6 +53,5 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _convertToByteData(destinationArray: Uint8Array): void;
     _doFft(): void;
     _flush(): void;
-    _recordingStopped(): void;
     process(inputs: Float32Array[][], _: Float32Array[][], parameters: Record<string, Float32Array>): boolean;
 }

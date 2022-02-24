@@ -1,5 +1,7 @@
 import FFT from 'fft.js';
+import { MAX_FFT_SIZE } from '../constants';
 import { MessageTypes } from '../types';
+
 
 const linearToDb = (x: number) => {
   return 20.0 * Math.log10(x);
@@ -10,8 +12,8 @@ const clamp = (val: number, min: number, max: number) => {
   return Math.min(Math.max(val, min), max);
 };
 
-let hasDebugged = false;
-let hasBeenCalledTimes = 0;
+// const hasDebugged = false;
+// const hasBeenCalledTimes = 0;
 
 // const debugOnce = (skip: number, fn: () => void) =>{
 //   if (hasDebugged) return;
@@ -24,7 +26,6 @@ let hasBeenCalledTimes = 0;
 // };
 export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
   _samplesCount = 0;
-  _indexOffset = 0;
   _count = 0;
   _first = true;
   _fftAnalyser: FFT;
@@ -33,9 +34,19 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
   _fftOutput: number[];
   _lastTransform: Float32Array;
   _samplesBetweenTransforms: number;
-  _buffer: Float32Array;
+  /**
+   * The W3C spec for the analyser node states that:
+   * "...increasing fftSize does mean that the current time-domain data must be expanded to include past frames that it previously did not.
+   * This means that the AnalyserNode effectively MUST keep around the last 32768 sample-frames and the current time-domain data 
+   * is the most recent fftSize sample-frames out of that."
+   * - https://webaudio.github.io/web-audio-api/#AnalyserNode-attributes
+   * 
+   * We're trying to match the W3C spec for the analyser node as close as possible, for that reason we do the same here.
+   */
+  _buffer: Float32Array = new Float32Array(MAX_FFT_SIZE);
   _minDecibels = -100.0;
   _maxDecibels = -30.0;
+  _smoothingTimeConstant = 0;
 
   static get parameterDescriptors() {
     return [
@@ -56,14 +67,8 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     this._lastTransform = new Float32Array(fftSize / 2);
     this._fftSize = fftSize;
     this._samplesBetweenTransforms = samplesBetweenTransforms;
-    this._buffer = new Float32Array(this._fftSize);
-
-    /**
-     * Skips enough enough position for the first transform to happen on time. 
-     * Essentially 0 padding the first transform.
-     */
+    
     this._samplesCount = 0;
-    this._indexOffset = this._buffer.length - this._samplesBetweenTransforms;
   }
   
   // _isBufferEmpty() {
@@ -75,7 +80,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
   
   
   _appendToBuffer(value:number) {
-    this._buffer[(this._indexOffset + this._samplesCount + this._fftSize)% this._buffer.length] = value;
+    this._buffer[this._samplesCount % this._buffer.length] = value;
     this._samplesCount = this._samplesCount + 1;
 
     if (this._isTimeToFLush()) {
@@ -98,9 +103,12 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
    * [5, 6, 3, 4] => [3, 4, 5, 6]
    */
   _updateFftInput() {
-    const startingIndex = this._samplesCount % this._samplesBetweenTransforms; 
+    /**
+     * TODO: pad the fftInput end if the analyser stops in the middle of the samplesBetweenTransforms interval
+     */
+    const startingIndex = (this._samplesCount  - this._fftSize) % this._buffer.length; 
     for (let i = 0; i < this._fftInput.length; i++) {
-      this._fftInput[i] = this._buffer[(startingIndex+ i) % this._buffer.length];
+      this._fftInput[i] = startingIndex+ i < 0 ? 0 :this._buffer[(startingIndex+ i) % this._buffer.length];
     }
   }
   _convertFloatToDb(destinationArray: Float32Array) {
@@ -136,7 +144,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     const magnitudeScale = 1.0 / this._fftSize;
     // A value of 0 does no averaging with the previous result.  Larger values
     // produce slower, but smoother changes.
-    const k = clamp(0.8, 0, 1);
+    const k = clamp(this._smoothingTimeConstant, 0, 1);
 
     for (let i = 0; i < this._lastTransform.length; i++) {
       const scalarMagnitude = Math.abs(
@@ -155,24 +163,13 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     } else {
       this._convertToByteData(destinationArray);
     }
-    if(this._first) {
-      console.log(destinationArray);
-      this._first = false;
-    }
     this.port.postMessage({
       type: MessageTypes.dataAvailable,
       currentTime: currentTime,
       data: destinationArray
     });
+  }
 
-  }
-  
-  _recordingStopped() {
-    this.port.postMessage({
-      type: MessageTypes.stop
-    });
-  }
-  
   process(
     inputs: Float32Array[][],
     _: Float32Array[][],
@@ -181,12 +178,6 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     const isRecordingValues = parameters.isRecording;
     for (let dataIndex = 0; dataIndex < inputs.length; dataIndex++) {
       const shouldRecord = isRecordingValues[dataIndex] === 1 && inputs[0][0];
-      
-      // if (!shouldRecord && !this._isBufferEmpty()) {
-      //   this._flush();
-      //   this._recordingStopped();
-      // }
-      
       if (shouldRecord) {
         for (
           let sampleIndex = 0;
