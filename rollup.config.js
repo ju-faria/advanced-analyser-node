@@ -5,6 +5,7 @@ import { terser } from "rollup-plugin-terser";
 import del from 'rollup-plugin-delete'
 import { base64 } from "rollup-plugin-base64";
 import eslint from '@rollup/plugin-eslint';
+import serve from 'rollup-plugin-serve'
 
 
 const mainBundlePlugins = [
@@ -18,6 +19,8 @@ export default [
     output: {
       file: 'dist/processor.worklet.js',
       format: "umd" ,
+      name: 'advancedAnalyserProcessor',
+
     },
     plugins: [
       del({ targets: 'dist/*' }),
@@ -47,6 +50,7 @@ export default [
     plugins: [
       ...mainBundlePlugins,
       terser(), 
+      // serve('./')
     ]
   },
 ]
