@@ -55,9 +55,15 @@ export enum ProcessorParameters {
   fftSize = 'fftSize',
   samplesBetweenTransforms = 'samplesBetweenTransforms',
   dataAsByteArray = 'dataAsByteArray',
+  windowFunction = 'windowFunction',
 }  
 
 export enum EventListenerTypes {
   frequencydata = 'frequencydata',
   bytefrequencydata = 'bytefrequencydata',
+}
+
+export enum WindowingFunctionTypes {
+  none = 'none',
+  blackmanWindow = "blackmanWindow" 
 }

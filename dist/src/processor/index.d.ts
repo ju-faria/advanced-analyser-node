@@ -1,5 +1,5 @@
 import FFT from 'fft.js';
-import { EventListenerTypes, Message } from '../types';
+import { EventListenerTypes, Message, WindowingFunctionTypes } from '../types';
 export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _samplesCount: number;
     _count: number;
@@ -10,6 +10,7 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _fftOutput: number[];
     _lastTransform: Float32Array;
     _samplesBetweenTransforms: number;
+    _windowFunctionType: WindowingFunctionTypes;
     _isListeningTo: Record<EventListenerTypes, boolean>;
     /**
      * The W3C spec for the analyser node states that:
@@ -33,6 +34,7 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
         processorOptions: {
             fftSize: number;
             samplesBetweenTransforms: number;
+            windowFunction?: WindowingFunctionTypes;
         };
     });
     _onmessage(message: Message): void;

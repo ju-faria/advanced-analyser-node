@@ -1,6 +1,11 @@
 import { fill } from 'lodash';
+import { WindowingFunctionTypes } from '../types';
 const noop = () => {
   // do nothing
+};
+const notImplemented = (name?: string) => {
+  it(`🚨 NO IMPLEMENTATION YET 🚨${name ? ` - ${name}`: ''}`, noop);
+
 };
 const portPostMessageSpy = jest.fn();
 global.AudioWorkletProcessor = class AudioWorkletProcessor {
@@ -263,7 +268,8 @@ describe('AdvancedAnalyserProcessor', () => {
       const processor = new AdvancedAnalyserProcessor({ 
         processorOptions:{ 
           fftSize, 
-          samplesBetweenTransforms
+          samplesBetweenTransforms,
+          windowFunction: WindowingFunctionTypes.none,
         }
       });
       // ignores flushing
@@ -277,7 +283,6 @@ describe('AdvancedAnalyserProcessor', () => {
       });
       
       
-      
       doNTimes(fftSize, () => {
         processor._appendToBuffer(999);
       });
@@ -286,6 +291,8 @@ describe('AdvancedAnalyserProcessor', () => {
       expect(Array.from(processor._fftInput)).toEqual(expectedResult);
       
     });
+
+    
     it('gets the correct values on the buffer overflows', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
@@ -293,7 +300,8 @@ describe('AdvancedAnalyserProcessor', () => {
       const processor = new AdvancedAnalyserProcessor({ 
         processorOptions:{ 
           fftSize, 
-          samplesBetweenTransforms
+          samplesBetweenTransforms,
+          windowFunction: WindowingFunctionTypes.none
         }
       });
       // ignores flushing
@@ -340,6 +348,8 @@ describe('AdvancedAnalyserProcessor', () => {
       expect(destinationArray).toEqual(fill(new Float32Array(fftSize),  20.0 * Math.log10(0.2)));
     });
     
+
+    notImplemented('calls the correct windowing function');
   });
   
   describe('_convertToByteData', () => {
@@ -528,7 +538,11 @@ describe('AdvancedAnalyserProcessor', () => {
 
     
   });
-  describe('process', noop);
-  describe('registerProcessor', noop);
-  describe('Happy path', noop);
+  describe('_getFloatFrequencyData', notImplemented);
+  describe('_getByteFrequencyData', notImplemented);
+  describe('_getFloatTimeDomainData', notImplemented);
+  describe('_getByteTimeDomainData', notImplemented);
+  describe('process', notImplemented);
+  describe('registerProcessor', notImplemented);
+  describe('Happy path', notImplemented);
 });

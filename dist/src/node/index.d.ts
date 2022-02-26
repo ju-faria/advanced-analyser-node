@@ -1,8 +1,9 @@
-import { EventListenerTypes, Message } from "../types";
+import { EventListenerTypes, Message, WindowingFunctionTypes } from "../types";
 declare type AdvancedAnalyserNodeProperties = {
     dataAsByteArray: boolean;
     fftSize?: number;
     samplesBetweenTransforms?: number;
+    windowFunction?: WindowingFunctionTypes;
 };
 export declare class AdvancedAnalyserNode extends AudioWorkletNode {
     fftSize: number;
@@ -10,7 +11,7 @@ export declare class AdvancedAnalyserNode extends AudioWorkletNode {
     _portMapId: number;
     _portMap: Map<any, any>;
     _eventListenersCount: Record<EventListenerTypes, EventListenerOrEventListenerObject[]>;
-    constructor(context: BaseAudioContext, { fftSize, samplesBetweenTransforms, }: AudioWorkletNodeOptions & AdvancedAnalyserNodeProperties);
+    constructor(context: BaseAudioContext, { fftSize, samplesBetweenTransforms, windowFunction }: AudioWorkletNodeOptions & AdvancedAnalyserNodeProperties);
     _uniqId(): number;
     _postMessage(message: Message, transfer?: Transferable[]): void;
     onprocessorerror: (err: Event) => void;

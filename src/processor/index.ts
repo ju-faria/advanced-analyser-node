@@ -1,6 +1,7 @@
 import FFT from 'fft.js';
 import { MAX_FFT_SIZE } from '../constants';
-import { EventListenerTypes, Message, MessageTypes } from '../types';
+import { EventListenerTypes, Message, MessageTypes, WindowingFunctionTypes } from '../types';
+import { windowFunctionsMap } from './window-functions';
 
 
 const linearToDb = (x: number) => {
@@ -34,6 +35,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
   _fftOutput: number[];
   _lastTransform: Float32Array;
   _samplesBetweenTransforms: number;
+  _windowFunctionType = WindowingFunctionTypes.blackmanWindow;
   _isListeningTo: Record<EventListenerTypes, boolean> = {
     frequencydata: false,
     bytefrequencydata: false
@@ -62,9 +64,9 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
       
     ];
   }
-  constructor (options: { processorOptions: { fftSize: number, samplesBetweenTransforms: number } }) {
+  constructor (options: { processorOptions: { fftSize: number, samplesBetweenTransforms: number, windowFunction?: WindowingFunctionTypes} }) {
     super();
-    const { fftSize, samplesBetweenTransforms } = options.processorOptions;
+    const { fftSize, samplesBetweenTransforms, windowFunction = WindowingFunctionTypes.blackmanWindow } = options.processorOptions;
 
     this._fftAnalyser = new FFT(fftSize);
     this._fftInput = new Float32Array(fftSize);
@@ -73,6 +75,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     this._fftSize = fftSize;
     this._samplesBetweenTransforms = samplesBetweenTransforms;
     this._samplesCount = 0;
+    this._windowFunctionType = windowFunction;
     this.port.onmessage = (event) => this._onmessage(event.data);
   }
   
@@ -133,6 +136,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     for (let i = 0; i < this._fftInput.length; i++) {
       this._fftInput[i] = startingIndex+ i < 0 ? 0 :this._buffer[(startingIndex+ i) % this._buffer.length];
     }
+    windowFunctionsMap[this._windowFunctionType](this._fftInput);
   }
   _convertFloatToDb(destinationArray: Float32Array) {
     const len = Math.min(this._lastTransform.length, destinationArray.length);

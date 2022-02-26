@@ -35,7 +35,6 @@
       advancedAnalyserNode.createAdvancedAnalyserNode(context, {
         fftSize: FFT_SIZE,
         samplesBetweenTransforms: FFT_SIZE,
-
       }).then((advancedAnalyser) => {
         advancedAnalyser.addEventListener('bytefrequencydata', ({ detail }) => {
 

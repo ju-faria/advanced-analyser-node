@@ -1,4 +1,4 @@
-import { EventListenerTypes, Message, MessageTypes, ProcessorParameters } from "../types";
+import { EventListenerTypes, Message, MessageTypes, ProcessorParameters, WindowingFunctionTypes } from "../types";
 /**
 * The path below is not an external module. It's an alias (defined in tsconfig.json) to ./dist/processor.worklet.js
 * The AudioWorkletProcessor is bundled first, and later imported here to be bundled as a base64 string, 
@@ -9,7 +9,8 @@ import processor from 'processor';
 type AdvancedAnalyserNodeProperties = {
   dataAsByteArray: boolean,
   fftSize?: number, 
-  samplesBetweenTransforms?: number
+  samplesBetweenTransforms?: number,
+  windowFunction?: WindowingFunctionTypes,
 }
 
 export class AdvancedAnalyserNode extends AudioWorkletNode {
@@ -27,12 +28,14 @@ export class AdvancedAnalyserNode extends AudioWorkletNode {
     {
       fftSize = 1024, 
       samplesBetweenTransforms,
+      windowFunction = WindowingFunctionTypes.blackmanWindow
     }:AudioWorkletNodeOptions & AdvancedAnalyserNodeProperties
   ) {
     super(context, 'AdvancedAnalyserProcessor', {
       processorOptions: {
         [ProcessorParameters.fftSize]: fftSize,
-        [ProcessorParameters.samplesBetweenTransforms]: samplesBetweenTransforms || fftSize
+        [ProcessorParameters.samplesBetweenTransforms]: samplesBetweenTransforms || fftSize,
+        [ProcessorParameters.windowFunction]: windowFunction,
       }
     });
     this.port.onmessage = (event) => this._onmessage(event.data);

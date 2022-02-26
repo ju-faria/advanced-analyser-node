@@ -31,10 +31,15 @@ export declare type Message = FloatFrequencyDataAvailableMessage | ByteFrequency
 export declare enum ProcessorParameters {
     fftSize = "fftSize",
     samplesBetweenTransforms = "samplesBetweenTransforms",
-    dataAsByteArray = "dataAsByteArray"
+    dataAsByteArray = "dataAsByteArray",
+    windowFunction = "windowFunction"
 }
 export declare enum EventListenerTypes {
     frequencydata = "frequencydata",
     bytefrequencydata = "bytefrequencydata"
+}
+export declare enum WindowingFunctionTypes {
+    none = "none",
+    blackmanWindow = "blackmanWindow"
 }
 export {};
