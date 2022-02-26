@@ -1,6 +1,6 @@
 import FFT from 'fft.js';
 import { MAX_FFT_SIZE } from '../constants';
-import { MessageTypes } from '../types';
+import { EventListenerTypes, Message, MessageTypes } from '../types';
 
 
 const linearToDb = (x: number) => {
@@ -34,6 +34,10 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
   _fftOutput: number[];
   _lastTransform: Float32Array;
   _samplesBetweenTransforms: number;
+  _isListeningTo: Record<EventListenerTypes, boolean> = {
+    frequencydata: false,
+    bytefrequencydata: false
+  };
   /**
    * The W3C spec for the analyser node states that:
    * "...increasing fftSize does mean that the current time-domain data must be expanded to include past frames that it previously did not.
@@ -47,6 +51,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
   _minDecibels = -100.0;
   _maxDecibels = -30.0;
   _smoothingTimeConstant = 0;
+  _portMap = new Map();
 
   static get parameterDescriptors() {
     return [
@@ -67,15 +72,33 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     this._lastTransform = new Float32Array(fftSize / 2);
     this._fftSize = fftSize;
     this._samplesBetweenTransforms = samplesBetweenTransforms;
-    
     this._samplesCount = 0;
+    this.port.onmessage = (event) => this._onmessage(event.data);
   }
   
-  // _isBufferEmpty() {
-  //   return this._samplesCount === 0;
-  // }
-  _isTimeToFLush(){
-    return this._samplesCount % this._samplesBetweenTransforms === 0;
+  _onmessage(message: Message) {
+    switch(message.type) {
+      case MessageTypes.getFloatFrequencyData: {
+        this._getFloatFrequencyData(message.id);
+        break;
+      }
+      case MessageTypes.startedListeningTo: {
+        this._isListeningTo[message.payload] = true;
+        break;
+      }
+      case MessageTypes.stoppedListeningTo: {
+        this._isListeningTo[message.payload] = false;
+        break;
+      }
+    }
+  }
+  _postMessage(message: Message, transfer?: Transferable[]) {
+    this.port.postMessage(message, transfer);
+  }
+
+  _shouldFlush(){
+    return (this._isListeningTo.frequencydata || this._isListeningTo.bytefrequencydata)
+      && this._samplesCount % this._samplesBetweenTransforms === 0;
   }
   
   
@@ -83,7 +106,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     this._buffer[this._samplesCount % this._buffer.length] = value;
     this._samplesCount = this._samplesCount + 1;
 
-    if (this._isTimeToFLush()) {
+    if (this._shouldFlush()) {
       this._flush();
     }
   }
@@ -153,23 +176,63 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
       
       this._lastTransform[i] =  k * this._lastTransform[i] + (1 - k) * scalarMagnitude;
     }
-  }
 
+  }
+  get _fftBinSize() {
+    return this._fftSize / 2;
+  }
   _flush() {
     this._doFft();
-    const destinationArray = new Uint8Array(this._fftSize / 2);
-    if(destinationArray instanceof Float32Array) {
+    if(this._isListeningTo.frequencydata) {
+      // let destinationArray: Float32Array|Uint8Array;
+      const destinationArray = new Float32Array(this._fftBinSize);
       this._convertFloatToDb(destinationArray);
+      this._postMessage({
+        type: MessageTypes.frequencyDataAvailable,
+        payload: destinationArray
+      });
     } else {
+      const destinationArray = new Uint8Array(this._fftBinSize);
       this._convertToByteData(destinationArray);
+      this._postMessage({
+        type: MessageTypes.byteFrequencyDataAvailable,
+        payload: destinationArray
+      });
     }
-    this.port.postMessage({
-      type: MessageTypes.dataAvailable,
-      currentTime: currentTime,
-      data: destinationArray
-    });
   }
 
+  _getFloatFrequencyData(requestId: number) {
+    const destinationArray = new Float32Array(this._fftSize/2);
+
+    this._doFft();
+    this._convertFloatToDb(destinationArray);
+
+    this._postMessage({
+      id: requestId,
+      type: MessageTypes.requestedFloatFrequencyDataAvailable,
+      payload: destinationArray.buffer
+    }, [destinationArray.buffer]);
+  }
+
+  _getByteFrequencyData(requestId: number) {
+    this._doFft();
+    const destinationArray = new Uint8Array(this._fftSize/2);
+
+    this._convertToByteData(destinationArray);
+
+    this._postMessage({
+      id: requestId,
+      type: MessageTypes.requestedByteFrequencyDataAvailable,
+      payload: destinationArray.buffer
+    }, [destinationArray.buffer]);
+  }
+
+  // _getFloatTimeDomainData() {
+
+  // }
+  // _getByteTimeDomainData() {
+
+  // }
   process(
     inputs: Float32Array[][],
     _: Float32Array[][],

@@ -1,4 +1,5 @@
 import FFT from 'fft.js';
+import { EventListenerTypes, Message } from '../types';
 export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _samplesCount: number;
     _count: number;
@@ -9,6 +10,7 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _fftOutput: number[];
     _lastTransform: Float32Array;
     _samplesBetweenTransforms: number;
+    _isListeningTo: Record<EventListenerTypes, boolean>;
     /**
      * The W3C spec for the analyser node states that:
      * "...increasing fftSize does mean that the current time-domain data must be expanded to include past frames that it previously did not.
@@ -22,6 +24,7 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _minDecibels: number;
     _maxDecibels: number;
     _smoothingTimeConstant: number;
+    _portMap: Map<any, any>;
     static get parameterDescriptors(): {
         name: string;
         defaultValue: number;
@@ -32,7 +35,9 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
             samplesBetweenTransforms: number;
         };
     });
-    _isTimeToFLush(): boolean;
+    _onmessage(message: Message): void;
+    _postMessage(message: Message, transfer?: Transferable[]): void;
+    _shouldFlush(): boolean;
     _appendToBuffer(value: number): void;
     /**
      * to clarify this as it could be a little confusing:
@@ -52,6 +57,9 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _convertFloatToDb(destinationArray: Float32Array): void;
     _convertToByteData(destinationArray: Uint8Array): void;
     _doFft(): void;
+    get _fftBinSize(): number;
     _flush(): void;
+    _getFloatFrequencyData(requestId: number): void;
+    _getByteFrequencyData(requestId: number): void;
     process(inputs: Float32Array[][], _: Float32Array[][], parameters: Record<string, Float32Array>): boolean;
 }
