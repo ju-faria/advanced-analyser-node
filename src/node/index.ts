@@ -15,13 +15,18 @@ type AdvancedAnalyserNodeProperties = {
 
 export class AdvancedAnalyserNode extends AudioWorkletNode {
   fftSize: number;
+
   samplesBetweenTransforms?: number;
+
   _portMapId = 0;
+
   _portMap = new Map();
+
   _eventListenersCount:Record<EventListenerTypes, EventListenerOrEventListenerObject[]> = {
     [EventListenerTypes.frequencydata]: [],
     [EventListenerTypes.bytefrequencydata]: [],
   };
+
   // _onDataAvailable = new CustomEvent('ondataavailable', { value: })
   constructor(
     context: BaseAudioContext,
@@ -44,9 +49,11 @@ export class AdvancedAnalyserNode extends AudioWorkletNode {
   _uniqId(){
     return this._portMapId++;
   }
+
   _postMessage(message: Message, transfer?: Transferable[]) {
     this.port.postMessage(message, transfer);
   }
+
   onprocessorerror = (err: Event)  => {
     console.log(`An error from AudioWorkletProcessor.process() occurred: ${err}`);
   };
@@ -82,9 +89,11 @@ export class AdvancedAnalyserNode extends AudioWorkletNode {
       });
     });
   }
+
   start() {
     this.parameters.get('isRecording').setValueAtTime(1, this.context.currentTime);
   }
+
   _pushEventListener(type: EventListenerTypes, listener: EventListenerOrEventListenerObject) {
     const listeners = this._eventListenersCount[type];
 
@@ -96,6 +105,7 @@ export class AdvancedAnalyserNode extends AudioWorkletNode {
       });
     }
   }
+
   _removeEventListener(type: EventListenerTypes, listener: EventListenerOrEventListenerObject) {
     const listeners = this._eventListenersCount[type];
     const index = listeners.indexOf(listener);
@@ -108,10 +118,12 @@ export class AdvancedAnalyserNode extends AudioWorkletNode {
       });
     }
   }
+
   addEventListener(type: EventListenerTypes | "processorerror", listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void { 
     super.addEventListener(type, listener, options);
     if (type !== 'processorerror' && typeof this._eventListenersCount[type] !== 'undefined' ) this._pushEventListener(type, listener);
   }
+
   removeEventListener(type: EventListenerTypes | "processorerror", listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void {
     super.removeEventListener(type, listener, options);
     if (type !== 'processorerror' && typeof this._eventListenersCount[type] !== 'undefined') this._removeEventListener(type, listener);

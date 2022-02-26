@@ -27,19 +27,30 @@ const clamp = (val: number, min: number, max: number) => {
 // };
 export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
   _samplesCount = 0;
+
   _count = 0;
+
   _first = true;
+
   _fftAnalyser: FFT;
+
   _fftSize: number;
+
   _fftInput: Float32Array;
+
   _fftOutput: number[];
+
   _lastTransform: Float32Array;
+
   _samplesBetweenTransforms: number;
+
   _windowFunctionType = WindowingFunctionTypes.blackmanWindow;
+
   _isListeningTo: Record<EventListenerTypes, boolean> = {
     frequencydata: false,
     bytefrequencydata: false
   };
+
   /**
    * The W3C spec for the analyser node states that:
    * "...increasing fftSize does mean that the current time-domain data must be expanded to include past frames that it previously did not.
@@ -50,9 +61,13 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
    * We're trying to match the W3C spec for the analyser node as close as possible, for that reason we do the same here.
    */
   _buffer: Float32Array = new Float32Array(MAX_FFT_SIZE);
+
   _minDecibels = -100.0;
+
   _maxDecibels = -30.0;
+
   _smoothingTimeConstant = 0;
+
   _portMap = new Map();
 
   static get parameterDescriptors() {
@@ -64,6 +79,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
       
     ];
   }
+
   constructor (options: { processorOptions: { fftSize: number, samplesBetweenTransforms: number, windowFunction?: WindowingFunctionTypes} }) {
     super();
     const { fftSize, samplesBetweenTransforms, windowFunction = WindowingFunctionTypes.blackmanWindow } = options.processorOptions;
@@ -95,6 +111,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
       }
     }
   }
+
   _postMessage(message: Message, transfer?: Transferable[]) {
     this.port.postMessage(message, transfer);
   }
@@ -138,6 +155,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     }
     windowFunctionsMap[this._windowFunctionType](this._fftInput);
   }
+
   _convertFloatToDb(destinationArray: Float32Array) {
     const len = Math.min(this._lastTransform.length, destinationArray.length);
     if (len > 0) {
@@ -147,6 +165,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
       }
     }
   }
+
   _convertToByteData(destinationArray: Uint8Array) {
     const len = Math.min(this._lastTransform.length, destinationArray.length);
     if (len > 0) {
@@ -161,6 +180,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
       }
     }
   }
+
   _doFft() {
     // tries to adhere as close as possible the W3C spec
     this._updateFftInput();
@@ -182,9 +202,11 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     }
 
   }
+
   get _fftBinSize() {
     return this._fftSize / 2;
   }
+
   _flush() {
     this._doFft();
     if(this._isListeningTo.frequencydata) {

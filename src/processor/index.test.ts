@@ -19,6 +19,7 @@ global.AudioWorkletProcessor = class AudioWorkletProcessor {
     removeEventListener: noop,
     dispatchEvent: () => true,
   };
+
   process() {
     return true;
   }
