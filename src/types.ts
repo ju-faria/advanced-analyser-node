@@ -13,8 +13,12 @@ export enum MessageTypes {
   requestedByteFrequencyDataAvailable,// = "byte-frequency-data-available",
 
 
-  floatTimeDomainData,// = "float-time-domain-data",
-  byteTimeDomainData,// = "byte-time-domain-data",
+  getFloatTimeDomainData,// = "float-time-domain-data",
+  requestedFloatTimeDomainDataAvailable,// = "float-time-domain-data",
+
+  getByteTimeDomainData,// = "get-byte-frequency-data",
+  requestedByteTimeDomainDataAvailable,// = "byte-frequency-data-available",
+
 
   startedListeningTo,// = 'started-listening-to',
   stoppedListeningTo,// = 'stopped-listening-to',
@@ -38,6 +42,13 @@ type RequestedFloatFrequencyDataAvailableMessage = IdentifiedMessage<MessageType
 type GetByteFrequencyDataMessage = IdentifiedMessage<MessageTypes.getByteFrequencyData,Uint8Array>
 type RequestedByteFrequencyDataAvailableMessage = IdentifiedMessage<MessageTypes.requestedByteFrequencyDataAvailable, ArrayBuffer>
 
+type GetFloatTimeDomainDataMessage = IdentifiedMessage<MessageTypes.getFloatTimeDomainData>
+type RequestedFloatTimeDomainDataAvailableMessage = IdentifiedMessage<MessageTypes.requestedFloatTimeDomainDataAvailable, ArrayBuffer>
+
+type GetByteTimeDomainDataMessage = IdentifiedMessage<MessageTypes.getByteTimeDomainData,Uint8Array>
+type RequestedByteTimeDomainDataAvailableMessage = IdentifiedMessage<MessageTypes.requestedByteTimeDomainDataAvailable, ArrayBuffer>
+
+
 type StartedListeningToMessage = BasicMessage<MessageTypes.startedListeningTo, EventListenerTypes>
 type StoppedListeningToMessage = BasicMessage<MessageTypes.stoppedListeningTo, EventListenerTypes>
 
@@ -48,6 +59,10 @@ export type Message =
   | RequestedFloatFrequencyDataAvailableMessage
   | GetByteFrequencyDataMessage
   | RequestedByteFrequencyDataAvailableMessage
+  | GetFloatTimeDomainDataMessage
+  | RequestedFloatTimeDomainDataAvailableMessage
+  | GetByteTimeDomainDataMessage
+  | RequestedByteTimeDomainDataAvailableMessage
   | StartedListeningToMessage
   | StoppedListeningToMessage
 
@@ -61,6 +76,8 @@ export enum ProcessorParameters {
 export enum EventListenerTypes {
   frequencydata = 'frequencydata',
   bytefrequencydata = 'bytefrequencydata',
+  timedomaindata = 'timedomaindata',
+  bytetimedomaindata = 'bytetimedomaindata',
 }
 
 export enum WindowingFunctionTypes {

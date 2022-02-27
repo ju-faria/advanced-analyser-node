@@ -26,6 +26,8 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _maxDecibels: number;
     _smoothingTimeConstant: number;
     _portMap: Map<any, any>;
+    get _frequencyBinCount(): number;
+    set frequencyBinCount(value: number);
     static get parameterDescriptors(): {
         name: string;
         defaultValue: number;
@@ -59,9 +61,10 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _convertFloatToDb(destinationArray: Float32Array): void;
     _convertToByteData(destinationArray: Uint8Array): void;
     _doFft(): void;
-    get _fftBinSize(): number;
     _flush(): void;
     _getFloatFrequencyData(requestId: number): void;
     _getByteFrequencyData(requestId: number): void;
+    _getFloatTimeDomainData(requestId: number): void;
+    _getByteTimeDomainData(requestId: number): void;
     process(inputs: Float32Array[][], _: Float32Array[][], parameters: Record<string, Float32Array>): boolean;
 }

@@ -1,4 +1,4 @@
-import { EventListenerTypes, Message, WindowingFunctionTypes } from "../types";
+import { EventListenerTypes, Message, MessageTypes, WindowingFunctionTypes } from "../types";
 declare type AdvancedAnalyserNodeProperties = {
     dataAsByteArray: boolean;
     fftSize?: number;
@@ -16,7 +16,11 @@ export declare class AdvancedAnalyserNode extends AudioWorkletNode {
     _postMessage(message: Message, transfer?: Transferable[]): void;
     onprocessorerror: (err: Event) => void;
     private _onmessage;
+    _postIdentifiedDataRequest(requestType: MessageTypes.getByteFrequencyData | MessageTypes.getByteTimeDomainData | MessageTypes.getFloatFrequencyData | MessageTypes.getFloatTimeDomainData): Promise<unknown>;
     getFloatFrequencyData(): Promise<unknown>;
+    getByteFrequencyData(): Promise<unknown>;
+    getFloatTimeDomainData(): Promise<unknown>;
+    getByteTimeDomainData(): Promise<unknown>;
     start(): void;
     _pushEventListener(type: EventListenerTypes, listener: EventListenerOrEventListenerObject): void;
     _removeEventListener(type: EventListenerTypes, listener: EventListenerOrEventListenerObject): void;

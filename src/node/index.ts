@@ -11,6 +11,7 @@ type AdvancedAnalyserNodeProperties = {
   fftSize?: number, 
   samplesBetweenTransforms?: number,
   windowFunction?: WindowingFunctionTypes,
+
 }
 
 export class AdvancedAnalyserNode extends AudioWorkletNode {
@@ -25,9 +26,10 @@ export class AdvancedAnalyserNode extends AudioWorkletNode {
   _eventListenersCount:Record<EventListenerTypes, EventListenerOrEventListenerObject[]> = {
     [EventListenerTypes.frequencydata]: [],
     [EventListenerTypes.bytefrequencydata]: [],
+    [EventListenerTypes.timedomaindata]: [],
+    [EventListenerTypes.bytetimedomaindata]: [],
   };
 
-  // _onDataAvailable = new CustomEvent('ondataavailable', { value: })
   constructor(
     context: BaseAudioContext,
     {
@@ -41,7 +43,12 @@ export class AdvancedAnalyserNode extends AudioWorkletNode {
         [ProcessorParameters.fftSize]: fftSize,
         [ProcessorParameters.samplesBetweenTransforms]: samplesBetweenTransforms || fftSize,
         [ProcessorParameters.windowFunction]: windowFunction,
-      }
+      },
+      numberOfInputs: 1,
+      numberOfOutputs: 1,
+      channelCount: 1,
+      channelCountMode: "max",
+      channelInterpretation: "speakers",
     });
     this.port.onmessage = (event) => this._onmessage(event.data);
   }
@@ -68,7 +75,10 @@ export class AdvancedAnalyserNode extends AudioWorkletNode {
         this.dispatchEvent(new CustomEvent<Uint8Array>(EventListenerTypes.bytefrequencydata, { detail: event.payload }));
         break;
       }
-      case MessageTypes.requestedFloatFrequencyDataAvailable: {
+      case MessageTypes.requestedFloatFrequencyDataAvailable:
+      case MessageTypes.requestedByteFrequencyDataAvailable:
+      case MessageTypes.requestedFloatTimeDomainDataAvailable:
+      case MessageTypes.requestedByteTimeDomainDataAvailable: {
         const {id, payload} = event;
         const resolve = this._portMap.get(id);
         this._portMap.delete(id);
@@ -76,18 +86,48 @@ export class AdvancedAnalyserNode extends AudioWorkletNode {
         break;
       }
     }
-
   }
-  
-  getFloatFrequencyData() {
+
+  _postIdentifiedDataRequest(
+    requestType: MessageTypes.getByteFrequencyData 
+    | MessageTypes.getByteTimeDomainData
+    | MessageTypes.getFloatFrequencyData 
+    | MessageTypes.getFloatTimeDomainData
+  ) {
     return new Promise(resolve => {
       const id = this._uniqId();
-      this._portMap.set(id, (buffer:ArrayBuffer) => resolve(new Float32Array(buffer)));
+      this._portMap.set(id, (buffer:ArrayBuffer) => {
+        if (
+          requestType === MessageTypes.getByteFrequencyData 
+          || requestType ===  MessageTypes.getByteTimeDomainData
+        ) {
+          resolve(new Uint8Array(buffer));
+
+        } else {
+          resolve(new Float32Array(buffer));
+        }
+      });
       this._postMessage({
         id, 
-        type: MessageTypes.getFloatFrequencyData,
+        type: requestType
       });
     });
+  }
+
+  getFloatFrequencyData() {
+    return this._postIdentifiedDataRequest(MessageTypes.getFloatFrequencyData);
+  }
+
+  getByteFrequencyData() {
+    return this._postIdentifiedDataRequest(MessageTypes.getByteFrequencyData);
+  }
+
+  getFloatTimeDomainData() {
+    return this._postIdentifiedDataRequest(MessageTypes.getFloatTimeDomainData);
+  }
+
+  getByteTimeDomainData() {
+    return this._postIdentifiedDataRequest(MessageTypes.getByteTimeDomainData);
   }
 
   start() {

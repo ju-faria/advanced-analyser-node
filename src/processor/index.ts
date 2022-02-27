@@ -48,7 +48,9 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
 
   _isListeningTo: Record<EventListenerTypes, boolean> = {
     frequencydata: false,
-    bytefrequencydata: false
+    bytefrequencydata: false,
+    timedomaindata: false,
+    bytetimedomaindata: false
   };
 
   /**
@@ -70,6 +72,15 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
 
   _portMap = new Map();
 
+  get _frequencyBinCount () {
+    return this._fftSize / 2;
+  }
+
+  set frequencyBinCount (value:number) {
+    this._fftSize = value * 2;
+  }
+
+
   static get parameterDescriptors() {
     return [
       {
@@ -78,7 +89,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
       },
       
     ];
-  }
+  } 
 
   constructor (options: { processorOptions: { fftSize: number, samplesBetweenTransforms: number, windowFunction?: WindowingFunctionTypes} }) {
     super();
@@ -87,8 +98,9 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     this._fftAnalyser = new FFT(fftSize);
     this._fftInput = new Float32Array(fftSize);
     this._fftOutput = this._fftAnalyser.createComplexArray();
-    this._lastTransform = new Float32Array(fftSize / 2);
     this._fftSize = fftSize;
+
+    this._lastTransform = new Float32Array(this._frequencyBinCount);
     this._samplesBetweenTransforms = samplesBetweenTransforms;
     this._samplesCount = 0;
     this._windowFunctionType = windowFunction;
@@ -99,6 +111,18 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     switch(message.type) {
       case MessageTypes.getFloatFrequencyData: {
         this._getFloatFrequencyData(message.id);
+        break;
+      }
+      case MessageTypes.getByteFrequencyData: {
+        this._getByteFrequencyData(message.id);
+        break;
+      }
+      case MessageTypes.getFloatTimeDomainData: {
+        this._getFloatTimeDomainData(message.id);
+        break;
+      }
+      case MessageTypes.getByteTimeDomainData: {
+        this._getByteTimeDomainData(message.id);
         break;
       }
       case MessageTypes.startedListeningTo: {
@@ -203,22 +227,20 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
 
   }
 
-  get _fftBinSize() {
-    return this._fftSize / 2;
-  }
-
   _flush() {
     this._doFft();
     if(this._isListeningTo.frequencydata) {
       // let destinationArray: Float32Array|Uint8Array;
-      const destinationArray = new Float32Array(this._fftBinSize);
+      const destinationArray = new Float32Array(this._frequencyBinCount );
       this._convertFloatToDb(destinationArray);
       this._postMessage({
         type: MessageTypes.frequencyDataAvailable,
         payload: destinationArray
       });
-    } else {
-      const destinationArray = new Uint8Array(this._fftBinSize);
+    } 
+    
+    if(this._isListeningTo.bytefrequencydata) {
+      const destinationArray = new Uint8Array(this._frequencyBinCount );
       this._convertToByteData(destinationArray);
       this._postMessage({
         type: MessageTypes.byteFrequencyDataAvailable,
@@ -228,7 +250,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
   }
 
   _getFloatFrequencyData(requestId: number) {
-    const destinationArray = new Float32Array(this._fftSize/2);
+    const destinationArray = new Float32Array(this._frequencyBinCount);
 
     this._doFft();
     this._convertFloatToDb(destinationArray);
@@ -242,7 +264,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
 
   _getByteFrequencyData(requestId: number) {
     this._doFft();
-    const destinationArray = new Uint8Array(this._fftSize/2);
+    const destinationArray = new Uint8Array(this._frequencyBinCount);
 
     this._convertToByteData(destinationArray);
 
@@ -253,12 +275,28 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     }, [destinationArray.buffer]);
   }
 
-  // _getFloatTimeDomainData() {
+  _getFloatTimeDomainData(requestId: number) {
+    this._updateFftInput();
+    this._postMessage({
+      id: requestId,
+      type: MessageTypes.requestedFloatTimeDomainDataAvailable,
+      payload: this._fftInput, // Don't bother transfering the buffer here because we reuse _fftInput, so it has to be cloned anyway
+    });
+  }
 
-  // }
-  // _getByteTimeDomainData() {
-
-  // }
+  _getByteTimeDomainData(requestId: number) {
+    this._updateFftInput();
+    const destinationArray = new Uint8Array(this._fftSize);
+    for (let i = 0; i < this._fftSize; ++i) {
+      destinationArray[i] = clamp((128 * (this._fftInput[i] + 1)) | 0, 0, 255);
+    }
+    this._postMessage({
+      id: requestId,
+      type: MessageTypes.requestedByteTimeDomainDataAvailable,
+      payload: destinationArray.buffer,
+    }, [destinationArray.buffer]);
+  }
+  
   process(
     inputs: Float32Array[][],
     _: Float32Array[][],

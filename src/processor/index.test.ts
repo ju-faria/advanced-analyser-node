@@ -1,12 +1,13 @@
 import { fill } from 'lodash';
 import { WindowingFunctionTypes } from '../types';
+
 const noop = () => {
   // do nothing
 };
 const notImplemented = (name?: string) => {
   it(`🚨 NO IMPLEMENTATION YET 🚨${name ? ` - ${name}`: ''}`, noop);
-
 };
+
 const portPostMessageSpy = jest.fn();
 global.AudioWorkletProcessor = class AudioWorkletProcessor {
   port = {
@@ -536,8 +537,6 @@ describe('AdvancedAnalyserProcessor', () => {
       processor._flush();
       expect(processor._doFft).toHaveBeenCalled();
     });
-
-    
   });
   describe('_getFloatFrequencyData', notImplemented);
   describe('_getByteFrequencyData', notImplemented);
