@@ -10,6 +10,7 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _fftOutput: number[];
     _lastTransform: Float32Array;
     _samplesBetweenTransforms: number;
+    _timeDomainSamplesCount: number;
     _windowFunctionType: WindowingFunctionTypes;
     _isListeningTo: Record<EventListenerTypes, boolean>;
     /**
@@ -28,6 +29,8 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _portMap: Map<any, any>;
     get _frequencyBinCount(): number;
     set frequencyBinCount(value: number);
+    get _isListeningToFrequencyData(): boolean;
+    get _isListeningToTimeDomainData(): boolean;
     static get parameterDescriptors(): {
         name: string;
         defaultValue: number;
@@ -36,12 +39,14 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
         processorOptions: {
             fftSize: number;
             samplesBetweenTransforms: number;
+            timeDomainSamplesCount?: number;
             windowFunction?: WindowingFunctionTypes;
         };
     });
     _onmessage(message: Message): void;
     _postMessage(message: Message, transfer?: Transferable[]): void;
-    _shouldFlush(): boolean;
+    _shouldFlushFrequencies(): boolean;
+    _shouldFlushTimeDomainData(): boolean;
     _appendToBuffer(value: number): void;
     /**
      * to clarify this as it could be a little confusing:
@@ -58,10 +63,13 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
      * [5, 6, 3, 4] => [3, 4, 5, 6]
      */
     _updateFftInput(): void;
-    _convertFloatToDb(destinationArray: Float32Array): void;
-    _convertToByteData(destinationArray: Uint8Array): void;
+    _fillArrayWithLastNSamples(destinationArray: Float32Array): void;
+    _convertFrequenciesToDb(destinationArray: Float32Array): void;
+    _convertFrequenciesToByteData(destinationArray: Uint8Array): void;
+    _convertTimeDomainDataToByteData(data: Float32Array, destinationArray: Uint8Array): void;
     _doFft(): void;
-    _flush(): void;
+    _flushFrequencies(): void;
+    _flushTimeDomainSamples(): void;
     _getFloatFrequencyData(requestId: number): void;
     _getByteFrequencyData(requestId: number): void;
     _getFloatTimeDomainData(requestId: number): void;

@@ -44,6 +44,8 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
 
   _samplesBetweenTransforms: number;
 
+  _timeDomainSamplesCount: number;
+
   _windowFunctionType = WindowingFunctionTypes.blackmanWindow;
 
   _isListeningTo: Record<EventListenerTypes, boolean> = {
@@ -80,28 +82,34 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     this._fftSize = value * 2;
   }
 
-
+  get _isListeningToFrequencyData() {
+    return (this._isListeningTo.frequencydata || this._isListeningTo.bytefrequencydata);
+  }
+  
+  get _isListeningToTimeDomainData() {
+    return (this._isListeningTo.timedomaindata || this._isListeningTo.bytetimedomaindata);
+  }
+  
   static get parameterDescriptors() {
     return [
       {
         name: "isRecording",
         defaultValue: 1
       },
-      
     ];
   } 
 
-  constructor (options: { processorOptions: { fftSize: number, samplesBetweenTransforms: number, windowFunction?: WindowingFunctionTypes} }) {
+  constructor (options: { processorOptions: { fftSize: number, samplesBetweenTransforms: number, timeDomainSamplesCount?: number, windowFunction?: WindowingFunctionTypes} }) {
     super();
-    const { fftSize, samplesBetweenTransforms, windowFunction = WindowingFunctionTypes.blackmanWindow } = options.processorOptions;
+    const { fftSize, samplesBetweenTransforms, timeDomainSamplesCount, windowFunction = WindowingFunctionTypes.blackmanWindow } = options.processorOptions;
 
     this._fftAnalyser = new FFT(fftSize);
     this._fftInput = new Float32Array(fftSize);
     this._fftOutput = this._fftAnalyser.createComplexArray();
     this._fftSize = fftSize;
-
     this._lastTransform = new Float32Array(this._frequencyBinCount);
-    this._samplesBetweenTransforms = samplesBetweenTransforms;
+    this._samplesBetweenTransforms = samplesBetweenTransforms || fftSize;
+    this._timeDomainSamplesCount = timeDomainSamplesCount;
     this._samplesCount = 0;
     this._windowFunctionType = windowFunction;
     this.port.onmessage = (event) => this._onmessage(event.data);
@@ -140,18 +148,25 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     this.port.postMessage(message, transfer);
   }
 
-  _shouldFlush(){
-    return (this._isListeningTo.frequencydata || this._isListeningTo.bytefrequencydata)
+  _shouldFlushFrequencies(){
+    return this._isListeningToFrequencyData
       && this._samplesCount % this._samplesBetweenTransforms === 0;
   }
-  
+
+  _shouldFlushTimeDomainData (){
+    return this._isListeningToTimeDomainData
+      && this._samplesCount % this._timeDomainSamplesCount === 0;
+  }
   
   _appendToBuffer(value:number) {
     this._buffer[this._samplesCount % this._buffer.length] = value;
     this._samplesCount = this._samplesCount + 1;
 
-    if (this._shouldFlush()) {
-      this._flush();
+    if (this._shouldFlushFrequencies()) {
+      this._flushFrequencies(); 
+    }
+    if (this._shouldFlushTimeDomainData()) {
+      this._flushTimeDomainSamples();
     }
   }
 
@@ -173,14 +188,20 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     /**
      * TODO: pad the fftInput end if the analyser stops in the middle of the samplesBetweenTransforms interval
      */
-    const startingIndex = (this._samplesCount  - this._fftSize) % this._buffer.length; 
-    for (let i = 0; i < this._fftInput.length; i++) {
-      this._fftInput[i] = startingIndex+ i < 0 ? 0 :this._buffer[(startingIndex+ i) % this._buffer.length];
-    }
+  
+    this._fillArrayWithLastNSamples(this._fftInput);
     windowFunctionsMap[this._windowFunctionType](this._fftInput);
   }
 
-  _convertFloatToDb(destinationArray: Float32Array) {
+  _fillArrayWithLastNSamples(destinationArray: Float32Array) {
+    const n = destinationArray.length;
+    const startingIndex = (this._samplesCount  - n) % this._buffer.length; 
+    for (let i = 0; i < n; i++) {
+      destinationArray[i] = startingIndex+ i < 0 ? 0 :this._buffer[(startingIndex+ i) % this._buffer.length];
+    }
+  }
+
+  _convertFrequenciesToDb(destinationArray: Float32Array) {
     const len = Math.min(this._lastTransform.length, destinationArray.length);
     if (len > 0) {
       const source = this._lastTransform;
@@ -190,7 +211,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     }
   }
 
-  _convertToByteData(destinationArray: Uint8Array) {
+  _convertFrequenciesToByteData(destinationArray: Uint8Array) {
     const len = Math.min(this._lastTransform.length, destinationArray.length);
     if (len > 0) {
       const source = this._lastTransform;
@@ -205,10 +226,13 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     }
   }
 
-  _doFft() {
-    // tries to adhere as close as possible the W3C spec
-    this._updateFftInput();
+  _convertTimeDomainDataToByteData(data: Float32Array, destinationArray: Uint8Array) {
+    for (let i = 0; i < data.length; ++i) {
+      destinationArray[i] = clamp((128 * (data[i] + 1)) | 0, 0, 255);
+    }
+  }
 
+  _doFft() {
     this._fftAnalyser.realTransform(this._fftOutput, this._fftInput);
     // Normalize so than an input sine wave at 0dBfs registers as 0dBfs (undo FFT
     // scaling factor).
@@ -224,36 +248,57 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
       
       this._lastTransform[i] =  k * this._lastTransform[i] + (1 - k) * scalarMagnitude;
     }
-
   }
 
-  _flush() {
+  _flushFrequencies() {
+    this._updateFftInput();
     this._doFft();
-    if(this._isListeningTo.frequencydata) {
-      // let destinationArray: Float32Array|Uint8Array;
-      const destinationArray = new Float32Array(this._frequencyBinCount );
-      this._convertFloatToDb(destinationArray);
+    if (this._isListeningTo.frequencydata) {
+      const destinationArray = new Float32Array(this._frequencyBinCount);
+      this._convertFrequenciesToDb(destinationArray);
       this._postMessage({
         type: MessageTypes.frequencyDataAvailable,
-        payload: destinationArray
-      });
+        payload: destinationArray.buffer
+      }, [destinationArray.buffer]);
     } 
     
-    if(this._isListeningTo.bytefrequencydata) {
-      const destinationArray = new Uint8Array(this._frequencyBinCount );
-      this._convertToByteData(destinationArray);
+    if (this._isListeningTo.bytefrequencydata) {
+      const destinationArray = new Uint8Array(this._frequencyBinCount);
+      this._convertFrequenciesToByteData(destinationArray);
       this._postMessage({
         type: MessageTypes.byteFrequencyDataAvailable,
-        payload: destinationArray
-      });
+        payload: destinationArray.buffer
+      }, [destinationArray.buffer]);
+    }
+  }
+
+  _flushTimeDomainSamples() {
+    if (this._isListeningTo.timedomaindata) {
+      const destinationArray = new Float32Array(this._timeDomainSamplesCount);
+      this._fillArrayWithLastNSamples(destinationArray);
+      this._postMessage({
+        type: MessageTypes.timeDomainDataAvailable,
+        payload: destinationArray.buffer,
+      }, [destinationArray.buffer]);
+    }
+    if (this._isListeningTo.bytetimedomaindata) {
+      const data = new Float32Array(this._timeDomainSamplesCount);
+      this._fillArrayWithLastNSamples(data);
+      const destinationArray = new Uint8Array(this._timeDomainSamplesCount);
+      this._convertTimeDomainDataToByteData(data, destinationArray);
+      this._postMessage({
+        type: MessageTypes.byteTimeDomainDataAvailable,
+        payload: destinationArray.buffer,
+      }, [destinationArray.buffer]);
     }
   }
 
   _getFloatFrequencyData(requestId: number) {
-    const destinationArray = new Float32Array(this._frequencyBinCount);
 
+    const destinationArray = new Float32Array(this._frequencyBinCount);
+    this._updateFftInput();
     this._doFft();
-    this._convertFloatToDb(destinationArray);
+    this._convertFrequenciesToDb(destinationArray);
 
     this._postMessage({
       id: requestId,
@@ -263,10 +308,12 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
   }
 
   _getByteFrequencyData(requestId: number) {
+    this._updateFftInput();
     this._doFft();
+    const data = new Float32Array(this._timeDomainSamplesCount);
+    this._fillArrayWithLastNSamples(data);
     const destinationArray = new Uint8Array(this._frequencyBinCount);
-
-    this._convertToByteData(destinationArray);
+    this._convertFrequenciesToByteData(destinationArray);
 
     this._postMessage({
       id: requestId,
@@ -276,20 +323,22 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
   }
 
   _getFloatTimeDomainData(requestId: number) {
-    this._updateFftInput();
+    const destinationArray = new Float32Array(this._timeDomainSamplesCount);
+    this._fillArrayWithLastNSamples(destinationArray);
+
     this._postMessage({
       id: requestId,
       type: MessageTypes.requestedFloatTimeDomainDataAvailable,
-      payload: this._fftInput, // Don't bother transfering the buffer here because we reuse _fftInput, so it has to be cloned anyway
-    });
+      payload: destinationArray.buffer,
+    }, [destinationArray.buffer]);
   }
+  
 
   _getByteTimeDomainData(requestId: number) {
-    this._updateFftInput();
-    const destinationArray = new Uint8Array(this._fftSize);
-    for (let i = 0; i < this._fftSize; ++i) {
-      destinationArray[i] = clamp((128 * (this._fftInput[i] + 1)) | 0, 0, 255);
-    }
+    const data = new Float32Array(this._timeDomainSamplesCount);
+    this._fillArrayWithLastNSamples(data);
+    const destinationArray = new Uint8Array(this._timeDomainSamplesCount);
+    this._convertTimeDomainDataToByteData(data, destinationArray);
     this._postMessage({
       id: requestId,
       type: MessageTypes.requestedByteTimeDomainDataAvailable,

@@ -3,15 +3,14 @@ declare type AdvancedAnalyserNodeProperties = {
     dataAsByteArray: boolean;
     fftSize?: number;
     samplesBetweenTransforms?: number;
+    timeDomainSamplesCount?: number;
     windowFunction?: WindowingFunctionTypes;
 };
 export declare class AdvancedAnalyserNode extends AudioWorkletNode {
-    fftSize: number;
-    samplesBetweenTransforms?: number;
     _portMapId: number;
     _portMap: Map<any, any>;
     _eventListenersCount: Record<EventListenerTypes, EventListenerOrEventListenerObject[]>;
-    constructor(context: BaseAudioContext, { fftSize, samplesBetweenTransforms, windowFunction }: AudioWorkletNodeOptions & AdvancedAnalyserNodeProperties);
+    constructor(context: BaseAudioContext, { fftSize, samplesBetweenTransforms, timeDomainSamplesCount, windowFunction }: AudioWorkletNodeOptions & AdvancedAnalyserNodeProperties);
     _uniqId(): number;
     _postMessage(message: Message, transfer?: Transferable[]): void;
     onprocessorerror: (err: Event) => void;

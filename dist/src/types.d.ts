@@ -3,16 +3,18 @@ export declare enum MessageTypes {
     stop = 1,
     frequencyDataAvailable = 2,
     byteFrequencyDataAvailable = 3,
-    getFloatFrequencyData = 4,
-    requestedFloatFrequencyDataAvailable = 5,
-    getByteFrequencyData = 6,
-    requestedByteFrequencyDataAvailable = 7,
-    getFloatTimeDomainData = 8,
-    requestedFloatTimeDomainDataAvailable = 9,
-    getByteTimeDomainData = 10,
-    requestedByteTimeDomainDataAvailable = 11,
-    startedListeningTo = 12,
-    stoppedListeningTo = 13
+    timeDomainDataAvailable = 4,
+    byteTimeDomainDataAvailable = 5,
+    getFloatFrequencyData = 6,
+    requestedFloatFrequencyDataAvailable = 7,
+    getByteFrequencyData = 8,
+    requestedByteFrequencyDataAvailable = 9,
+    getFloatTimeDomainData = 10,
+    requestedFloatTimeDomainDataAvailable = 11,
+    getByteTimeDomainData = 12,
+    requestedByteTimeDomainDataAvailable = 13,
+    startedListeningTo = 14,
+    stoppedListeningTo = 15
 }
 interface BasicMessage<T, P = unknown> {
     type: T;
@@ -21,23 +23,25 @@ interface BasicMessage<T, P = unknown> {
 interface IdentifiedMessage<T, P = unknown> extends BasicMessage<T, P> {
     id: number;
 }
-declare type FloatFrequencyDataAvailableMessage = BasicMessage<MessageTypes.frequencyDataAvailable, Float32Array>;
-declare type ByteFrequencyDataAvailableMessage = BasicMessage<MessageTypes.byteFrequencyDataAvailable, Uint8Array>;
+declare type FloatFrequencyDataAvailableMessage = BasicMessage<MessageTypes.frequencyDataAvailable, ArrayBuffer>;
+declare type ByteFrequencyDataAvailableMessage = BasicMessage<MessageTypes.byteFrequencyDataAvailable, ArrayBuffer>;
+declare type FloatTimeDomainDataAvailableMessage = BasicMessage<MessageTypes.timeDomainDataAvailable, ArrayBuffer>;
+declare type ByteTimeDomainDataAvailableMessage = BasicMessage<MessageTypes.byteTimeDomainDataAvailable, ArrayBuffer>;
 declare type GetFloatFrequencyDataMessage = IdentifiedMessage<MessageTypes.getFloatFrequencyData>;
 declare type RequestedFloatFrequencyDataAvailableMessage = IdentifiedMessage<MessageTypes.requestedFloatFrequencyDataAvailable, ArrayBuffer>;
-declare type GetByteFrequencyDataMessage = IdentifiedMessage<MessageTypes.getByteFrequencyData, Uint8Array>;
+declare type GetByteFrequencyDataMessage = IdentifiedMessage<MessageTypes.getByteFrequencyData, ArrayBuffer>;
 declare type RequestedByteFrequencyDataAvailableMessage = IdentifiedMessage<MessageTypes.requestedByteFrequencyDataAvailable, ArrayBuffer>;
 declare type GetFloatTimeDomainDataMessage = IdentifiedMessage<MessageTypes.getFloatTimeDomainData>;
 declare type RequestedFloatTimeDomainDataAvailableMessage = IdentifiedMessage<MessageTypes.requestedFloatTimeDomainDataAvailable, ArrayBuffer>;
-declare type GetByteTimeDomainDataMessage = IdentifiedMessage<MessageTypes.getByteTimeDomainData, Uint8Array>;
+declare type GetByteTimeDomainDataMessage = IdentifiedMessage<MessageTypes.getByteTimeDomainData, ArrayBuffer>;
 declare type RequestedByteTimeDomainDataAvailableMessage = IdentifiedMessage<MessageTypes.requestedByteTimeDomainDataAvailable, ArrayBuffer>;
 declare type StartedListeningToMessage = BasicMessage<MessageTypes.startedListeningTo, EventListenerTypes>;
 declare type StoppedListeningToMessage = BasicMessage<MessageTypes.stoppedListeningTo, EventListenerTypes>;
-export declare type Message = FloatFrequencyDataAvailableMessage | ByteFrequencyDataAvailableMessage | GetFloatFrequencyDataMessage | RequestedFloatFrequencyDataAvailableMessage | GetByteFrequencyDataMessage | RequestedByteFrequencyDataAvailableMessage | GetFloatTimeDomainDataMessage | RequestedFloatTimeDomainDataAvailableMessage | GetByteTimeDomainDataMessage | RequestedByteTimeDomainDataAvailableMessage | StartedListeningToMessage | StoppedListeningToMessage;
+export declare type Message = FloatFrequencyDataAvailableMessage | ByteFrequencyDataAvailableMessage | FloatTimeDomainDataAvailableMessage | ByteTimeDomainDataAvailableMessage | GetFloatFrequencyDataMessage | RequestedFloatFrequencyDataAvailableMessage | GetByteFrequencyDataMessage | RequestedByteFrequencyDataAvailableMessage | GetFloatTimeDomainDataMessage | RequestedFloatTimeDomainDataAvailableMessage | GetByteTimeDomainDataMessage | RequestedByteTimeDomainDataAvailableMessage | StartedListeningToMessage | StoppedListeningToMessage;
 export declare enum ProcessorParameters {
     fftSize = "fftSize",
     samplesBetweenTransforms = "samplesBetweenTransforms",
-    dataAsByteArray = "dataAsByteArray",
+    timeDomainSamplesCount = "timeDomainSamplesCount",
     windowFunction = "windowFunction"
 }
 export declare enum EventListenerTypes {

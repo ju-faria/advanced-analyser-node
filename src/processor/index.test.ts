@@ -51,14 +51,9 @@ function FFT(fftSize: number) {
         output[i * 2] = input[i];
         output[i * 2 + 1] = input[0];
       }
-
     })
   };
 }
-
-
-
-
 
 jest.mock('fft.js', () =>( {
   default: FFT,
@@ -100,7 +95,7 @@ describe('AdvancedAnalyserProcessor', () => {
     expect(processor._samplesCount).toEqual(0); 
     
   });
-  describe('_shouldFlush', () => {
+  describe('_shouldFlushFrequencies', () => {
     it('returns true whenever _samplesCount is a multiple of samplesBetweenTransforms', () => {
       const fftSize = 16;
       const samplesBetweenTransforms = 8;
@@ -113,15 +108,15 @@ describe('AdvancedAnalyserProcessor', () => {
       processor._isListeningTo.frequencydata = true;
 
       processor._samplesCount = samplesBetweenTransforms;
-      expect(processor._shouldFlush()).toBeTruthy();
+      expect(processor._shouldFlushFrequencies()).toBeTruthy();
       processor._samplesCount = samplesBetweenTransforms * 2;
-      expect(processor._shouldFlush()).toBeTruthy();
+      expect(processor._shouldFlushFrequencies()).toBeTruthy();
       processor._samplesCount = samplesBetweenTransforms * 3;
-      expect(processor._shouldFlush()).toBeTruthy();
+      expect(processor._shouldFlushFrequencies()).toBeTruthy();
       processor._samplesCount = samplesBetweenTransforms * 1234;
-      expect(processor._shouldFlush()).toBeTruthy();
+      expect(processor._shouldFlushFrequencies()).toBeTruthy();
       processor._samplesCount = samplesBetweenTransforms + 1;
-      expect(processor._shouldFlush()).toBeFalsy();
+      expect(processor._shouldFlushFrequencies()).toBeFalsy();
     });
   });
   it('only flushes if there are active event listeners', () => {
@@ -134,16 +129,16 @@ describe('AdvancedAnalyserProcessor', () => {
       }
     });
     processor._isListeningTo.frequencydata = true;
-    expect(processor._shouldFlush()).toBeTruthy();
+    expect(processor._shouldFlushFrequencies()).toBeTruthy();
 
     processor._isListeningTo.frequencydata = false;
-    expect(processor._shouldFlush()).toBeFalsy();
+    expect(processor._shouldFlushFrequencies()).toBeFalsy();
     
     processor._isListeningTo.bytefrequencydata = true;
-    expect(processor._shouldFlush()).toBeTruthy();
+    expect(processor._shouldFlushFrequencies()).toBeTruthy();
 
     processor._isListeningTo.bytefrequencydata = false;
-    expect(processor._shouldFlush()).toBeFalsy();
+    expect(processor._shouldFlushFrequencies()).toBeFalsy();
   });
   describe('_appendToBuffer', () => {
     it('adds values to the correct position in the buffer', () => {
@@ -158,7 +153,7 @@ describe('AdvancedAnalyserProcessor', () => {
       });
       
       
-      processor._flush = noop; // ignores flushing
+      processor._flushFrequencies = noop; // ignores flushing
       let expectedResult = fill(new Array(MAX_FFT_SIZE), 0);
       expect(Array.from(processor._buffer)).toEqual(expectedResult);
       
@@ -172,7 +167,7 @@ describe('AdvancedAnalyserProcessor', () => {
       expect(Array.from(processor._buffer)).toEqual(expectedResult);                
       
     });
-    describe('calls _flush at the correct time', () => {
+    describe('calls _flushFrequencies at the correct time', () => {
       it('when samplesBetweenTransforms is multiple of fftSize', () => {
         const fftSize = 4;
         const samplesBetweenTransforms = 2;
@@ -183,15 +178,15 @@ describe('AdvancedAnalyserProcessor', () => {
           }
         });
         processor._isListeningTo.frequencydata = true;
-        processor._flush = jest.fn();
+        processor._flushFrequencies = jest.fn();
         processor._appendToBuffer(1);
-        expect(processor._flush).toHaveBeenCalledTimes(0);
+        expect(processor._flushFrequencies).toHaveBeenCalledTimes(0);
         processor._appendToBuffer(1);
-        expect(processor._flush).toHaveBeenCalledTimes(1);
+        expect(processor._flushFrequencies).toHaveBeenCalledTimes(1);
         processor._appendToBuffer(1);
-        expect(processor._flush).toHaveBeenCalledTimes(1);
+        expect(processor._flushFrequencies).toHaveBeenCalledTimes(1);
         processor._appendToBuffer(1);
-        expect(processor._flush).toHaveBeenCalledTimes(2);
+        expect(processor._flushFrequencies).toHaveBeenCalledTimes(2);
       });
       it('when samplesBetweenTransforms is NOT multiple of fftSize', () => {
         const fftSize = 4;
@@ -203,18 +198,18 @@ describe('AdvancedAnalyserProcessor', () => {
           }
         });
         processor._isListeningTo.frequencydata = true;
-        processor._flush = jest.fn();
+        processor._flushFrequencies = jest.fn();
         processor._appendToBuffer(1);
-        expect(processor._flush).toHaveBeenCalledTimes(0);
+        expect(processor._flushFrequencies).toHaveBeenCalledTimes(0);
         processor._appendToBuffer(1);
-        expect(processor._flush).toHaveBeenCalledTimes(0);
+        expect(processor._flushFrequencies).toHaveBeenCalledTimes(0);
         processor._appendToBuffer(1);
-        expect(processor._flush).toHaveBeenCalledTimes(1);
+        expect(processor._flushFrequencies).toHaveBeenCalledTimes(1);
         processor._appendToBuffer(1);
         processor._appendToBuffer(1);
-        expect(processor._flush).toHaveBeenCalledTimes(1);
+        expect(processor._flushFrequencies).toHaveBeenCalledTimes(1);
         processor._appendToBuffer(1);
-        expect(processor._flush).toHaveBeenCalledTimes(2);
+        expect(processor._flushFrequencies).toHaveBeenCalledTimes(2);
       });
       
       it('when samplesBetweenTransforms is bigger than the fftSize', () => {
@@ -228,16 +223,16 @@ describe('AdvancedAnalyserProcessor', () => {
         });
         processor._isListeningTo.frequencydata = true;
 
-        processor._flush = jest.fn();
+        processor._flushFrequencies = jest.fn();
         doNTimes(7, () => processor._appendToBuffer(1));
         
-        expect(processor._flush).toHaveBeenCalledTimes(0);
+        expect(processor._flushFrequencies).toHaveBeenCalledTimes(0);
         processor._appendToBuffer(1);
-        expect(processor._flush).toHaveBeenCalledTimes(1);
+        expect(processor._flushFrequencies).toHaveBeenCalledTimes(1);
         doNTimes(7, () => processor._appendToBuffer(1));
-        expect(processor._flush).toHaveBeenCalledTimes(1);
+        expect(processor._flushFrequencies).toHaveBeenCalledTimes(1);
         processor._appendToBuffer(1);
-        expect(processor._flush).toHaveBeenCalledTimes(2);
+        expect(processor._flushFrequencies).toHaveBeenCalledTimes(2);
       });
       it('when samplesBetweenTransforms is bigger than and is not multiple of the fftSize', () => {
         const fftSize = 4;
@@ -249,20 +244,22 @@ describe('AdvancedAnalyserProcessor', () => {
           }
         });
         processor._isListeningTo.frequencydata = true;
-        processor._flush = jest.fn();
+        processor._flushFrequencies = jest.fn();
         doNTimes(6, () => processor._appendToBuffer(1));
         
-        expect(processor._flush).toHaveBeenCalledTimes(0);
+        expect(processor._flushFrequencies).toHaveBeenCalledTimes(0);
         processor._appendToBuffer(1);
-        expect(processor._flush).toHaveBeenCalledTimes(1);
+        expect(processor._flushFrequencies).toHaveBeenCalledTimes(1);
         doNTimes(6, () => processor._appendToBuffer(1));
-        expect(processor._flush).toHaveBeenCalledTimes(1);
+        expect(processor._flushFrequencies).toHaveBeenCalledTimes(1);
         processor._appendToBuffer(1);
-        expect(processor._flush).toHaveBeenCalledTimes(2);
+        expect(processor._flushFrequencies).toHaveBeenCalledTimes(2);
       });
     });
   });
   describe('_updateFftInput', () => {
+
+
     it('cherry pick the correct values from _fftInput from _buffer', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
@@ -275,7 +272,7 @@ describe('AdvancedAnalyserProcessor', () => {
         }
       });
       // ignores flushing
-      processor._flush = noop;
+      processor._flushFrequencies = noop;
       let expectedResult = fill(new Array(fftSize), 0);
       processor._updateFftInput();
       expect(Array.from(processor._fftInput)).toEqual(expectedResult);
@@ -307,7 +304,7 @@ describe('AdvancedAnalyserProcessor', () => {
         }
       });
       // ignores flushing
-      processor._flush = noop;
+      processor._flushFrequencies = noop;
       let expectedResult = fill(new Array(fftSize), 0);
       processor._updateFftInput();
       expect(Array.from(processor._fftInput)).toEqual(expectedResult);
@@ -325,7 +322,7 @@ describe('AdvancedAnalyserProcessor', () => {
       expect(Array.from(processor._fftInput)).toEqual(expectedResult);
     });
   });
-  describe('_convertFloatToDb', () => {
+  describe('_convertFrequenciesToDb', () => {
     it('transform _lastTransform values to db and populate the array passed as argument', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
@@ -336,15 +333,15 @@ describe('AdvancedAnalyserProcessor', () => {
           samplesBetweenTransforms
         }
       });
-      processor._flush = noop;
+      processor._flushFrequencies = noop;
       const destinationArray = new Float32Array(fftSize);
       processor._lastTransform = fill(new Float32Array(fftSize), 0.1) as Float32Array;
-      processor._convertFloatToDb(destinationArray);
+      processor._convertFrequenciesToDb(destinationArray);
       expect(destinationArray).toEqual(fill(new Float32Array(fftSize), -20));
       
       
       processor._lastTransform = fill(new Float32Array(fftSize), 0.2) as Float32Array;
-      processor._convertFloatToDb(destinationArray);
+      processor._convertFrequenciesToDb(destinationArray);
       
 
       expect(destinationArray).toEqual(fill(new Float32Array(fftSize),  20.0 * Math.log10(0.2)));
@@ -354,7 +351,7 @@ describe('AdvancedAnalyserProcessor', () => {
     notImplemented('calls the correct windowing function');
   });
   
-  describe('_convertToByteData', () => {
+  describe('_convertFrequenciesToByteData', () => {
     it('converts _lastTransform to a Uint8Array with 0 being equal to _minDecibels and 255 being equal to _maxDecibels', () => {
       const fftSize = 32;
       const samplesBetweenTransforms = 4;
@@ -365,7 +362,7 @@ describe('AdvancedAnalyserProcessor', () => {
           samplesBetweenTransforms
         }
       });
-      processor._flush = noop;
+      processor._flushFrequencies = noop;
       
       const destinationArray = new Uint8Array(fftSize /2);
       const destinationFloatArray = new Float32Array(fftSize /2);
@@ -373,8 +370,8 @@ describe('AdvancedAnalyserProcessor', () => {
       doNTimes(fftSize / 2, (i) => {
         processor._lastTransform[i] = 0.0000001 + i * 0.003;
       });
-      processor._convertToByteData(destinationArray);
-      processor._convertFloatToDb(destinationFloatArray);
+      processor._convertFrequenciesToByteData(destinationArray);
+      processor._convertFrequenciesToDb(destinationFloatArray);
       
 
       const rangeScaleFactor =  1.0 / (processor._maxDecibels - processor._minDecibels);
@@ -393,6 +390,7 @@ describe('AdvancedAnalyserProcessor', () => {
       });
     });
   });
+  describe('_convertTimeDomainDataToByteData', notImplemented);
   describe('_doFft', () => {
     it('calls _updateFftInput', () => {
       const fftSize = 8;
@@ -404,9 +402,9 @@ describe('AdvancedAnalyserProcessor', () => {
           samplesBetweenTransforms
         }
       });
-      processor._flush = noop;
+      processor._flushFrequencies = noop;
 
-      processor._updateFftInput = jest.fn();
+      processor._updateFftInput = noop;
 
 
       fftRealTransformSpy.mockImplementationOnce((fftOutput:number[]) => {
@@ -414,10 +412,10 @@ describe('AdvancedAnalyserProcessor', () => {
           fftOutput[i] = ((i + 1) % 2) ? 1 : 0;
         });
       });
+      processor._updateFftInput();
 
 
       processor._doFft();
-      expect(processor._updateFftInput).toHaveBeenCalled();
       expect(fftRealTransformSpy).toHaveBeenCalledWith(processor._fftOutput, processor._fftInput);
 
       expect(new Array(...processor._lastTransform)).toEqual([ 0.125, 0.125, 0.125, 0.125 ]);
@@ -458,7 +456,7 @@ describe('AdvancedAnalyserProcessor', () => {
           samplesBetweenTransforms
         }
       });
-      processor._flush = noop;
+      processor._flushFrequencies = noop;
       processor._updateFftInput = noop;
 
       fftRealTransformSpy.mockImplementationOnce((fftOutput:number[]) => {
@@ -480,7 +478,7 @@ describe('AdvancedAnalyserProcessor', () => {
           samplesBetweenTransforms
         }
       });
-      processor._flush = noop;
+      processor._flushFrequencies = noop;
 
       processor._updateFftInput = noop;
 
@@ -507,7 +505,24 @@ describe('AdvancedAnalyserProcessor', () => {
       expect(new Array(...processor._lastTransform)).toEqual([ 0.0625, 0.0625, 0.0625, 0.0625 ]);
     });
   });
-  describe('_flush', () => {
+  describe('_flushFrequencies', () => {
+    it ('calls _updateFftInput', () => {
+      const fftSize = 8;
+      const samplesBetweenTransforms = 4;
+      
+      const processor = new AdvancedAnalyserProcessor({ 
+        processorOptions:{ 
+          fftSize, 
+          samplesBetweenTransforms
+        }
+      });
+      processor._isListeningTo.bytefrequencydata = true;
+      processor._updateFftInput = jest.fn();
+      processor._flushFrequencies();
+      expect(processor._updateFftInput).toHaveBeenCalled();
+
+    });
+    
     it('calls doFft', ()=> {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
@@ -518,12 +533,13 @@ describe('AdvancedAnalyserProcessor', () => {
           samplesBetweenTransforms
         }
       });
+      processor._isListeningTo.bytefrequencydata = true;
       processor._doFft = jest.fn();
-      processor._flush();
+      processor._flushFrequencies();
       expect(processor._doFft).toHaveBeenCalled();
     });
 
-    it('calls doFft', ()=> {
+    it('calls _updateFftInput', ()=> {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
@@ -533,9 +549,10 @@ describe('AdvancedAnalyserProcessor', () => {
           samplesBetweenTransforms
         }
       });
-      processor._doFft = jest.fn();
-      processor._flush();
-      expect(processor._doFft).toHaveBeenCalled();
+
+      processor._updateFftInput = jest.fn();
+      processor._flushFrequencies();
+      expect(processor._updateFftInput).toHaveBeenCalled();
     });
   });
   describe('_getFloatFrequencyData', notImplemented);

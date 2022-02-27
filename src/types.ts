@@ -1,27 +1,30 @@
 
 export enum MessageTypes {
-  start,// = "start",
-  stop,// = "stop",
-  frequencyDataAvailable,// = "frequency-data-available",
-  byteFrequencyDataAvailable,// = "byte-frequency-data-available",
+  start,
+  stop,
+  frequencyDataAvailable,
+  byteFrequencyDataAvailable,
 
-  getFloatFrequencyData,// = "get-float-frequency-data",
-  requestedFloatFrequencyDataAvailable,// = "float-frequency-data-available",
+  timeDomainDataAvailable,
+  byteTimeDomainDataAvailable,
 
-
-  getByteFrequencyData,// = "get-byte-frequency-data",
-  requestedByteFrequencyDataAvailable,// = "byte-frequency-data-available",
-
-
-  getFloatTimeDomainData,// = "float-time-domain-data",
-  requestedFloatTimeDomainDataAvailable,// = "float-time-domain-data",
-
-  getByteTimeDomainData,// = "get-byte-frequency-data",
-  requestedByteTimeDomainDataAvailable,// = "byte-frequency-data-available",
+  getFloatFrequencyData,
+  requestedFloatFrequencyDataAvailable,
 
 
-  startedListeningTo,// = 'started-listening-to',
-  stoppedListeningTo,// = 'stopped-listening-to',
+  getByteFrequencyData,
+  requestedByteFrequencyDataAvailable,
+
+
+  getFloatTimeDomainData,
+  requestedFloatTimeDomainDataAvailable,
+
+  getByteTimeDomainData,
+  requestedByteTimeDomainDataAvailable,
+
+
+  startedListeningTo,
+  stoppedListeningTo,
 } 
 
 interface BasicMessage<T, P = unknown> {
@@ -33,19 +36,22 @@ interface IdentifiedMessage<T, P = unknown> extends BasicMessage<T, P> {
   id: number,
 }
 
-type FloatFrequencyDataAvailableMessage = BasicMessage<MessageTypes.frequencyDataAvailable, Float32Array>
-type ByteFrequencyDataAvailableMessage = BasicMessage<MessageTypes.byteFrequencyDataAvailable, Uint8Array>
+type FloatFrequencyDataAvailableMessage = BasicMessage<MessageTypes.frequencyDataAvailable, ArrayBuffer>
+type ByteFrequencyDataAvailableMessage = BasicMessage<MessageTypes.byteFrequencyDataAvailable, ArrayBuffer>
+
+type FloatTimeDomainDataAvailableMessage = BasicMessage<MessageTypes.timeDomainDataAvailable, ArrayBuffer>
+type ByteTimeDomainDataAvailableMessage = BasicMessage<MessageTypes.byteTimeDomainDataAvailable, ArrayBuffer>
 
 type GetFloatFrequencyDataMessage = IdentifiedMessage<MessageTypes.getFloatFrequencyData>
 type RequestedFloatFrequencyDataAvailableMessage = IdentifiedMessage<MessageTypes.requestedFloatFrequencyDataAvailable, ArrayBuffer>
 
-type GetByteFrequencyDataMessage = IdentifiedMessage<MessageTypes.getByteFrequencyData,Uint8Array>
+type GetByteFrequencyDataMessage = IdentifiedMessage<MessageTypes.getByteFrequencyData,ArrayBuffer>
 type RequestedByteFrequencyDataAvailableMessage = IdentifiedMessage<MessageTypes.requestedByteFrequencyDataAvailable, ArrayBuffer>
 
 type GetFloatTimeDomainDataMessage = IdentifiedMessage<MessageTypes.getFloatTimeDomainData>
 type RequestedFloatTimeDomainDataAvailableMessage = IdentifiedMessage<MessageTypes.requestedFloatTimeDomainDataAvailable, ArrayBuffer>
 
-type GetByteTimeDomainDataMessage = IdentifiedMessage<MessageTypes.getByteTimeDomainData,Uint8Array>
+type GetByteTimeDomainDataMessage = IdentifiedMessage<MessageTypes.getByteTimeDomainData,ArrayBuffer>
 type RequestedByteTimeDomainDataAvailableMessage = IdentifiedMessage<MessageTypes.requestedByteTimeDomainDataAvailable, ArrayBuffer>
 
 
@@ -55,6 +61,8 @@ type StoppedListeningToMessage = BasicMessage<MessageTypes.stoppedListeningTo, E
 export type Message =  
   FloatFrequencyDataAvailableMessage  
   | ByteFrequencyDataAvailableMessage
+  | FloatTimeDomainDataAvailableMessage
+  | ByteTimeDomainDataAvailableMessage
   | GetFloatFrequencyDataMessage
   | RequestedFloatFrequencyDataAvailableMessage
   | GetByteFrequencyDataMessage
@@ -69,7 +77,7 @@ export type Message =
 export enum ProcessorParameters {
   fftSize = 'fftSize',
   samplesBetweenTransforms = 'samplesBetweenTransforms',
-  dataAsByteArray = 'dataAsByteArray',
+  timeDomainSamplesCount = 'timeDomainSamplesCount',
   windowFunction = 'windowFunction',
 }  
 

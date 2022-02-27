@@ -1,4 +1,5 @@
 import { EventListenerTypes, Message, MessageTypes, ProcessorParameters, WindowingFunctionTypes } from "../types";
+
 /**
 * The path below is not an external module. It's an alias (defined in tsconfig.json) to ./dist/processor.worklet.js
 * The AudioWorkletProcessor is bundled first, and later imported here to be bundled as a base64 string, 
@@ -10,15 +11,11 @@ type AdvancedAnalyserNodeProperties = {
   dataAsByteArray: boolean,
   fftSize?: number, 
   samplesBetweenTransforms?: number,
+  timeDomainSamplesCount?: number,
   windowFunction?: WindowingFunctionTypes,
-
 }
 
 export class AdvancedAnalyserNode extends AudioWorkletNode {
-  fftSize: number;
-
-  samplesBetweenTransforms?: number;
-
   _portMapId = 0;
 
   _portMap = new Map();
@@ -35,6 +32,7 @@ export class AdvancedAnalyserNode extends AudioWorkletNode {
     {
       fftSize = 1024, 
       samplesBetweenTransforms,
+      timeDomainSamplesCount,
       windowFunction = WindowingFunctionTypes.blackmanWindow
     }:AudioWorkletNodeOptions & AdvancedAnalyserNodeProperties
   ) {
@@ -42,6 +40,7 @@ export class AdvancedAnalyserNode extends AudioWorkletNode {
       processorOptions: {
         [ProcessorParameters.fftSize]: fftSize,
         [ProcessorParameters.samplesBetweenTransforms]: samplesBetweenTransforms || fftSize,
+        [ProcessorParameters.timeDomainSamplesCount]: timeDomainSamplesCount || fftSize,
         [ProcessorParameters.windowFunction]: windowFunction,
       },
       numberOfInputs: 1,
@@ -68,11 +67,19 @@ export class AdvancedAnalyserNode extends AudioWorkletNode {
   private _onmessage(event: Message) {
     switch(event.type) {
       case MessageTypes.frequencyDataAvailable: {
-        this.dispatchEvent(new CustomEvent<Float32Array>(EventListenerTypes.frequencydata, { detail: event.payload }));
+        this.dispatchEvent(new CustomEvent<Float32Array>(EventListenerTypes.frequencydata, { detail: new Float32Array(event.payload) }));
         break;
       }
       case MessageTypes.byteFrequencyDataAvailable: {
-        this.dispatchEvent(new CustomEvent<Uint8Array>(EventListenerTypes.bytefrequencydata, { detail: event.payload }));
+        this.dispatchEvent(new CustomEvent<Uint8Array>(EventListenerTypes.bytefrequencydata, { detail: new Uint8Array(event.payload) }));
+        break;
+      }
+      case MessageTypes.timeDomainDataAvailable: {
+        this.dispatchEvent(new CustomEvent<Float32Array>(EventListenerTypes.timedomaindata, { detail: new Float32Array(event.payload) }));
+        break;
+      }
+      case MessageTypes.byteTimeDomainDataAvailable: {
+        this.dispatchEvent(new CustomEvent<Uint8Array>(EventListenerTypes.bytetimedomaindata, { detail: new Uint8Array(event.payload) }));
         break;
       }
       case MessageTypes.requestedFloatFrequencyDataAvailable:
@@ -169,6 +176,7 @@ export class AdvancedAnalyserNode extends AudioWorkletNode {
     if (type !== 'processorerror' && typeof this._eventListenersCount[type] !== 'undefined') this._removeEventListener(type, listener);
   }
 }
+
 
 export const createAdvancedAnalyserNode = async (context: BaseAudioContext, options:AudioWorkletNodeOptions & AdvancedAnalyserNodeProperties) => {
   const processorUrl = 'data:application/javascript;base64,' + processor;
