@@ -6,6 +6,7 @@ import { EventListenerTypes, Message, MessageTypes, ProcessorParameters, Windowi
 * to avoid needing to be manually imported and loaded by this module's consumers
 */
 import processor from 'processor';
+import { PROCESSOR_NAME } from "src/constants";
 
 type AdvancedAnalyserNodeProperties = {
   dataAsByteArray: boolean,
@@ -33,10 +34,10 @@ export class AdvancedAnalyserNode extends AudioWorkletNode {
       fftSize = 1024, 
       samplesBetweenTransforms,
       timeDomainSamplesCount,
-      windowFunction = WindowingFunctionTypes.blackmanWindow
+      windowFunction = WindowingFunctionTypes.blackman
     }:AudioWorkletNodeOptions & AdvancedAnalyserNodeProperties
   ) {
-    super(context, 'AdvancedAnalyserProcessor', {
+    super(context, PROCESSOR_NAME, {
       processorOptions: {
         [ProcessorParameters.fftSize]: fftSize,
         [ProcessorParameters.samplesBetweenTransforms]: samplesBetweenTransforms || fftSize,

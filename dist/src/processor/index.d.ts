@@ -10,7 +10,6 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _fftOutput: number[];
     _lastTransform: Float32Array;
     _samplesBetweenTransforms: number;
-    _timeDomainSamplesCount: number;
     _windowFunctionType: WindowingFunctionTypes;
     _isListeningTo: Record<EventListenerTypes, boolean>;
     /**
@@ -27,10 +26,13 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _maxDecibels: number;
     _smoothingTimeConstant: number;
     _portMap: Map<any, any>;
+    _timeDomainSamplesCountValue?: number;
     get _frequencyBinCount(): number;
     set frequencyBinCount(value: number);
     get _isListeningToFrequencyData(): boolean;
     get _isListeningToTimeDomainData(): boolean;
+    get _timeDomainSamplesCount(): number;
+    set _timeDomainSamplesCount(value: number);
     static get parameterDescriptors(): {
         name: string;
         defaultValue: number;

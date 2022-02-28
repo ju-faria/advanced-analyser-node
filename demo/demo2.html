@@ -51,7 +51,7 @@
     const analyserNode = await advancedAnalyserNode.createAdvancedAnalyserNode(context, {
       fftSize: FFT_SIZE,
       samplesBetweenTransforms: FFT_SIZE,
-      windowFunction: 'none'
+      windowFunction: 'rectangular'
     })
     
     const drawFrame = (canvas, context2d, data) => {

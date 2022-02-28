@@ -1,12 +1,8 @@
-import { fill } from 'lodash';
-import { WindowingFunctionTypes } from '../types';
-
-const noop = () => {
-  // do nothing
-};
-const notImplemented = (name?: string) => {
-  it(`🚨 NO IMPLEMENTATION YET 🚨${name ? ` - ${name}`: ''}`, noop);
-};
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+import { fill, noop } from 'lodash';
+import { MessageTypes, WindowingFunctionTypes } from '../types';
+import { doNTimes } from '../../tests/utils';
+import 'jest-extended';
 
 const portPostMessageSpy = jest.fn();
 global.AudioWorkletProcessor = class AudioWorkletProcessor {
@@ -31,14 +27,9 @@ const registerProcessorSpy = jest.fn();
 
 global.registerProcessor = (name, processorCtor) => registerProcessorSpy(name, processorCtor);
 
-import { MAX_FFT_SIZE } from '../constants';
+import { MAX_FFT_SIZE, PROCESSOR_NAME } from '../constants';
 import { AdvancedAnalyserProcessor } from './';
-
-const doNTimes = (n:number, fn: (iterator: number) => void) => {
-  for (let i = 0; i < n; i++) {
-    fn(i);
-  }
-};
+import { windowFunctionsMap } from './window-functions';
 
 const fftConstructorSpy = jest.fn();
 const fftRealTransformSpy = jest.fn();
@@ -63,6 +54,7 @@ jest.mock('fft.js', () =>( {
 jest.mock('../constants', () =>( {
   //  Smaller max fft size to make it more manageable for testing purposes
   MAX_FFT_SIZE: 32,
+  PROCESSOR_NAME: 'processorName',
   __esModule: true,
 }));
 describe('AdvancedAnalyserProcessor', () => {
@@ -94,6 +86,36 @@ describe('AdvancedAnalyserProcessor', () => {
     expect(processor._samplesBetweenTransforms).toEqual(samplesBetweenTransforms); 
     expect(processor._samplesCount).toEqual(0); 
     
+  });
+
+  describe('_onmessage', () => {
+    it('calls the expected methods according to the MessageType', () => {
+      const fftSize = 16;
+      const samplesBetweenTransforms = 8;
+
+      const processor = new AdvancedAnalyserProcessor({ 
+        processorOptions:{ 
+          fftSize, 
+          samplesBetweenTransforms
+        }
+      });
+
+      processor._getFloatFrequencyData = jest.fn();
+      processor._getByteFrequencyData = jest.fn();
+      processor._getFloatTimeDomainData = jest.fn();
+      processor._getByteTimeDomainData = jest.fn();
+      [
+        [MessageTypes.getFloatFrequencyData, processor._getFloatFrequencyData as jest.Mock<unknown, never>],
+        [MessageTypes.getByteFrequencyData, processor._getByteFrequencyData as jest.Mock<unknown, never>],
+        [MessageTypes.getFloatTimeDomainData, processor._getFloatTimeDomainData as jest.Mock<unknown, never>],
+        [MessageTypes.getByteTimeDomainData, processor._getByteTimeDomainData as jest.Mock<unknown, never>]
+      ].forEach(([type, spy]:[MessageTypes, jest.Mock<unknown, never>]) => {
+        expect(spy).not.toHaveBeenCalled();
+        // @ts-ignore
+        processor._onmessage({ type });
+        expect(spy).toHaveBeenCalled();
+      });
+    });
   });
   describe('_shouldFlushFrequencies', () => {
     it('returns true whenever _samplesCount is a multiple of samplesBetweenTransforms', () => {
@@ -268,7 +290,7 @@ describe('AdvancedAnalyserProcessor', () => {
         processorOptions:{ 
           fftSize, 
           samplesBetweenTransforms,
-          windowFunction: WindowingFunctionTypes.none,
+          windowFunction: WindowingFunctionTypes.rectangular,
         }
       });
       // ignores flushing
@@ -300,7 +322,7 @@ describe('AdvancedAnalyserProcessor', () => {
         processorOptions:{ 
           fftSize, 
           samplesBetweenTransforms,
-          windowFunction: WindowingFunctionTypes.none
+          windowFunction: WindowingFunctionTypes.rectangular
         }
       });
       // ignores flushing
@@ -348,7 +370,28 @@ describe('AdvancedAnalyserProcessor', () => {
     });
     
 
-    notImplemented('calls the correct windowing function');
+    it('calls the correct windowing function', () => {
+      const fftSize = 8;
+      const samplesBetweenTransforms = 4;
+      
+      const processor = new AdvancedAnalyserProcessor({ 
+        processorOptions:{ 
+          fftSize, 
+          samplesBetweenTransforms
+        }
+      });
+      const blackmanFunctionSpy = jest.fn();
+      const noFunctionSpy = jest.fn();
+      windowFunctionsMap.blackman = blackmanFunctionSpy; 
+      windowFunctionsMap.rectangular = noFunctionSpy; 
+      processor._updateFftInput();
+      expect(blackmanFunctionSpy).toHaveBeenCalled();
+
+      processor._windowFunctionType = WindowingFunctionTypes.rectangular;
+      processor._updateFftInput();
+
+      expect(noFunctionSpy).toHaveBeenCalled();
+    });
   });
   
   describe('_convertFrequenciesToByteData', () => {
@@ -390,7 +433,24 @@ describe('AdvancedAnalyserProcessor', () => {
       });
     });
   });
-  describe('_convertTimeDomainDataToByteData', notImplemented);
+  describe('_convertTimeDomainDataToByteData', () => {
+    it('converts time domain data to byte data', () => {
+      const fftSize = 8;
+      const samplesBetweenTransforms = 4;
+    
+      const processor = new AdvancedAnalyserProcessor({ 
+        processorOptions:{ 
+          fftSize, 
+          samplesBetweenTransforms
+        }
+      });
+
+      const destinationArray = new Uint8Array(3);
+      const dataArray = Float32Array.from([0, -1, 1]);
+      processor._convertTimeDomainDataToByteData(dataArray, destinationArray);
+      expect(Array.from(destinationArray)).toEqual([128, 0, 255]);
+    });
+  });
   describe('_doFft', () => {
     it('calls _updateFftInput', () => {
       const fftSize = 8;
@@ -554,12 +614,256 @@ describe('AdvancedAnalyserProcessor', () => {
       processor._flushFrequencies();
       expect(processor._updateFftInput).toHaveBeenCalled();
     });
+    it('returns the last N samples', () => {
+      const fftSize = 8;
+      const samplesBetweenTransforms = 4;
+      
+      const processor = new AdvancedAnalyserProcessor({ 
+        processorOptions:{ 
+          fftSize, 
+          samplesBetweenTransforms
+        }
+      });
+      processor._isListeningTo.frequencydata = true;
+      processor._isListeningTo.bytefrequencydata = true;
+
+      doNTimes(fftSize, () => {
+        processor._appendToBuffer(0.00125);
+
+      });
+
+      const postMessageSpy = jest.fn();
+      processor._postMessage = postMessageSpy;
+      processor._flushFrequencies();
+      const floatCall = postMessageSpy.mock.calls[0][0];
+      const byteCall = postMessageSpy.mock.calls[1][0];
+
+      expect(floatCall.type).toEqual(MessageTypes.frequencyDataAvailable);
+      expect(new Float32Array(floatCall.payload)).toEqual(Float32Array.from( [-73.11329650878906, -73.11329650878906, -73.11329650878906, -73.11329650878906]));
+
+
+      expect(byteCall.type).toEqual(MessageTypes.byteFrequencyDataAvailable);
+      expect(Array.from(new Uint8Array(byteCall.payload))).toEqual([97, 97, 97, 97]);
+    });
   });
-  describe('_getFloatFrequencyData', notImplemented);
-  describe('_getByteFrequencyData', notImplemented);
-  describe('_getFloatTimeDomainData', notImplemented);
-  describe('_getByteTimeDomainData', notImplemented);
-  describe('process', notImplemented);
-  describe('registerProcessor', notImplemented);
-  describe('Happy path', notImplemented);
+  describe('_flushTimeDomainSamples', () => {
+    it('returns the last N samples', () => {
+      const fftSize = 8;
+      const samplesBetweenTransforms = 4;
+      
+      const processor = new AdvancedAnalyserProcessor({ 
+        processorOptions:{ 
+          fftSize, 
+          samplesBetweenTransforms
+        }
+      });
+      processor._isListeningTo.timedomaindata = true;
+      processor._isListeningTo.bytetimedomaindata = true;
+      const expectedSamples = new Float32Array(fftSize);
+      doNTimes(fftSize, (i) => {
+        processor._appendToBuffer(i / 100);
+        expectedSamples[i] = i / 100;
+      });
+
+      const postMessageSpy = jest.fn();
+      processor._postMessage = postMessageSpy;
+      processor._flushTimeDomainSamples();
+      const floatCall = postMessageSpy.mock.calls[0][0];
+      const byteCall = postMessageSpy.mock.calls[1][0];
+
+      expect(floatCall.type).toEqual(MessageTypes.timeDomainDataAvailable);
+      expect(new Float32Array(floatCall.payload)).toEqual(expectedSamples);
+
+
+      expect(byteCall.type).toEqual(MessageTypes.byteTimeDomainDataAvailable);
+      expect(Array.from(new Uint8Array(byteCall.payload))).toEqual([128, 129, 130, 131, 133, 134, 135, 136]);
+    });
+  });
+
+  describe('_getFloatFrequencyData', () => {
+    it('calls methods in the correct order', () => {
+      const fftSize = 8;
+      const samplesBetweenTransforms = 4;
+      
+      const processor = new AdvancedAnalyserProcessor({ 
+        processorOptions:{ 
+          fftSize, 
+          samplesBetweenTransforms,
+          windowFunction: WindowingFunctionTypes.rectangular
+        }
+      });
+
+
+      processor._updateFftInput = jest.fn();
+      processor._doFft = jest.fn();
+      processor._convertFrequenciesToDb = jest.fn();
+      processor._postMessage = jest.fn();
+
+      processor._getFloatFrequencyData(1);
+      expect(processor._updateFftInput).toHaveBeenCalledBefore(processor._doFft as jest.Mock<unknown, never>);
+      expect(processor._doFft).toHaveBeenCalledBefore(processor._convertFrequenciesToDb as jest.Mock<unknown, never>);
+      expect(processor._convertFrequenciesToDb).toHaveBeenCalledBefore(processor._postMessage as jest.Mock<unknown, never>);
+
+    });
+    it('posts an identified message with the fft data', () => {
+      const fftSize = 8;
+      const samplesBetweenTransforms = 4;
+      
+      const processor = new AdvancedAnalyserProcessor({ 
+        processorOptions:{ 
+          fftSize, 
+          samplesBetweenTransforms
+        }
+      });
+      
+      const postMessageSpy = jest.fn();
+      processor._postMessage = postMessageSpy;
+
+
+      processor._doFft = jest.fn(()  => {
+        processor._lastTransform = processor._lastTransform.map(() => 0.001);
+      });
+
+      processor._getFloatFrequencyData(123);
+      const { id, type, payload } = postMessageSpy.mock.calls[0][0];
+      expect(id).toEqual(123);
+      expect(type).toEqual(MessageTypes.requestedFloatFrequencyDataAvailable);
+
+      expect(Array.from(new Float32Array(payload))).toEqual([-60, -60, -60, -60]);
+    });
+
+  });
+  describe('_getByteFrequencyData', () => {
+    it('calls methods in the correct order', () => {
+      const fftSize = 8;
+      const samplesBetweenTransforms = 4;
+      
+      const processor = new AdvancedAnalyserProcessor({ 
+        processorOptions:{ 
+          fftSize, 
+          samplesBetweenTransforms,
+          windowFunction: WindowingFunctionTypes.rectangular
+        }
+      });
+
+
+      processor._updateFftInput = jest.fn();
+      processor._doFft = jest.fn();
+      processor._fillArrayWithLastNSamples = jest.fn();
+      processor._convertFrequenciesToByteData = jest.fn();
+      processor._postMessage = jest.fn();
+
+      processor._getByteFrequencyData(1);
+      expect(processor._updateFftInput).toHaveBeenCalledBefore(processor._doFft as jest.Mock<unknown, never>);
+      expect(processor._doFft).toHaveBeenCalledBefore(processor._fillArrayWithLastNSamples as jest.Mock<unknown, never>);
+      expect(processor._fillArrayWithLastNSamples).toHaveBeenCalledBefore(processor._convertFrequenciesToByteData as jest.Mock<unknown, never>);
+      expect(processor._convertFrequenciesToByteData).toHaveBeenCalledBefore(processor._postMessage as jest.Mock<unknown, never>);
+
+    });
+    it('posts an identified message with the fft data', () => {
+      const fftSize = 8;
+      const samplesBetweenTransforms = 4;
+      
+      const processor = new AdvancedAnalyserProcessor({ 
+        processorOptions:{ 
+          fftSize, 
+          samplesBetweenTransforms
+        }
+      });
+      
+      const postMessageSpy = jest.fn();
+      processor._postMessage = postMessageSpy;
+
+
+      processor._doFft = jest.fn(()  => {
+        processor._lastTransform = processor._lastTransform.map(() => 0.001);
+      });
+
+      processor._getByteFrequencyData(123);
+      const { id, type, payload } = postMessageSpy.mock.calls[0][0];
+
+      expect(id).toEqual(123);
+      expect(type).toEqual(MessageTypes.requestedByteFrequencyDataAvailable);
+
+
+      expect(Array.from(new Uint8Array(payload))).toEqual([145, 145, 145, 145]);
+    });
+  });
+  describe('_getFloatTimeDomainData', () => {
+    it('returns the last N samples', () => {
+      const fftSize = 8;
+      const samplesBetweenTransforms = 4;
+      
+      const processor = new AdvancedAnalyserProcessor({ 
+        processorOptions:{ 
+          fftSize, 
+          samplesBetweenTransforms
+        }
+      });
+      doNTimes(fftSize, (i) => {
+        processor._appendToBuffer(i);
+      });
+
+      const postMessageSpy = jest.fn();
+      processor._postMessage = postMessageSpy;
+      processor._getFloatTimeDomainData(123);
+      const { id, type, payload } = postMessageSpy.mock.calls[0][0];
+      expect(id).toEqual(123);
+      expect(type).toEqual(MessageTypes.requestedFloatTimeDomainDataAvailable);
+      expect(Array.from(new Float32Array(payload))).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
+    });
+  });
+  describe('_getByteTimeDomainData', () => {
+    it('returns the last N samples as bytes', () => {
+      const fftSize = 8;
+      const samplesBetweenTransforms = 4;
+      
+      const processor = new AdvancedAnalyserProcessor({ 
+        processorOptions:{ 
+          fftSize, 
+          samplesBetweenTransforms
+        }
+      });
+      doNTimes(fftSize, (i) => {
+        processor._appendToBuffer(i / 100);
+      });
+
+      const postMessageSpy = jest.fn();
+      processor._postMessage = postMessageSpy;
+      processor._getByteTimeDomainData(123);
+      const { id, type, payload } = postMessageSpy.mock.calls[0][0];
+      expect(id).toEqual(123);
+      expect(type).toEqual(MessageTypes.requestedByteTimeDomainDataAvailable);
+      expect(Array.from(new Uint8Array(payload))).toEqual([128, 129, 130, 131, 133, 134, 135, 136]);
+    });
+  });
+  describe('process', () => {
+    it('calls _appendToBuffer for every input sample', () => {
+      const fftSize = 8;
+      const samplesBetweenTransforms = 4;
+      
+      const processor = new AdvancedAnalyserProcessor({ 
+        processorOptions:{ 
+          fftSize, 
+          samplesBetweenTransforms
+        }
+      });
+      const appendToBufferSpy = jest.fn();
+      processor._appendToBuffer = appendToBufferSpy;
+
+      processor.process(
+        [[
+          Float32Array.from([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+        ]], 
+        [[]],
+        { isRecording: Float32Array.from([1]) }
+      );
+
+      expect(appendToBufferSpy.mock.calls.map(([n]) => n)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+
+    });
+  });
+  describe('registerProcessor', () => {
+    expect(registerProcessorSpy).toHaveBeenCalledWith(PROCESSOR_NAME, AdvancedAnalyserProcessor);
+  });
 });

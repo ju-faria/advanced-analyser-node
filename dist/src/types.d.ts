@@ -51,7 +51,13 @@ export declare enum EventListenerTypes {
     bytetimedomaindata = "bytetimedomaindata"
 }
 export declare enum WindowingFunctionTypes {
-    none = "none",
-    blackmanWindow = "blackmanWindow"
+    rectangular = "rectangular",
+    blackman = "blackman",
+    nuttall = "nuttall",
+    blackmanNuttall = "blackman-nuttall",
+    blackmanHarris = "blackman-harris",
+    hann = "hann",
+    hamming = "hamming",
+    bartlett = "bartlett"
 }
 export {};

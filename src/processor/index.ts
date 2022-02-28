@@ -1,30 +1,16 @@
 import FFT from 'fft.js';
-import { MAX_FFT_SIZE } from '../constants';
+import { MAX_FFT_SIZE, PROCESSOR_NAME } from '../constants';
 import { EventListenerTypes, Message, MessageTypes, WindowingFunctionTypes } from '../types';
 import { windowFunctionsMap } from './window-functions';
-
 
 const linearToDb = (x: number) => {
   return 20.0 * Math.log10(x);
 };
 
-
 const clamp = (val: number, min: number, max: number) => {
   return Math.min(Math.max(val, min), max);
 };
 
-// const hasDebugged = false;
-// const hasBeenCalledTimes = 0;
-
-// const debugOnce = (skip: number, fn: () => void) =>{
-//   if (hasDebugged) return;
-//   if (hasBeenCalledTimes >= skip) {
-//     fn();
-//     hasDebugged = true;
-//     return;
-//   }
-//   hasBeenCalledTimes ++;
-// };
 export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
   _samplesCount = 0;
 
@@ -44,9 +30,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
 
   _samplesBetweenTransforms: number;
 
-  _timeDomainSamplesCount: number;
-
-  _windowFunctionType = WindowingFunctionTypes.blackmanWindow;
+  _windowFunctionType = WindowingFunctionTypes.blackman;
 
   _isListeningTo: Record<EventListenerTypes, boolean> = {
     frequencydata: false,
@@ -74,9 +58,14 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
 
   _portMap = new Map();
 
+
+  _timeDomainSamplesCountValue?: number;
+
+  
   get _frequencyBinCount () {
     return this._fftSize / 2;
   }
+
 
   set frequencyBinCount (value:number) {
     this._fftSize = value * 2;
@@ -90,6 +79,16 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     return (this._isListeningTo.timedomaindata || this._isListeningTo.bytetimedomaindata);
   }
   
+
+  get _timeDomainSamplesCount() {
+    return this._timeDomainSamplesCountValue || this._fftSize;
+  } 
+
+  set _timeDomainSamplesCount(value: number) {
+    this._timeDomainSamplesCountValue  = value;
+  } 
+
+  
   static get parameterDescriptors() {
     return [
       {
@@ -101,7 +100,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
 
   constructor (options: { processorOptions: { fftSize: number, samplesBetweenTransforms: number, timeDomainSamplesCount?: number, windowFunction?: WindowingFunctionTypes} }) {
     super();
-    const { fftSize, samplesBetweenTransforms, timeDomainSamplesCount, windowFunction = WindowingFunctionTypes.blackmanWindow } = options.processorOptions;
+    const { fftSize, samplesBetweenTransforms, timeDomainSamplesCount, windowFunction = WindowingFunctionTypes.blackman } = options.processorOptions;
 
     this._fftAnalyser = new FFT(fftSize);
     this._fftInput = new Float32Array(fftSize);
@@ -109,10 +108,12 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     this._fftSize = fftSize;
     this._lastTransform = new Float32Array(this._frequencyBinCount);
     this._samplesBetweenTransforms = samplesBetweenTransforms || fftSize;
-    this._timeDomainSamplesCount = timeDomainSamplesCount;
+    this._timeDomainSamplesCountValue = timeDomainSamplesCount;
     this._samplesCount = 0;
     this._windowFunctionType = windowFunction;
     this.port.onmessage = (event) => this._onmessage(event.data);
+
+
   }
   
   _onmessage(message: Message) {
@@ -196,6 +197,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
   _fillArrayWithLastNSamples(destinationArray: Float32Array) {
     const n = destinationArray.length;
     const startingIndex = (this._samplesCount  - n) % this._buffer.length; 
+
     for (let i = 0; i < n; i++) {
       destinationArray[i] = startingIndex+ i < 0 ? 0 :this._buffer[(startingIndex+ i) % this._buffer.length];
     }
@@ -218,8 +220,8 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
       const rangeScaleFactor =  1.0 / (this._maxDecibels - this._minDecibels);
 
       for (let i = 0; i < len; ++i) {
-        const linear_value = source[i];
-        const dbMag = linearToDb(linear_value);
+        const linearValue = source[i];
+        const dbMag = linearToDb(linearValue);
         const result = 255 * (dbMag - this._minDecibels) * rangeScaleFactor;
         destinationArray[i] = clamp(result | 0, 0, 255);
       }
@@ -294,10 +296,10 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
   }
 
   _getFloatFrequencyData(requestId: number) {
-
     const destinationArray = new Float32Array(this._frequencyBinCount);
     this._updateFftInput();
     this._doFft();
+
     this._convertFrequenciesToDb(destinationArray);
 
     this._postMessage({
@@ -369,5 +371,5 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
 }
     
 
-registerProcessor('AdvancedAnalyserProcessor',AdvancedAnalyserProcessor);
+registerProcessor(PROCESSOR_NAME, AdvancedAnalyserProcessor);
 

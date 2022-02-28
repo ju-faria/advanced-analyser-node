@@ -44,14 +44,14 @@
     snapshotCanvas.width = 1024
     
     const context = new AudioContext({ sampleRate: SAMPLE_RATE })
-    
+    const nativeAnalyserNode = context.createAnalyser()
     const audioSource = context.createMediaStreamSource(stream);
 
     const bottomMargin = 30
     const analyserNode = await advancedAnalyserNode.createAdvancedAnalyserNode(context, {
       fftSize: FFT_SIZE,
       samplesBetweenTransforms: FFT_SIZE,
-      windowFunction: 'none'
+      windowFunction: 'rectangular'
     })
     
     const drawFrame = (canvas, context2d, data) => {
@@ -70,10 +70,12 @@
       drawFrame(canvas, context2d, detail)
     })
     audioSource.connect(analyserNode)
+    audioSource.connect(nativeAnalyserNode);
+
 
     floatFrequencyButton.onclick = async () => {
       const response = await analyserNode.getFloatFrequencyData()
-
+      drawFrame(snapshotCanvas, snapshotContext2d, response)
       output.innerHTML = 
       `
         \nFloat Frequency Data
@@ -84,8 +86,6 @@
     }
 
     byteFrequencyButton.onclick = async () => {
-      const response = await analyserNode.getByteFrequencyData()
-      drawFrame(snapshotCanvas, snapshotContext2d, response)
       output.innerHTML = 
       `
         \nByte Frequency Data

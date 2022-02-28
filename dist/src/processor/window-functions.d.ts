@@ -1,3 +1,10 @@
-import { WindowingFunctionTypes } from "src/types";
-export declare const applyBlackmanWindow: (samples: Float32Array) => void;
-export declare const windowFunctionsMap: Record<WindowingFunctionTypes, (samples: Float32Array) => void>;
+import { WindowingFunctionTypes } from "../types";
+export declare const hann: (n: number, points: number) => number;
+export declare const hamming: (n: number, points: number) => number;
+export declare const blackman: (n: number, points: number) => number;
+export declare const nuttall: (n: number, points: number) => number;
+export declare const blackmanHarris: (n: number, points: number) => number;
+export declare const blackmanNuttall: (n: number, points: number) => number;
+export declare const barlett: (n: number, points: number) => number;
+export declare const applyWindowFunction: (data: Float32Array, windowingFunction: (n: number, points: number, alpha?: number) => number, alpha?: number) => void;
+export declare const windowFunctionsMap: Record<WindowingFunctionTypes, (samples: Float32Array, alpha?: number) => void>;
