@@ -19,6 +19,13 @@ interface AudioWorkletProcessor {
   ): boolean;
 }
 
+interface AdvancedAnalyserNode extends AudioNode {
+  onprocessorerror: ((this: AudioWorkletNode, ev: Event) => unknown) | null;
+  readonly parameters: AudioParamMap;
+  readonly port: MessagePort;
+  addEventListener<T>(type: string, listener: EventListenerOrEventListenerObject| CustomEvent<T>, options?: boolean | AddEventListenerOptions): void; 
+  removeEventListener<T>(type: string, listener: EventListenerOrEventListenerObject| CustomEvent<T>, options?: boolean | AddEventListenerOptions): void; 
+}
 
 declare function registerProcessor(
   name: string,

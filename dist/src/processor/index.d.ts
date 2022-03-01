@@ -1,5 +1,5 @@
 import FFT from 'fft.js';
-import { EventListenerTypes, Message, WindowingFunctionTypes } from '../types';
+import { EventListenerTypes, Message, WindowFunctionTypes } from '../types';
 export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _samplesCount: number;
     _count: number;
@@ -10,7 +10,7 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _fftOutput: number[];
     _lastTransform: Float32Array;
     _samplesBetweenTransforms: number;
-    _windowFunctionType: WindowingFunctionTypes;
+    _windowFunctionType: WindowFunctionTypes;
     _isListeningTo: Record<EventListenerTypes, boolean>;
     /**
      * The W3C spec for the analyser node states that:
@@ -26,13 +26,11 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _maxDecibels: number;
     _smoothingTimeConstant: number;
     _portMap: Map<any, any>;
-    _timeDomainSamplesCountValue?: number;
+    _timeDomainSamplesCount: number;
     get _frequencyBinCount(): number;
     set frequencyBinCount(value: number);
     get _isListeningToFrequencyData(): boolean;
     get _isListeningToTimeDomainData(): boolean;
-    get _timeDomainSamplesCount(): number;
-    set _timeDomainSamplesCount(value: number);
     static get parameterDescriptors(): {
         name: string;
         defaultValue: number;
@@ -41,8 +39,8 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
         processorOptions: {
             fftSize: number;
             samplesBetweenTransforms: number;
-            timeDomainSamplesCount?: number;
-            windowFunction?: WindowingFunctionTypes;
+            timeDomainSamplesCount: number;
+            windowFunction: WindowFunctionTypes;
         };
     });
     _onmessage(message: Message): void;

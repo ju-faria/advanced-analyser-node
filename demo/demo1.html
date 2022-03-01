@@ -86,6 +86,8 @@
     }
 
     byteFrequencyButton.onclick = async () => {
+      const response = await analyserNode.getByteFrequencyData()
+      drawFrame(snapshotCanvas, snapshotContext2d, response)
       output.innerHTML = 
       `
         \nByte Frequency Data

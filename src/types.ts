@@ -2,6 +2,8 @@
 export enum MessageTypes {
   start,
   stop,
+  updateProcessorOptions,
+  
   frequencyDataAvailable,
   byteFrequencyDataAvailable,
 
@@ -35,6 +37,14 @@ interface BasicMessage<T, P = unknown> {
 interface IdentifiedMessage<T, P = unknown> extends BasicMessage<T, P> {
   id: number,
 }
+
+export type UpdateProcessorOptionsPayload = {
+  [ProcessorParameters.fftSize]?: number,
+  [ProcessorParameters.samplesBetweenTransforms]?: number,
+  [ProcessorParameters.timeDomainSamplesCount]?: number,
+  [ProcessorParameters.windowFunction]?: WindowFunctionTypes,
+}
+type UpdateProcessorOptionsMessage = BasicMessage<MessageTypes.updateProcessorOptions,UpdateProcessorOptionsPayload>
 
 type FloatFrequencyDataAvailableMessage = BasicMessage<MessageTypes.frequencyDataAvailable, ArrayBuffer>
 type ByteFrequencyDataAvailableMessage = BasicMessage<MessageTypes.byteFrequencyDataAvailable, ArrayBuffer>
@@ -73,6 +83,7 @@ export type Message =
   | RequestedByteTimeDomainDataAvailableMessage
   | StartedListeningToMessage
   | StoppedListeningToMessage
+  | UpdateProcessorOptionsMessage
 
 export enum ProcessorParameters {
   fftSize = 'fftSize',
@@ -88,7 +99,7 @@ export enum EventListenerTypes {
   bytetimedomaindata = 'bytetimedomaindata',
 }
 
-export enum WindowingFunctionTypes {
+export enum WindowFunctionTypes {
   rectangular = 'rectangular',
   blackman = 'blackman',
   nuttall = 'nuttall',
@@ -98,3 +109,12 @@ export enum WindowingFunctionTypes {
   hamming = 'hamming',
   bartlett = 'bartlett',
 }
+
+type NodeAddEventListener<T, L, O = unknown> = (type: T, listener: () => ({ detail: L }), options?: O ) => void;
+
+export type NodeEventListener<T = Float32Array | Uint8Array> = (event:{ detail: T }) => void
+export type AddEventListenerTypes = NodeAddEventListener<EventListenerTypes.bytefrequencydata, Float32Array>
+
+// export interface AdvancedAnalyserNode {
+//   addEventListener: AddEventListenerTypes
+// }

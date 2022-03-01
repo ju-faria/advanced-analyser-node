@@ -1,5 +1,5 @@
 import { fill } from "lodash";
-import { WindowingFunctionTypes } from "../types";
+import { WindowFunctionTypes } from "../types";
 import { notImplemented } from "../../tests/utils";
 import { windowFunctionsMap} from "./window-functions";
 
@@ -74,7 +74,7 @@ describe('Window functions ', () => {
     [
       [0.00036279999767430127,0.11051525175571442,0.7982581257820129,0.7982581257820129,0.11051525175571442,0.00036279999767430127]
     ].forEach((expected) => {
-      testWindowResult(windowFunctionsMap[WindowingFunctionTypes.blackmanNuttall], expected);
+      testWindowResult(windowFunctionsMap[WindowFunctionTypes.blackmanNuttall], expected);
     });
   });
 
@@ -82,7 +82,7 @@ describe('Window functions ', () => {
     [
       [0.00005999999848427251,0.10301148891448975,0.7938334941864014,0.7938334941864014,0.10301148891448975,0.00005999999848427251]
     ].forEach((expected) => {
-      testWindowResult(windowFunctionsMap[WindowingFunctionTypes.blackmanHarris], expected);
+      testWindowResult(windowFunctionsMap[WindowFunctionTypes.blackmanHarris], expected);
     });
   });
 });

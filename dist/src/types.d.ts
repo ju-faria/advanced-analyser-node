@@ -1,20 +1,21 @@
 export declare enum MessageTypes {
     start = 0,
     stop = 1,
-    frequencyDataAvailable = 2,
-    byteFrequencyDataAvailable = 3,
-    timeDomainDataAvailable = 4,
-    byteTimeDomainDataAvailable = 5,
-    getFloatFrequencyData = 6,
-    requestedFloatFrequencyDataAvailable = 7,
-    getByteFrequencyData = 8,
-    requestedByteFrequencyDataAvailable = 9,
-    getFloatTimeDomainData = 10,
-    requestedFloatTimeDomainDataAvailable = 11,
-    getByteTimeDomainData = 12,
-    requestedByteTimeDomainDataAvailable = 13,
-    startedListeningTo = 14,
-    stoppedListeningTo = 15
+    updateProcessorOptions = 2,
+    frequencyDataAvailable = 3,
+    byteFrequencyDataAvailable = 4,
+    timeDomainDataAvailable = 5,
+    byteTimeDomainDataAvailable = 6,
+    getFloatFrequencyData = 7,
+    requestedFloatFrequencyDataAvailable = 8,
+    getByteFrequencyData = 9,
+    requestedByteFrequencyDataAvailable = 10,
+    getFloatTimeDomainData = 11,
+    requestedFloatTimeDomainDataAvailable = 12,
+    getByteTimeDomainData = 13,
+    requestedByteTimeDomainDataAvailable = 14,
+    startedListeningTo = 15,
+    stoppedListeningTo = 16
 }
 interface BasicMessage<T, P = unknown> {
     type: T;
@@ -23,6 +24,13 @@ interface BasicMessage<T, P = unknown> {
 interface IdentifiedMessage<T, P = unknown> extends BasicMessage<T, P> {
     id: number;
 }
+export declare type UpdateProcessorOptionsPayload = {
+    [ProcessorParameters.fftSize]?: number;
+    [ProcessorParameters.samplesBetweenTransforms]?: number;
+    [ProcessorParameters.timeDomainSamplesCount]?: number;
+    [ProcessorParameters.windowFunction]?: WindowFunctionTypes;
+};
+declare type UpdateProcessorOptionsMessage = BasicMessage<MessageTypes.updateProcessorOptions, UpdateProcessorOptionsPayload>;
 declare type FloatFrequencyDataAvailableMessage = BasicMessage<MessageTypes.frequencyDataAvailable, ArrayBuffer>;
 declare type ByteFrequencyDataAvailableMessage = BasicMessage<MessageTypes.byteFrequencyDataAvailable, ArrayBuffer>;
 declare type FloatTimeDomainDataAvailableMessage = BasicMessage<MessageTypes.timeDomainDataAvailable, ArrayBuffer>;
@@ -37,7 +45,7 @@ declare type GetByteTimeDomainDataMessage = IdentifiedMessage<MessageTypes.getBy
 declare type RequestedByteTimeDomainDataAvailableMessage = IdentifiedMessage<MessageTypes.requestedByteTimeDomainDataAvailable, ArrayBuffer>;
 declare type StartedListeningToMessage = BasicMessage<MessageTypes.startedListeningTo, EventListenerTypes>;
 declare type StoppedListeningToMessage = BasicMessage<MessageTypes.stoppedListeningTo, EventListenerTypes>;
-export declare type Message = FloatFrequencyDataAvailableMessage | ByteFrequencyDataAvailableMessage | FloatTimeDomainDataAvailableMessage | ByteTimeDomainDataAvailableMessage | GetFloatFrequencyDataMessage | RequestedFloatFrequencyDataAvailableMessage | GetByteFrequencyDataMessage | RequestedByteFrequencyDataAvailableMessage | GetFloatTimeDomainDataMessage | RequestedFloatTimeDomainDataAvailableMessage | GetByteTimeDomainDataMessage | RequestedByteTimeDomainDataAvailableMessage | StartedListeningToMessage | StoppedListeningToMessage;
+export declare type Message = FloatFrequencyDataAvailableMessage | ByteFrequencyDataAvailableMessage | FloatTimeDomainDataAvailableMessage | ByteTimeDomainDataAvailableMessage | GetFloatFrequencyDataMessage | RequestedFloatFrequencyDataAvailableMessage | GetByteFrequencyDataMessage | RequestedByteFrequencyDataAvailableMessage | GetFloatTimeDomainDataMessage | RequestedFloatTimeDomainDataAvailableMessage | GetByteTimeDomainDataMessage | RequestedByteTimeDomainDataAvailableMessage | StartedListeningToMessage | StoppedListeningToMessage | UpdateProcessorOptionsMessage;
 export declare enum ProcessorParameters {
     fftSize = "fftSize",
     samplesBetweenTransforms = "samplesBetweenTransforms",
@@ -50,7 +58,7 @@ export declare enum EventListenerTypes {
     timedomaindata = "timedomaindata",
     bytetimedomaindata = "bytetimedomaindata"
 }
-export declare enum WindowingFunctionTypes {
+export declare enum WindowFunctionTypes {
     rectangular = "rectangular",
     blackman = "blackman",
     nuttall = "nuttall",
@@ -60,4 +68,11 @@ export declare enum WindowingFunctionTypes {
     hamming = "hamming",
     bartlett = "bartlett"
 }
+declare type NodeAddEventListener<T, L, O = unknown> = (type: T, listener: () => ({
+    detail: L;
+}), options?: O) => void;
+export declare type NodeEventListener<T = Float32Array | Uint8Array> = (event: {
+    detail: T;
+}) => void;
+export declare type AddEventListenerTypes = NodeAddEventListener<EventListenerTypes.bytefrequencydata, Float32Array>;
 export {};

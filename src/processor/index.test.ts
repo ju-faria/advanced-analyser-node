@@ -1,8 +1,29 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { fill, noop } from 'lodash';
-import { MessageTypes, WindowingFunctionTypes } from '../types';
+import { MessageTypes, WindowFunctionTypes } from '../types';
 import { doNTimes } from '../../tests/utils';
 import 'jest-extended';
+
+const createProcessor = ({
+  fftSize,
+  samplesBetweenTransforms,
+  timeDomainSamplesCount,
+  windowFunction = WindowFunctionTypes.blackman,
+} : { 
+  fftSize: number,
+  samplesBetweenTransforms?: number,
+  timeDomainSamplesCount?: number,
+  windowFunction?: WindowFunctionTypes
+}) => {
+  return new AdvancedAnalyserProcessor({ 
+    processorOptions:{ 
+      fftSize, 
+      samplesBetweenTransforms: samplesBetweenTransforms || fftSize,
+      timeDomainSamplesCount: timeDomainSamplesCount || fftSize,
+      windowFunction: windowFunction
+    }
+  });
+};
 
 const portPostMessageSpy = jest.fn();
 global.AudioWorkletProcessor = class AudioWorkletProcessor {
@@ -57,6 +78,7 @@ jest.mock('../constants', () =>( {
   PROCESSOR_NAME: 'processorName',
   __esModule: true,
 }));
+
 describe('AdvancedAnalyserProcessor', () => {
 
   beforeAll(() => {
@@ -69,13 +91,10 @@ describe('AdvancedAnalyserProcessor', () => {
     const fftSize = 16;
     const samplesBetweenTransforms = 8;
     const fftBinSize = fftSize / 2;
-    const processor = new AdvancedAnalyserProcessor({ 
-      processorOptions:{ 
-        fftSize, 
-        samplesBetweenTransforms
-      }
+    const processor = createProcessor({
+      fftSize,
+      samplesBetweenTransforms,
     });
-    
     expect(processor._fftSize).toEqual(fftSize);
     expect(processor._fftInput).toHaveLength(fftSize);
     expect(processor._fftAnalyser).toBeDefined();
@@ -93,11 +112,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 16;
       const samplesBetweenTransforms = 8;
 
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
 
       processor._getFloatFrequencyData = jest.fn();
@@ -121,11 +138,9 @@ describe('AdvancedAnalyserProcessor', () => {
     it('returns true whenever _samplesCount is a multiple of samplesBetweenTransforms', () => {
       const fftSize = 16;
       const samplesBetweenTransforms = 8;
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
       processor._isListeningTo.frequencydata = true;
 
@@ -144,11 +159,9 @@ describe('AdvancedAnalyserProcessor', () => {
   it('only flushes if there are active event listeners', () => {
     const fftSize = 16;
     const samplesBetweenTransforms = 8;
-    const processor = new AdvancedAnalyserProcessor({ 
-      processorOptions:{ 
-        fftSize, 
-        samplesBetweenTransforms
-      }
+    const processor = createProcessor({
+      fftSize,
+      samplesBetweenTransforms,
     });
     processor._isListeningTo.frequencydata = true;
     expect(processor._shouldFlushFrequencies()).toBeTruthy();
@@ -167,11 +180,9 @@ describe('AdvancedAnalyserProcessor', () => {
       
       const fftSize = 4;
       const samplesBetweenTransforms = 2;
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
       
       
@@ -193,11 +204,9 @@ describe('AdvancedAnalyserProcessor', () => {
       it('when samplesBetweenTransforms is multiple of fftSize', () => {
         const fftSize = 4;
         const samplesBetweenTransforms = 2;
-        const processor = new AdvancedAnalyserProcessor({ 
-          processorOptions:{ 
-            fftSize, 
-            samplesBetweenTransforms
-          }
+        const processor = createProcessor({
+          fftSize,
+          samplesBetweenTransforms,
         });
         processor._isListeningTo.frequencydata = true;
         processor._flushFrequencies = jest.fn();
@@ -213,11 +222,9 @@ describe('AdvancedAnalyserProcessor', () => {
       it('when samplesBetweenTransforms is NOT multiple of fftSize', () => {
         const fftSize = 4;
         const samplesBetweenTransforms = 3;
-        const processor = new AdvancedAnalyserProcessor({ 
-          processorOptions:{ 
-            fftSize, 
-            samplesBetweenTransforms
-          }
+        const processor = createProcessor({
+          fftSize,
+          samplesBetweenTransforms,
         });
         processor._isListeningTo.frequencydata = true;
         processor._flushFrequencies = jest.fn();
@@ -237,11 +244,9 @@ describe('AdvancedAnalyserProcessor', () => {
       it('when samplesBetweenTransforms is bigger than the fftSize', () => {
         const fftSize = 4;
         const samplesBetweenTransforms = 8;
-        const processor = new AdvancedAnalyserProcessor({ 
-          processorOptions:{ 
-            fftSize, 
-            samplesBetweenTransforms
-          }
+        const processor = createProcessor({
+          fftSize,
+          samplesBetweenTransforms,
         });
         processor._isListeningTo.frequencydata = true;
 
@@ -259,11 +264,9 @@ describe('AdvancedAnalyserProcessor', () => {
       it('when samplesBetweenTransforms is bigger than and is not multiple of the fftSize', () => {
         const fftSize = 4;
         const samplesBetweenTransforms = 7;
-        const processor = new AdvancedAnalyserProcessor({ 
-          processorOptions:{ 
-            fftSize, 
-            samplesBetweenTransforms
-          }
+        const processor = createProcessor({
+          fftSize,
+          samplesBetweenTransforms,
         });
         processor._isListeningTo.frequencydata = true;
         processor._flushFrequencies = jest.fn();
@@ -286,12 +289,10 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms,
-          windowFunction: WindowingFunctionTypes.rectangular,
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
+        windowFunction: WindowFunctionTypes.rectangular,
       });
       // ignores flushing
       processor._flushFrequencies = noop;
@@ -317,13 +318,10 @@ describe('AdvancedAnalyserProcessor', () => {
     it('gets the correct values on the buffer overflows', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
-      
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms,
-          windowFunction: WindowingFunctionTypes.rectangular
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
+        windowFunction: WindowFunctionTypes.rectangular,
       });
       // ignores flushing
       processor._flushFrequencies = noop;
@@ -349,11 +347,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
       processor._flushFrequencies = noop;
       const destinationArray = new Float32Array(fftSize);
@@ -374,11 +370,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
       const blackmanFunctionSpy = jest.fn();
       const noFunctionSpy = jest.fn();
@@ -387,7 +381,7 @@ describe('AdvancedAnalyserProcessor', () => {
       processor._updateFftInput();
       expect(blackmanFunctionSpy).toHaveBeenCalled();
 
-      processor._windowFunctionType = WindowingFunctionTypes.rectangular;
+      processor._windowFunctionType = WindowFunctionTypes.rectangular;
       processor._updateFftInput();
 
       expect(noFunctionSpy).toHaveBeenCalled();
@@ -399,11 +393,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 32;
       const samplesBetweenTransforms = 4;
       
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
       processor._flushFrequencies = noop;
       
@@ -438,11 +430,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
     
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
 
       const destinationArray = new Uint8Array(3);
@@ -456,11 +446,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
     
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
       processor._flushFrequencies = noop;
 
@@ -496,11 +484,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
     
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
 
       processor._doFft();
@@ -510,11 +496,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
     
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
       processor._flushFrequencies = noop;
       processor._updateFftInput = noop;
@@ -532,11 +516,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
     
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
       processor._flushFrequencies = noop;
 
@@ -570,11 +552,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
       processor._isListeningTo.bytefrequencydata = true;
       processor._updateFftInput = jest.fn();
@@ -587,11 +567,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
       processor._isListeningTo.bytefrequencydata = true;
       processor._doFft = jest.fn();
@@ -603,11 +581,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
 
       processor._updateFftInput = jest.fn();
@@ -618,11 +594,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
       processor._isListeningTo.frequencydata = true;
       processor._isListeningTo.bytefrequencydata = true;
@@ -651,11 +625,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
       processor._isListeningTo.timedomaindata = true;
       processor._isListeningTo.bytetimedomaindata = true;
@@ -685,14 +657,11 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms,
-          windowFunction: WindowingFunctionTypes.rectangular
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
+        windowFunction: WindowFunctionTypes.rectangular
       });
-
 
       processor._updateFftInput = jest.fn();
       processor._doFft = jest.fn();
@@ -709,11 +678,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
       
       const postMessageSpy = jest.fn();
@@ -737,15 +704,12 @@ describe('AdvancedAnalyserProcessor', () => {
     it('calls methods in the correct order', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
-      
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms,
-          windowFunction: WindowingFunctionTypes.rectangular
-        }
+    
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
+        windowFunction: WindowFunctionTypes.rectangular
       });
-
 
       processor._updateFftInput = jest.fn();
       processor._doFft = jest.fn();
@@ -764,11 +728,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
       
       const postMessageSpy = jest.fn();
@@ -794,11 +756,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
       doNTimes(fftSize, (i) => {
         processor._appendToBuffer(i);
@@ -818,11 +778,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
       doNTimes(fftSize, (i) => {
         processor._appendToBuffer(i / 100);
@@ -842,11 +800,9 @@ describe('AdvancedAnalyserProcessor', () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
-      const processor = new AdvancedAnalyserProcessor({ 
-        processorOptions:{ 
-          fftSize, 
-          samplesBetweenTransforms
-        }
+      const processor = createProcessor({
+        fftSize,
+        samplesBetweenTransforms,
       });
       const appendToBufferSpy = jest.fn();
       processor._appendToBuffer = appendToBufferSpy;

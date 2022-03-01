@@ -1,4 +1,4 @@
-import { WindowingFunctionTypes } from "../types";
+import { WindowFunctionTypes } from "../types";
 
 
 export const hann = (n: number, points: number) => 0.5 - 0.5 * Math.cos((2 * Math.PI * n) / (points - 1));
@@ -55,13 +55,13 @@ export const applyWindowFunction = (
   }
 };
 
-export const windowFunctionsMap:Record<WindowingFunctionTypes, (samples: Float32Array, alpha?: number) => void> = {
-  [WindowingFunctionTypes.rectangular]: () => { /* does nothing */ },
-  [WindowingFunctionTypes.hann]: (data: Float32Array) => applyWindowFunction(data, hann),
-  [WindowingFunctionTypes.hamming]: (data: Float32Array) => applyWindowFunction(data, hamming),
-  [WindowingFunctionTypes.blackman]: (data: Float32Array) => applyWindowFunction(data, blackman),
-  [WindowingFunctionTypes.blackmanNuttall]: (data: Float32Array) => applyWindowFunction(data, blackmanNuttall),
-  [WindowingFunctionTypes.blackmanHarris]: (data: Float32Array) => applyWindowFunction(data, blackmanHarris),
-  [WindowingFunctionTypes.nuttall]: (data: Float32Array) => applyWindowFunction(data, nuttall),
-  [WindowingFunctionTypes.bartlett]: (data: Float32Array) => applyWindowFunction(data, barlett),
+export const windowFunctionsMap:Record<WindowFunctionTypes, (samples: Float32Array, alpha?: number) => void> = {
+  [WindowFunctionTypes.rectangular]: () => { /* does nothing */ },
+  [WindowFunctionTypes.hann]: (data: Float32Array) => applyWindowFunction(data, hann),
+  [WindowFunctionTypes.hamming]: (data: Float32Array) => applyWindowFunction(data, hamming),
+  [WindowFunctionTypes.blackman]: (data: Float32Array) => applyWindowFunction(data, blackman),
+  [WindowFunctionTypes.blackmanNuttall]: (data: Float32Array) => applyWindowFunction(data, blackmanNuttall),
+  [WindowFunctionTypes.blackmanHarris]: (data: Float32Array) => applyWindowFunction(data, blackmanHarris),
+  [WindowFunctionTypes.nuttall]: (data: Float32Array) => applyWindowFunction(data, nuttall),
+  [WindowFunctionTypes.bartlett]: (data: Float32Array) => applyWindowFunction(data, barlett),
 };

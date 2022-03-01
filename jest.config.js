@@ -3,7 +3,7 @@ module.exports = {
   testEnvironment: 'node',
   setupFilesAfterEnv: ["jest-extended/all"],
   collectCoverageFrom: [
-    "**/*.ts",
+    "src/**/*.ts",
     "!**/node_modules/**",
     "!**/dist/**"
   ]

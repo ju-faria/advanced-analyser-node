@@ -1,6 +1,6 @@
 import FFT from 'fft.js';
 import { MAX_FFT_SIZE, PROCESSOR_NAME } from '../constants';
-import { EventListenerTypes, Message, MessageTypes, WindowingFunctionTypes } from '../types';
+import { EventListenerTypes, Message, MessageTypes, WindowFunctionTypes } from '../types';
 import { windowFunctionsMap } from './window-functions';
 
 const linearToDb = (x: number) => {
@@ -30,7 +30,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
 
   _samplesBetweenTransforms: number;
 
-  _windowFunctionType = WindowingFunctionTypes.blackman;
+  _windowFunctionType = WindowFunctionTypes.blackman;
 
   _isListeningTo: Record<EventListenerTypes, boolean> = {
     frequencydata: false,
@@ -59,9 +59,8 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
   _portMap = new Map();
 
 
-  _timeDomainSamplesCountValue?: number;
+  _timeDomainSamplesCount: number;
 
-  
   get _frequencyBinCount () {
     return this._fftSize / 2;
   }
@@ -79,16 +78,6 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     return (this._isListeningTo.timedomaindata || this._isListeningTo.bytetimedomaindata);
   }
   
-
-  get _timeDomainSamplesCount() {
-    return this._timeDomainSamplesCountValue || this._fftSize;
-  } 
-
-  set _timeDomainSamplesCount(value: number) {
-    this._timeDomainSamplesCountValue  = value;
-  } 
-
-  
   static get parameterDescriptors() {
     return [
       {
@@ -98,22 +87,20 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     ];
   } 
 
-  constructor (options: { processorOptions: { fftSize: number, samplesBetweenTransforms: number, timeDomainSamplesCount?: number, windowFunction?: WindowingFunctionTypes} }) {
+  constructor (options: { processorOptions: { fftSize: number, samplesBetweenTransforms: number, timeDomainSamplesCount: number, windowFunction: WindowFunctionTypes} }) {
     super();
-    const { fftSize, samplesBetweenTransforms, timeDomainSamplesCount, windowFunction = WindowingFunctionTypes.blackman } = options.processorOptions;
+    const { fftSize, samplesBetweenTransforms, timeDomainSamplesCount, windowFunction = WindowFunctionTypes.blackman } = options.processorOptions;
 
     this._fftAnalyser = new FFT(fftSize);
     this._fftInput = new Float32Array(fftSize);
     this._fftOutput = this._fftAnalyser.createComplexArray();
     this._fftSize = fftSize;
     this._lastTransform = new Float32Array(this._frequencyBinCount);
-    this._samplesBetweenTransforms = samplesBetweenTransforms || fftSize;
-    this._timeDomainSamplesCountValue = timeDomainSamplesCount;
+    this._samplesBetweenTransforms = samplesBetweenTransforms;
+    this._timeDomainSamplesCount = timeDomainSamplesCount;
     this._samplesCount = 0;
     this._windowFunctionType = windowFunction;
     this.port.onmessage = (event) => this._onmessage(event.data);
-
-
   }
   
   _onmessage(message: Message) {
