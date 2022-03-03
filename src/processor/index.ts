@@ -30,7 +30,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
 
   _samplesBetweenTransforms: number;
 
-  _windowFunctionType = WindowFunctionTypes.blackman;
+  _windowFunction = WindowFunctionTypes.blackman;
 
   _isListeningTo: Record<EventListenerTypes, boolean> = {
     frequencydata: false,
@@ -39,7 +39,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     bytetimedomaindata: false
   };
 
-  /**
+  /*
    * The W3C spec for the analyser node states that:
    * "...increasing fftSize does mean that the current time-domain data must be expanded to include past frames that it previously did not.
    * This means that the AnalyserNode effectively MUST keep around the last 32768 sample-frames and the current time-domain data 
@@ -87,9 +87,25 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     ];
   } 
 
-  constructor (options: { processorOptions: { fftSize: number, samplesBetweenTransforms: number, timeDomainSamplesCount: number, windowFunction: WindowFunctionTypes} }) {
+  constructor (options: { processorOptions: { 
+    fftSize: number, 
+    samplesBetweenTransforms: number, 
+    timeDomainSamplesCount: number, 
+    windowFunction: WindowFunctionTypes,
+    minDecibels: number, 
+    maxDecibels: number, 
+    smoothingTimeConstant: number, 
+  } }) {
     super();
-    const { fftSize, samplesBetweenTransforms, timeDomainSamplesCount, windowFunction = WindowFunctionTypes.blackman } = options.processorOptions;
+    const { 
+      fftSize, 
+      samplesBetweenTransforms, 
+      timeDomainSamplesCount, 
+      windowFunction = WindowFunctionTypes.blackman,
+      minDecibels,
+      maxDecibels,
+      smoothingTimeConstant,
+    } = options.processorOptions;
 
     this._fftAnalyser = new FFT(fftSize);
     this._fftInput = new Float32Array(fftSize);
@@ -99,7 +115,11 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     this._samplesBetweenTransforms = samplesBetweenTransforms;
     this._timeDomainSamplesCount = timeDomainSamplesCount;
     this._samplesCount = 0;
-    this._windowFunctionType = windowFunction;
+    this._windowFunction = windowFunction;
+    this._minDecibels = minDecibels;
+    this._maxDecibels = maxDecibels;
+    this._smoothingTimeConstant = smoothingTimeConstant;
+
     this.port.onmessage = (event) => this._onmessage(event.data);
   }
   
@@ -127,6 +147,25 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
       }
       case MessageTypes.stoppedListeningTo: {
         this._isListeningTo[message.payload] = false;
+        break;
+      }
+      case MessageTypes.updateProcessorOptions: {
+        const {
+          fftSize,
+          samplesBetweenTransforms,
+          timeDomainSamplesCount,
+          windowFunction,
+          minDecibels,
+          maxDecibels,
+          smoothingTimeConstant,
+        } = message.payload;
+        if (typeof fftSize !== 'undefined') this._fftSize = fftSize;
+        if (typeof samplesBetweenTransforms !== 'undefined') this._samplesBetweenTransforms = samplesBetweenTransforms;
+        if (typeof timeDomainSamplesCount !== 'undefined') this._timeDomainSamplesCount = timeDomainSamplesCount;
+        if (typeof windowFunction !== 'undefined') this._windowFunction = windowFunction;
+        if (typeof minDecibels !== 'undefined') this._minDecibels = minDecibels;
+        if (typeof maxDecibels !== 'undefined') this._maxDecibels = maxDecibels;
+        if (typeof smoothingTimeConstant !== 'undefined') this._smoothingTimeConstant = smoothingTimeConstant;
         break;
       }
     }
@@ -158,7 +197,7 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     }
   }
 
-  /** 
+  /**
    * to clarify this as it could be a little confusing:
    * to save memory, _buffer has length equal to the fftSize, and appendToBuffer add the new value always after the last value.
    * that means that the order of the values may not be ordered sequentially. For example:
@@ -170,15 +209,15 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
    * [5, 6, 3, 4]
    * 
    * Now consider we want to calculate a transform, for an fftSize of 4, we want the last 4 values. For that we remap the _buffer to the _fftInput like this:
-   * [5, 6, 3, 4] => [3, 4, 5, 6]
+   * [5, 6, 3, 4] -\> [3, 4, 5, 6]
    */
   _updateFftInput() {
-    /**
+    /*
      * TODO: pad the fftInput end if the analyser stops in the middle of the samplesBetweenTransforms interval
      */
   
     this._fillArrayWithLastNSamples(this._fftInput);
-    windowFunctionsMap[this._windowFunctionType](this._fftInput);
+    windowFunctionsMap[this._windowFunction](this._fftInput);
   }
 
   _fillArrayWithLastNSamples(destinationArray: Float32Array) {

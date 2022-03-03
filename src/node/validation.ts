@@ -47,3 +47,21 @@ export const validateWindowFunction = (value: WindowFunctionTypes) => {
           .join(', ')}`);
   }
 };
+
+
+export const validateMaxAndMinDecibels = (minDecibels: number, maxDecibels: number) => {
+  if (maxDecibels <= minDecibels) {
+    throw new Error(
+      `Values ${minDecibels} for minDecibels and ${maxDecibels} for maxDecibels are invalid: maxDecibels value cannot be equal or lower than minDecibels.`
+    );
+  }
+};
+
+
+export const validateSmoothingTimeConstant = (value: number) => {
+  if (value < 0 && value > 1) {
+    throw new Error(
+      'smoothingTimeConstant value must be between 0 and 1'
+    );
+  }
+};

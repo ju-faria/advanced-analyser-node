@@ -17,10 +17,20 @@ interface AudioWorkletProcessor {
     outputs: Float32Array[][],
     parameters: Record<string, Float32Array>
   ): boolean;
+ 
+}
+
+declare class AudioWorkletProcessor {
+  prototype: AudioWorkletProcessor;
+
+  constructor (options?: AudioWorkletNodeOptions);
 }
 
 interface AdvancedAnalyserNode extends AudioNode {
   onprocessorerror: ((this: AudioWorkletNode, ev: Event) => unknown) | null;
+  readonly channelCount: number;
+  readonly channelCountMode: ChannelCountMode;
+  readonly channelInterpretation: ChannelInterpretation;
   readonly parameters: AudioParamMap;
   readonly port: MessagePort;
   addEventListener<T>(type: string, listener: EventListenerOrEventListenerObject| CustomEvent<T>, options?: boolean | AddEventListenerOptions): void; 
@@ -38,19 +48,3 @@ declare function registerProcessor(
 
 
 
-declare module 'fft-windowing-ts' {
-  // const blackman:(samples: Float32Array) => void;
-  const hann: (array: number[], alpha?: number | undefined) => number[];
-  const hamming: (array: number[], alpha?: number | undefined) => number[];
-  const cosine: (array: number[], alpha?: number | undefined) => number[];
-  const lanczos: (array: number[], alpha?: number | undefined) => number[];
-  const gaussian: (array: number[], alpha?: number | undefined) => number[];
-  const tukey: (array: number[], alpha?: number | undefined) => number[];
-  const blackman: (array: number[], alpha?: number | undefined) => number[];
-  const exact_blackman: (array: number[], alpha?: number | undefined) => number[];
-  const kaiser: (array: number[], alpha?: number | undefined) => number[];
-  const nuttall: (array: number[], alpha?: number | undefined) => number[];
-  const blackmanHarris: (array: number[], alpha?: number | undefined) => number[];
-  const blackmanNuttall: (array: number[], alpha?: number | undefined) => number[];
-  const flat_top: (array: number[], alpha?: number | undefined) => number[];
-}

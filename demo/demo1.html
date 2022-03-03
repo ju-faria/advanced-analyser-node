@@ -31,7 +31,7 @@
 
     const [floatFrequencyButton, byteFrequencyButton, floatTimeDomainButton, byteTimeDomainButton] = document.querySelectorAll('button')
 
-    const stream = await  navigator.mediaDevices.getUserMedia({
+    const stream = await navigator.mediaDevices.getUserMedia({
       audio: true,
       video: false
     })
@@ -44,6 +44,7 @@
     snapshotCanvas.width = 1024
     
     const context = new AudioContext({ sampleRate: SAMPLE_RATE })
+    
     const nativeAnalyserNode = context.createAnalyser()
     const audioSource = context.createMediaStreamSource(stream);
 

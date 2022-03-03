@@ -10,17 +10,8 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _fftOutput: number[];
     _lastTransform: Float32Array;
     _samplesBetweenTransforms: number;
-    _windowFunctionType: WindowFunctionTypes;
+    _windowFunction: WindowFunctionTypes;
     _isListeningTo: Record<EventListenerTypes, boolean>;
-    /**
-     * The W3C spec for the analyser node states that:
-     * "...increasing fftSize does mean that the current time-domain data must be expanded to include past frames that it previously did not.
-     * This means that the AnalyserNode effectively MUST keep around the last 32768 sample-frames and the current time-domain data
-     * is the most recent fftSize sample-frames out of that."
-     * - https://webaudio.github.io/web-audio-api/#AnalyserNode-attributes
-     *
-     * We're trying to match the W3C spec for the analyser node as close as possible, for that reason we do the same here.
-     */
     _buffer: Float32Array;
     _minDecibels: number;
     _maxDecibels: number;
@@ -41,6 +32,9 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
             samplesBetweenTransforms: number;
             timeDomainSamplesCount: number;
             windowFunction: WindowFunctionTypes;
+            minDecibels: number;
+            maxDecibels: number;
+            smoothingTimeConstant: number;
         };
     });
     _onmessage(message: Message): void;
@@ -60,7 +54,7 @@ export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
      * [5, 6, 3, 4]
      *
      * Now consider we want to calculate a transform, for an fftSize of 4, we want the last 4 values. For that we remap the _buffer to the _fftInput like this:
-     * [5, 6, 3, 4] => [3, 4, 5, 6]
+     * [5, 6, 3, 4] -\> [3, 4, 5, 6]
      */
     _updateFftInput(): void;
     _fillArrayWithLastNSamples(destinationArray: Float32Array): void;

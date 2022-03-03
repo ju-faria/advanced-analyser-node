@@ -1,27 +1,28 @@
 {
   "name": "advanced-analyser-node",
   "version": "0.1.0",
-  "description": "<div align=\"center\">",
+  "description": "Advanced Analyser Node aims to be an enhanced version of the native Analyser Node. It provides real-time frequency and time-domain analysis information.",
   "main": "./dist/bundle.js",
   "types": "./dist/src/index.d.ts",
   "files": [
     "dist"
   ],
-  "directories": {
-    "test": "tests"
+  "repository": { 
+    "type": "git",
+    "url": "https://github.com/julia-script/advanced-analyser-node"
   },
   "dependencies": {},
   "devDependencies": {
+    "@microsoft/tsdoc-config": "^0.15.2",
     "@rollup/plugin-data-uri": "^0.1.1",
     "@rollup/plugin-eslint": "^8.0.1",
     "@rollup/plugin-node-resolve": "^13.1.3",
-    "@types/audioworklet": "0.0.23",
     "@types/jest": "^27.4.1",
     "@types/lodash": "^4.14.178",
     "@typescript-eslint/eslint-plugin": "^5.12.1",
     "@typescript-eslint/parser": "^5.12.1",
     "eslint": "^8.9.0",
-    "fft-windowing-ts": "^0.2.7",
+    "eslint-plugin-tsdoc": "^0.2.14",
     "fft.js": "^4.0.4",
     "jest": "^27.5.1",
     "jest-extended": "^2.0.0",
@@ -35,16 +36,19 @@
     "rollup-plugin-terser": "^7.0.2",
     "rollup-plugin-typescript2": "^0.31.2",
     "ts-jest": "^27.1.3",
-    "typescript": "^4.5.5",
-    "window-function": "^2.1.0"
+    "typedoc": "^0.22.12",
+    "typedoc-github-wiki-theme": "^1.0.0",
+    "typedoc-plugin-markdown": "^3.11.14",
+    "typescript": "^4.5.5"
   },
   "scripts": {
     "build": "rollup -c",
     "build:dev": "rollup -c --environment dev",
     "test": "jest --coverage",
     "lint": "eslint ./",
-    "lint:fix": "eslint ./ --fix"
+    "lint:fix": "eslint ./ --fix",
+    "doc": "typedoc"
   },
-  "author": "juliafaria",
-  "license": "ISC"
+  "author": "juliascript",
+  "license": "MIT"
 }

@@ -1,17 +1,11 @@
+[![view on npm](https://badgen.net/npm/v/jsdoc-to-markdown)](https://www.npmjs.org/package/jsdoc-to-markdown)
+
 # Advanced Analyser Node
 
-Advanced Analyser Node aims to be an enhanced version of the native Analyser Node. Both Audio nodes provide real-time frequency and time-domain analysis information.
+Advanced Analyser Node aims to be an enhanced version of the native Analyser Node. It provides real-time frequency and time-domain analysis information.
 
-## Why this exists?
-The native Analyser Node offers two primary features: Request frequency data (`.getFloatFrequencyData|.getByteFrequencyData`) and time-domain data (`.getFloatTimeDomainData|.getByteTimeDomainData`). The main problem is that the Analyser Node only gives you the data at the time of the request, meaning that when you request for the frequency data, the node will apply the Fast Fourier Transform to the last n audio samples (n is the fftSize property), or in the case of time-domain data, the last n audio samples.
 
-That's good enough if you are creating an audio visualization of the data currently being played, as the usual approach is to create a loop that requests and draws the data every frame (and if you're doing that, you should probably stick to the native Analyser Node as it will give you better performance).
-
-The problem happens when you need to display the data **over time** (ex: Spectrograms, the waveform of the whole track). As the native Analyser Node gives you the data at the request time, it's impossible to guarantee that all requests will be evenly spaced in time. That means you will have inconsistent data overlaps or even skip some samples altogether. Depending on your goal, overlapping or skipping samples are not a problem per se; the issue is the inconsistency as the interval between samples will be completely based on your loop FPS.
-
-The Advanced Analyser Node provides all the native version features (with a slightly different API), but also gives you the option of registering events that will be consistently triggered based on its configuration. For advanced users, you also have the option of choosing between different window functions.
-
-## Installation
+## Getting started
 
 Using npm:
 ```bash
@@ -21,7 +15,6 @@ Using yarn:
 ```bash
 yarn add --dev advanced-analyser-node
 ```
-
 
 ## Usage
 
@@ -60,9 +53,18 @@ init();
 const data = await analyserNode.getByteFrequencyData() // Differently from the native implementation, the request methods are asynchronous, and do not take an array as parameter
 ```
 
-
 ## Documentation
+[You can find the documentation here](docs/DOC.md).
 
+
+## Why this exists?
+The native Analyser Node offers two primary features: Request frequency data (`.getFloatFrequencyData|.getByteFrequencyData`) and time-domain data (`.getFloatTimeDomainData|.getByteTimeDomainData`). The main problem is that the Analyser Node only gives you the data at the time of the request, meaning that when you request for the frequency data, the node will apply the Fast Fourier Transform to the last n audio samples (n is the fftSize property), or in the case of time-domain data, the last n audio samples.
+
+That's good enough if you are creating an audio visualization of the data currently being played, as the usual approach is to create a loop that requests and draws the data every frame (and if you're doing that, you should probably stick to the native Analyser Node as it will give you better performance).
+
+The problem happens when you need to display the data **over time** (ex: Spectrograms, the waveform of the whole track). As the native Analyser Node gives you the data at the request time, it's impossible to guarantee that all requests will be evenly spaced in time. That means you will have inconsistent data overlaps or even skip some samples altogether. Depending on your goal, overlapping or skipping samples are not a problem per se; the issue is the inconsistency as the interval between samples will be completely based on your loop FPS.
+
+The Advanced Analyser Node provides all the native version features (with a slightly different API), but also gives you the option of registering events that will be consistently triggered based on its configuration. For advanced users, you also have the option of choosing between different window functions.
 
 ## Caveats
 

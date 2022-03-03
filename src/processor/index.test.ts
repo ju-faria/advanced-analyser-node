@@ -20,12 +20,18 @@ const createProcessor = ({
       fftSize, 
       samplesBetweenTransforms: samplesBetweenTransforms || fftSize,
       timeDomainSamplesCount: timeDomainSamplesCount || fftSize,
-      windowFunction: windowFunction
+      windowFunction: windowFunction,
+      minDecibels: -100,
+      maxDecibels: -30,
+      smoothingTimeConstant: 0,
     }
   });
 };
 
+
+
 const portPostMessageSpy = jest.fn();
+// @ts-ignore
 global.AudioWorkletProcessor = class AudioWorkletProcessor {
   port = {
     onmessage: noop,
@@ -42,7 +48,6 @@ global.AudioWorkletProcessor = class AudioWorkletProcessor {
     return true;
   }
 };
-global.currentTime = 0;
 
 const registerProcessorSpy = jest.fn();
 
@@ -381,7 +386,7 @@ describe('AdvancedAnalyserProcessor', () => {
       processor._updateFftInput();
       expect(blackmanFunctionSpy).toHaveBeenCalled();
 
-      processor._windowFunctionType = WindowFunctionTypes.rectangular;
+      processor._windowFunction = WindowFunctionTypes.rectangular;
       processor._updateFftInput();
 
       expect(noFunctionSpy).toHaveBeenCalled();

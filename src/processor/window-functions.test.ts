@@ -12,7 +12,7 @@ const testWindowResult = (windowFn: (samples: Float32Array, alpha?:number) => vo
 };
 
 
-describe('Window functions ', () => {
+describe('Window functions', () => {
   it('rectangular', () => {
     // rectangular window function does essentially nothing to the signal
     [

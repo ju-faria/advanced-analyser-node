@@ -7,12 +7,14 @@
   "parser": "@typescript-eslint/parser",
   "parserOptions": { "project": ["./tsconfig.json"] },
   "plugins": [
-    "@typescript-eslint"
+    "@typescript-eslint",
+    "eslint-plugin-tsdoc"
   ],
   "rules": {
     "indent": ["error", 2, { "SwitchCase": 1 }],
     "semi": ["error", "always"],
-    "lines-between-class-members": ["error", "always"]
+    "lines-between-class-members": ["error", "always"],
+    "tsdoc/syntax": "warn"
   },
   "ignorePatterns": [
     "rollup.config.js",

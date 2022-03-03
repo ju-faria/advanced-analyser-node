@@ -89,7 +89,7 @@ global.CustomEvent = class CustomEvent<T> {
     this.detail = eventInitDict.detail;
   }
 } as unknown as typeof CustomEvent;
-import { AdvancedAnalyserNode } from ".";
+import { AdvancedAnalyserNode } from "./advanced-analyser-node";
 
 describe('AdvancedAnalyserNode', () => {
   beforeEach(() => {
@@ -113,7 +113,10 @@ describe('AdvancedAnalyserNode', () => {
         fftSize: 1024,
         samplesBetweenTransforms: 2048,
         timeDomainSamplesCount: 4096,
-        windowFunction: WindowFunctionTypes.blackmanNuttall
+        windowFunction: WindowFunctionTypes.blackmanNuttall,
+        maxDecibels: -30,
+        minDecibels: -100,
+        smoothingTimeConstant: 0,
       },
       numberOfInputs: 1,
       numberOfOutputs: 1,
@@ -671,7 +674,7 @@ describe('AdvancedAnalyserNode', () => {
         });
   
         addEventListenerSpy.mockClear();
-        node.addEventListener(EventListenerTypes.bytetimedomaindata, ({ detail }:CustomEvent<Uint8Array>) => {
+        node.addEventListener(EventListenerTypes.bytetimedomaindata, ({ detail }) => {
           console.log(detail);
         });
   
@@ -685,7 +688,7 @@ describe('AdvancedAnalyserNode', () => {
         });
         dispatchEventSpy.mockClear();
         addEventListenerSpy.mockClear();
-        node.addEventListener(EventListenerTypes.bytetimedomaindata, ({ detail }:CustomEvent<Uint8Array>) => {
+        node.addEventListener(EventListenerTypes.bytetimedomaindata, ({ detail }) => {
           console.log(detail);
         });
         const payload = Uint8Array.from([0, 1, 2, 3]);
