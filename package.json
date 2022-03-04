@@ -50,6 +50,9 @@
     "lint:fix": "eslint ./ --fix",
     "doc": "typedoc"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "juliascript",
   "license": "MIT"
 }
