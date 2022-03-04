@@ -1,4 +1,4 @@
-[advanced-analyser-node](../DOC.md) / AdvancedAnalyserNode
+[@audioui/advanced-analyser-node](../DOC.md) / AdvancedAnalyserNode
 
 # Class: AdvancedAnalyserNode
 
@@ -70,11 +70,11 @@ Use the `createAdvancedAnalyserNode` method, which registers this Worklet before
 
 #### Overrides
 
-AudioWorkletNode.constructor
+window.AudioWorkletNode.constructor
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:203](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L203)
+[src/node/advanced-analyser-node.ts:202](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L202)
 
 ## Properties
 
@@ -84,11 +84,11 @@ AudioWorkletNode.constructor
 
 #### Overrides
 
-AudioWorkletNode.channelCount
+window.AudioWorkletNode.channelCount
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:47](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L47)
+[src/node/advanced-analyser-node.ts:46](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L46)
 
 ___
 
@@ -98,11 +98,11 @@ ___
 
 #### Overrides
 
-AudioWorkletNode.channelCountMode
+window.AudioWorkletNode.channelCountMode
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:53](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L53)
+[src/node/advanced-analyser-node.ts:52](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L52)
 
 ___
 
@@ -112,11 +112,11 @@ ___
 
 #### Overrides
 
-AudioWorkletNode.channelInterpretation
+window.AudioWorkletNode.channelInterpretation
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:55](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L55)
+[src/node/advanced-analyser-node.ts:54](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L54)
 
 ___
 
@@ -126,7 +126,7 @@ ___
 
 #### Inherited from
 
-AudioWorkletNode.context
+window.AudioWorkletNode.context
 
 #### Defined in
 
@@ -140,11 +140,11 @@ ___
 
 #### Overrides
 
-AudioWorkletNode.numberOfInputs
+window.AudioWorkletNode.numberOfInputs
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:49](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L49)
+[src/node/advanced-analyser-node.ts:48](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L48)
 
 ___
 
@@ -154,11 +154,11 @@ ___
 
 #### Overrides
 
-AudioWorkletNode.numberOfOutputs
+window.AudioWorkletNode.numberOfOutputs
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:51](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L51)
+[src/node/advanced-analyser-node.ts:50](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L50)
 
 ___
 
@@ -168,7 +168,7 @@ ___
 
 #### Inherited from
 
-AudioWorkletNode.parameters
+window.AudioWorkletNode.parameters
 
 #### Defined in
 
@@ -182,7 +182,7 @@ ___
 
 #### Inherited from
 
-AudioWorkletNode.port
+window.AudioWorkletNode.port
 
 #### Defined in
 
@@ -206,7 +206,7 @@ Note that large FFT sizes can be costly to compute.
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:64](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L64)
+[src/node/advanced-analyser-node.ts:63](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L63)
 
 • `set` **fftSize**(`value`): `void`
 
@@ -228,7 +228,7 @@ Note that large FFT sizes can be costly to compute.
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:68](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L68)
+[src/node/advanced-analyser-node.ts:67](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L67)
 
 ___
 
@@ -242,7 +242,7 @@ ___
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:99](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L99)
+[src/node/advanced-analyser-node.ts:98](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L98)
 
 ___
 
@@ -266,7 +266,7 @@ An exception will be thrown if set to less than or equal to maxDecibels.
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:159](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L159)
+[src/node/advanced-analyser-node.ts:158](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L158)
 
 • `set` **maxDecibels**(`value`): `void`
 
@@ -292,7 +292,7 @@ An exception will be thrown if set to less than or equal to maxDecibels.
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:163](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L163)
+[src/node/advanced-analyser-node.ts:162](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L162)
 
 ___
 
@@ -316,7 +316,7 @@ An exception will be thrown if set to more than or equal to maxDecibels.
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:137](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L137)
+[src/node/advanced-analyser-node.ts:136](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L136)
 
 • `set` **minDecibels**(`value`): `void`
 
@@ -342,7 +342,7 @@ An exception will be thrown if set to more than or equal to maxDecibels.
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:141](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L141)
+[src/node/advanced-analyser-node.ts:140](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L140)
 
 ___
 
@@ -356,7 +356,7 @@ ___
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:95](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L95)
+[src/node/advanced-analyser-node.ts:94](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L94)
 
 • `set` **samplesBetweenTransforms**(`value`): `void`
 
@@ -372,7 +372,7 @@ ___
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:87](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L87)
+[src/node/advanced-analyser-node.ts:86](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L86)
 
 ___
 
@@ -392,7 +392,7 @@ and results in a much smoother set of value changes over time.
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:178](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L178)
+[src/node/advanced-analyser-node.ts:177](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L177)
 
 • `set` **smoothingTimeConstant**(`value`): `void`
 
@@ -414,7 +414,7 @@ and results in a much smoother set of value changes over time.
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:182](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L182)
+[src/node/advanced-analyser-node.ts:181](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L181)
 
 ___
 
@@ -428,7 +428,7 @@ ___
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:111](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L111)
+[src/node/advanced-analyser-node.ts:110](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L110)
 
 • `set` **timeDomainSamplesCount**(`value`): `void`
 
@@ -444,7 +444,7 @@ ___
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:103](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L103)
+[src/node/advanced-analyser-node.ts:102](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L102)
 
 ___
 
@@ -458,7 +458,7 @@ ___
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:123](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L123)
+[src/node/advanced-analyser-node.ts:122](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L122)
 
 • `set` **windowFunction**(`value`): `void`
 
@@ -474,7 +474,7 @@ ___
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:115](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L115)
+[src/node/advanced-analyser-node.ts:114](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L114)
 
 ## Methods
 
@@ -495,11 +495,11 @@ ___
 
 #### Overrides
 
-AudioWorkletNode.addEventListener
+window.AudioWorkletNode.addEventListener
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:355](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L355)
+[src/node/advanced-analyser-node.ts:354](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L354)
 
 ▸ **addEventListener**(`type`, `listener`): `void`
 
@@ -516,11 +516,11 @@ AudioWorkletNode.addEventListener
 
 #### Overrides
 
-AudioWorkletNode.addEventListener
+window.AudioWorkletNode.addEventListener
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:357](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L357)
+[src/node/advanced-analyser-node.ts:356](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L356)
 
 ▸ **addEventListener**(`type`, `listener`, `options?`): `void`
 
@@ -538,11 +538,11 @@ AudioWorkletNode.addEventListener
 
 #### Overrides
 
-AudioWorkletNode.addEventListener
+window.AudioWorkletNode.addEventListener
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:360](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L360)
+[src/node/advanced-analyser-node.ts:359](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L359)
 
 ___
 
@@ -564,7 +564,7 @@ ___
 
 #### Inherited from
 
-AudioWorkletNode.connect
+window.AudioWorkletNode.connect
 
 #### Defined in
 
@@ -585,7 +585,7 @@ node_modules/typescript/lib/lib.dom.d.ts:2153
 
 #### Inherited from
 
-AudioWorkletNode.connect
+window.AudioWorkletNode.connect
 
 #### Defined in
 
@@ -603,7 +603,7 @@ ___
 
 #### Inherited from
 
-AudioWorkletNode.disconnect
+window.AudioWorkletNode.disconnect
 
 #### Defined in
 
@@ -623,7 +623,7 @@ node_modules/typescript/lib/lib.dom.d.ts:2155
 
 #### Inherited from
 
-AudioWorkletNode.disconnect
+window.AudioWorkletNode.disconnect
 
 #### Defined in
 
@@ -643,7 +643,7 @@ node_modules/typescript/lib/lib.dom.d.ts:2156
 
 #### Inherited from
 
-AudioWorkletNode.disconnect
+window.AudioWorkletNode.disconnect
 
 #### Defined in
 
@@ -664,7 +664,7 @@ node_modules/typescript/lib/lib.dom.d.ts:2157
 
 #### Inherited from
 
-AudioWorkletNode.disconnect
+window.AudioWorkletNode.disconnect
 
 #### Defined in
 
@@ -686,7 +686,7 @@ node_modules/typescript/lib/lib.dom.d.ts:2158
 
 #### Inherited from
 
-AudioWorkletNode.disconnect
+window.AudioWorkletNode.disconnect
 
 #### Defined in
 
@@ -706,7 +706,7 @@ node_modules/typescript/lib/lib.dom.d.ts:2159
 
 #### Inherited from
 
-AudioWorkletNode.disconnect
+window.AudioWorkletNode.disconnect
 
 #### Defined in
 
@@ -727,7 +727,7 @@ node_modules/typescript/lib/lib.dom.d.ts:2160
 
 #### Inherited from
 
-AudioWorkletNode.disconnect
+window.AudioWorkletNode.disconnect
 
 #### Defined in
 
@@ -753,7 +753,7 @@ Dispatches a synthetic event event to target and returns true if either event's 
 
 #### Inherited from
 
-AudioWorkletNode.dispatchEvent
+window.AudioWorkletNode.dispatchEvent
 
 #### Defined in
 
@@ -771,7 +771,7 @@ ___
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:317](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L317)
+[src/node/advanced-analyser-node.ts:316](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L316)
 
 ___
 
@@ -785,7 +785,7 @@ ___
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:325](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L325)
+[src/node/advanced-analyser-node.ts:324](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L324)
 
 ___
 
@@ -799,7 +799,7 @@ ___
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:313](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L313)
+[src/node/advanced-analyser-node.ts:312](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L312)
 
 ___
 
@@ -813,7 +813,7 @@ ___
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:321](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L321)
+[src/node/advanced-analyser-node.ts:320](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L320)
 
 ___
 
@@ -833,11 +833,11 @@ ___
 
 #### Overrides
 
-AudioWorkletNode.onprocessorerror
+window.AudioWorkletNode.onprocessorerror
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:254](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L254)
+[src/node/advanced-analyser-node.ts:253](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L253)
 
 ___
 
@@ -859,8 +859,8 @@ ___
 
 #### Overrides
 
-AudioWorkletNode.removeEventListener
+window.AudioWorkletNode.removeEventListener
 
 #### Defined in
 
-[src/node/advanced-analyser-node.ts:367](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/advanced-analyser-node.ts#L367)
+[src/node/advanced-analyser-node.ts:366](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/advanced-analyser-node.ts#L366)

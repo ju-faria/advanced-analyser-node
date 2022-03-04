@@ -4,15 +4,22 @@
 * to avoid needing to be manually imported and loaded by this module's consumers
 */
 import processor from 'processor';
-import { AdvancedAnalyserNodeProperties } from 'src/types';
-import { AdvancedAnalyserNode } from './advanced-analyser-node';
+import { AdvancedAnalyserNodeProperties } from '../types';
 
 export const createAdvancedAnalyserNode = async (context: BaseAudioContext, options: AdvancedAnalyserNodeProperties = {}) => {
-  const processorUrl = 'data:application/javascript;base64,' + processor;
-  await context.audioWorklet.addModule(processorUrl);
-  const advancedAnalyser = new AdvancedAnalyserNode(context, {
-    ...options,
-  });
-  return advancedAnalyser;
+  if (IS_SERVER) {
+    throw new Error(`
+      AudioWorkletNode does not exist in this environment: 
+      This typically happens if you try to run 'createAdvancedAnalyserNode' in the server
+    `);
+  } else {
+    const processorUrl = 'data:application/javascript;base64,' + processor;
+    await context.audioWorklet.addModule(processorUrl);
+    const AdvancedAnalyserNode = (await import('./advanced-analyser-node')).AdvancedAnalyserNode;
+    const advancedAnalyser = new AdvancedAnalyserNode(context, {
+      ...options,
+    });
+    return advancedAnalyser;
+  }
 };
   

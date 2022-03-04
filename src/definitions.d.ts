@@ -3,6 +3,8 @@ declare module "processor" {
   export default value;
 }
 
+declare const IS_SERVER:boolean;
+
 type AudioParamDescriptor = {
   name: string,
   defaultValue?: number,

@@ -14,7 +14,8 @@
     "indent": ["error", 2, { "SwitchCase": 1 }],
     "semi": ["error", "always"],
     "lines-between-class-members": ["error", "always"],
-    "tsdoc/syntax": "warn"
+    "tsdoc/syntax": "warn",
+    "no-constant-condition": "off"
   },
   "ignorePatterns": [
     "rollup.config.js",

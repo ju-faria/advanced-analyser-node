@@ -1,4 +1,4 @@
-[advanced-analyser-node](../DOC.md) / EventListenerTypes
+[@audioui/advanced-analyser-node](../DOC.md) / EventListenerTypes
 
 # Enumeration: EventListenerTypes
 
@@ -23,7 +23,7 @@ Returns a Uint8Array with half the `fftSize`, with the current frequency data.
 
 #### Defined in
 
-[src/types.ts:114](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/types.ts#L114)
+[src/types.ts:114](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/types.ts#L114)
 
 ___
 
@@ -36,7 +36,7 @@ Returns a Uint8Array with the size defined by `timeDomainSamplesCount`, with the
 
 #### Defined in
 
-[src/types.ts:124](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/types.ts#L124)
+[src/types.ts:124](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/types.ts#L124)
 
 ___
 
@@ -49,7 +49,7 @@ Returns a Float32Array with half the `fftSize`, with the current frequency data.
 
 #### Defined in
 
-[src/types.ts:108](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/types.ts#L108)
+[src/types.ts:108](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/types.ts#L108)
 
 ___
 
@@ -62,4 +62,4 @@ Returns a Float32Array with the size defined by `timeDomainSamplesCount`, with t
 
 #### Defined in
 
-[src/types.ts:119](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/types.ts#L119)
+[src/types.ts:119](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/types.ts#L119)

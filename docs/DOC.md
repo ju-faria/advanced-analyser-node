@@ -1,6 +1,6 @@
-advanced-analyser-node
+@audioui/advanced-analyser-node
 
-# advanced-analyser-node
+# @audioui/advanced-analyser-node
 
 ## Table of contents
 
@@ -41,13 +41,13 @@ advanced-analyser-node
 
 #### Defined in
 
-[src/types.ts:163](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/types.ts#L163)
+[src/types.ts:163](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/types.ts#L163)
 
 ## Functions
 
 ### createAdvancedAnalyserNode
 
-▸ **createAdvancedAnalyserNode**(`context`, `options`): `Promise`<[`AdvancedAnalyserNode`](classes/AdvancedAnalyserNode.md)\>
+▸ **createAdvancedAnalyserNode**(`context`, `options?`): `Promise`<[`AdvancedAnalyserNode`](classes/AdvancedAnalyserNode.md)\>
 
 #### Parameters
 
@@ -62,4 +62,4 @@ advanced-analyser-node
 
 #### Defined in
 
-[src/node/create-advanced-analyser.ts:10](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/create-advanced-analyser.ts#L10)
+[src/node/create-advanced-analyser.ts:9](https://github.com/ju-faria/advanced-analyser-node/blob/e49d444/src/node/create-advanced-analyser.ts#L9)

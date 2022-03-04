@@ -24,7 +24,6 @@ import {
  * The Audio Node class. Do not instantiate this class directly.
  * Use the `createAdvancedAnalyserNode` method instead.
  */
-
 export class AdvancedAnalyserNode extends AudioWorkletNode  {
   private _portMapId = 0;
 
