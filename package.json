@@ -1,6 +1,6 @@
 {
   "name": "@audioui/advanced-analyser-node",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Advanced Analyser Node aims to be an enhanced version of the native Analyser Node. It provides real-time frequency and time-domain analysis information.",
   "main": "./dist/bundle.js",
   "types": "./dist/src/index.d.ts",
