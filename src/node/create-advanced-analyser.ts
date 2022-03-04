@@ -7,7 +7,7 @@ import processor from 'processor';
 import { AdvancedAnalyserNodeProperties } from 'src/types';
 import { AdvancedAnalyserNode } from './advanced-analyser-node';
 
-export const createAdvancedAnalyserNode = async (context: BaseAudioContext, options: AdvancedAnalyserNodeProperties) => {
+export const createAdvancedAnalyserNode = async (context: BaseAudioContext, options: AdvancedAnalyserNodeProperties = {}) => {
   const processorUrl = 'data:application/javascript;base64,' + processor;
   await context.audioWorklet.addModule(processorUrl);
   const advancedAnalyser = new AdvancedAnalyserNode(context, {

@@ -25,7 +25,7 @@ Bartlett window
 
 #### Defined in
 
-[src/types.ts:160](https://github.com/ju-faria/advanced-analyser-node/blob/f2ab6f9/src/types.ts#L160)
+[src/types.ts:160](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/types.ts#L160)
 
 ___
 
@@ -37,7 +37,7 @@ ___
 
 #### Defined in
 
-[src/types.ts:136](https://github.com/ju-faria/advanced-analyser-node/blob/f2ab6f9/src/types.ts#L136)
+[src/types.ts:136](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/types.ts#L136)
 
 ___
 
@@ -49,7 +49,7 @@ ___
 
 #### Defined in
 
-[src/types.ts:148](https://github.com/ju-faria/advanced-analyser-node/blob/f2ab6f9/src/types.ts#L148)
+[src/types.ts:148](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/types.ts#L148)
 
 ___
 
@@ -61,7 +61,7 @@ ___
 
 #### Defined in
 
-[src/types.ts:144](https://github.com/ju-faria/advanced-analyser-node/blob/f2ab6f9/src/types.ts#L144)
+[src/types.ts:144](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/types.ts#L144)
 
 ___
 
@@ -73,7 +73,7 @@ ___
 
 #### Defined in
 
-[src/types.ts:156](https://github.com/ju-faria/advanced-analyser-node/blob/f2ab6f9/src/types.ts#L156)
+[src/types.ts:156](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/types.ts#L156)
 
 ___
 
@@ -85,7 +85,7 @@ ___
 
 #### Defined in
 
-[src/types.ts:152](https://github.com/ju-faria/advanced-analyser-node/blob/f2ab6f9/src/types.ts#L152)
+[src/types.ts:152](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/types.ts#L152)
 
 ___
 
@@ -97,7 +97,7 @@ ___
 
 #### Defined in
 
-[src/types.ts:140](https://github.com/ju-faria/advanced-analyser-node/blob/f2ab6f9/src/types.ts#L140)
+[src/types.ts:140](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/types.ts#L140)
 
 ___
 
@@ -109,4 +109,4 @@ Retangular window - Doesn't change the signal
 
 #### Defined in
 
-[src/types.ts:132](https://github.com/ju-faria/advanced-analyser-node/blob/f2ab6f9/src/types.ts#L132)
+[src/types.ts:132](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/types.ts#L132)

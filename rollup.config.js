@@ -1,6 +1,6 @@
 import typescript from 'rollup-plugin-typescript2';
-import resolve from 'rollup-plugin-node-resolve'
-import commonjs from 'rollup-plugin-commonjs';
+import resolve from '@rollup/plugin-node-resolve'
+import commonjs from '@rollup/plugin-commonjs';
 import { terser } from "rollup-plugin-terser";
 import del from 'rollup-plugin-delete'
 import { base64 } from "rollup-plugin-base64";
@@ -24,7 +24,6 @@ export default (commandLineArgs) => {
         file: 'dist/processor.worklet.js',
         format: "umd" ,
         name: 'advancedAnalyserProcessor',
-
       },
       plugins: [
         del({ targets: 'dist/*' }),

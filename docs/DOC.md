@@ -41,7 +41,7 @@ advanced-analyser-node
 
 #### Defined in
 
-[src/types.ts:163](https://github.com/ju-faria/advanced-analyser-node/blob/f2ab6f9/src/types.ts#L163)
+[src/types.ts:163](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/types.ts#L163)
 
 ## Functions
 
@@ -62,4 +62,4 @@ advanced-analyser-node
 
 #### Defined in
 
-src/node/create-advanced-analyser.ts:10
+[src/node/create-advanced-analyser.ts:10](https://github.com/ju-faria/advanced-analyser-node/blob/bc691c4/src/node/create-advanced-analyser.ts#L10)

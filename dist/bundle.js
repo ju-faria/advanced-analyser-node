@@ -430,7 +430,7 @@
   * The AudioWorkletProcessor is bundled first, and later imported here to be bundled as a base64 string,
   * to avoid needing to be manually imported and loaded by this module's consumers
   */
-  const createAdvancedAnalyserNode = async (context, options) => {
+  const createAdvancedAnalyserNode = async (context, options = {}) => {
       const processorUrl = 'data:application/javascript;base64,' + processor;
       await context.audioWorklet.addModule(processorUrl);
       const advancedAnalyser = new AdvancedAnalyserNode(context, {

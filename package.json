@@ -1,19 +1,20 @@
 {
   "name": "advanced-analyser-node",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Advanced Analyser Node aims to be an enhanced version of the native Analyser Node. It provides real-time frequency and time-domain analysis information.",
   "main": "./dist/bundle.js",
   "types": "./dist/src/index.d.ts",
   "files": [
     "dist"
   ],
-  "repository": { 
+  "repository": {
     "type": "git",
     "url": "https://github.com/julia-script/advanced-analyser-node"
   },
   "dependencies": {},
   "devDependencies": {
     "@microsoft/tsdoc-config": "^0.15.2",
+    "@rollup/plugin-commonjs": "^21.0.2",
     "@rollup/plugin-data-uri": "^0.1.1",
     "@rollup/plugin-eslint": "^8.0.1",
     "@rollup/plugin-node-resolve": "^13.1.3",
