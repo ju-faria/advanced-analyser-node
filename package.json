@@ -1,6 +1,6 @@
 {
   "name": "@soundui/advanced-analyser-node",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Advanced Analyser Node aims to be an enhanced version of the native Analyser Node. It provides real-time frequency and time-domain analysis information.",
   "main": "./dist/bundle.server.js",
   "browser": "./dist/bundle.browser.js",
