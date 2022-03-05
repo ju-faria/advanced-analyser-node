@@ -1,4 +1,4 @@
-[![view on npm](https://badgen.net/npm/v/@audioui/advanced-analyser-node)](https://www.npmjs.com/package/@audioui/advanced-analyser-node)
+[![view on npm](https://badgen.net/npm/v/@soundui/advanced-analyser-node)](https://www.npmjs.com/package/@soundui/advanced-analyser-node)
 
 # Advanced Analyser Node
 
@@ -9,17 +9,17 @@ Advanced Analyser Node aims to be an enhanced version of the native Analyser Nod
 
 Using npm:
 ```bash
-npm install --save-dev @audioui/advanced-analyser-node
+npm install --save-dev @soundui/advanced-analyser-node
 ```
 Using yarn:
 ```bash
-yarn add --dev @audioui/advanced-analyser-node
+yarn add --dev @soundui/advanced-analyser-node
 ```
 
 ## Usage
 
 ```javascript
-import { createAdvancedAnalyserNode } from '@audioui/advanced-analyser-node';
+import { createAdvancedAnalyserNode } from '@soundui/advanced-analyser-node';
 
 const init = async () => {
 
