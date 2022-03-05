@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { fill, noop } from 'lodash';
-import { MessageTypes, WindowFunctionTypes } from '../types';
-import { doNTimes } from '../../tests/utils';
-import 'jest-extended';
+import { fill, noop } from "lodash";
+import { MessageTypes, WindowFunctionTypes } from "../types";
+import { doNTimes } from "../../tests/utils";
+import "jest-extended";
 
 const createProcessor = ({
   fftSize,
@@ -53,9 +53,9 @@ const registerProcessorSpy = jest.fn();
 
 global.registerProcessor = (name, processorCtor) => registerProcessorSpy(name, processorCtor);
 
-import { MAX_FFT_SIZE, PROCESSOR_NAME } from '../constants';
-import { AdvancedAnalyserProcessor } from './';
-import { windowFunctionsMap } from './window-functions';
+import { MAX_FFT_SIZE, PROCESSOR_NAME } from "../constants";
+import { AdvancedAnalyserProcessor } from "./";
+import { windowFunctionsMap } from "./window-functions";
 
 const fftConstructorSpy = jest.fn();
 const fftRealTransformSpy = jest.fn();
@@ -72,19 +72,19 @@ function FFT(fftSize: number) {
   };
 }
 
-jest.mock('fft.js', () =>( {
+jest.mock("fft.js", () =>( {
   default: FFT,
   __esModule: true,
 }));
 
-jest.mock('../constants', () =>( {
+jest.mock("../constants", () =>( {
   //  Smaller max fft size to make it more manageable for testing purposes
   MAX_FFT_SIZE: 32,
-  PROCESSOR_NAME: 'processorName',
+  PROCESSOR_NAME: "processorName",
   __esModule: true,
 }));
 
-describe('AdvancedAnalyserProcessor', () => {
+describe("AdvancedAnalyserProcessor", () => {
 
   beforeAll(() => {
     fftConstructorSpy.mockClear();
@@ -92,7 +92,7 @@ describe('AdvancedAnalyserProcessor', () => {
     portPostMessageSpy.mockClear();
   });
 
-  it('sets up initial properties correctly', () => {
+  it("sets up initial properties correctly", () => {
     const fftSize = 16;
     const samplesBetweenTransforms = 8;
     const fftBinSize = fftSize / 2;
@@ -112,8 +112,8 @@ describe('AdvancedAnalyserProcessor', () => {
     
   });
 
-  describe('_onmessage', () => {
-    it('calls the expected methods according to the MessageType', () => {
+  describe("_onmessage", () => {
+    it("calls the expected methods according to the MessageType", () => {
       const fftSize = 16;
       const samplesBetweenTransforms = 8;
 
@@ -139,8 +139,8 @@ describe('AdvancedAnalyserProcessor', () => {
       });
     });
   });
-  describe('_shouldFlushFrequencies', () => {
-    it('returns true whenever _samplesCount is a multiple of samplesBetweenTransforms', () => {
+  describe("_shouldFlushFrequencies", () => {
+    it("returns true whenever _samplesCount is a multiple of samplesBetweenTransforms", () => {
       const fftSize = 16;
       const samplesBetweenTransforms = 8;
       const processor = createProcessor({
@@ -161,7 +161,7 @@ describe('AdvancedAnalyserProcessor', () => {
       expect(processor._shouldFlushFrequencies()).toBeFalsy();
     });
   });
-  it('only flushes if there are active event listeners', () => {
+  it("only flushes if there are active event listeners", () => {
     const fftSize = 16;
     const samplesBetweenTransforms = 8;
     const processor = createProcessor({
@@ -180,8 +180,8 @@ describe('AdvancedAnalyserProcessor', () => {
     processor._isListeningTo.bytefrequencydata = false;
     expect(processor._shouldFlushFrequencies()).toBeFalsy();
   });
-  describe('_appendToBuffer', () => {
-    it('adds values to the correct position in the buffer', () => {
+  describe("_appendToBuffer", () => {
+    it("adds values to the correct position in the buffer", () => {
       
       const fftSize = 4;
       const samplesBetweenTransforms = 2;
@@ -205,8 +205,8 @@ describe('AdvancedAnalyserProcessor', () => {
       expect(Array.from(processor._buffer)).toEqual(expectedResult);                
       
     });
-    describe('calls _flushFrequencies at the correct time', () => {
-      it('when samplesBetweenTransforms is multiple of fftSize', () => {
+    describe("calls _flushFrequencies at the correct time", () => {
+      it("when samplesBetweenTransforms is multiple of fftSize", () => {
         const fftSize = 4;
         const samplesBetweenTransforms = 2;
         const processor = createProcessor({
@@ -224,7 +224,7 @@ describe('AdvancedAnalyserProcessor', () => {
         processor._appendToBuffer(1);
         expect(processor._flushFrequencies).toHaveBeenCalledTimes(2);
       });
-      it('when samplesBetweenTransforms is NOT multiple of fftSize', () => {
+      it("when samplesBetweenTransforms is NOT multiple of fftSize", () => {
         const fftSize = 4;
         const samplesBetweenTransforms = 3;
         const processor = createProcessor({
@@ -246,7 +246,7 @@ describe('AdvancedAnalyserProcessor', () => {
         expect(processor._flushFrequencies).toHaveBeenCalledTimes(2);
       });
       
-      it('when samplesBetweenTransforms is bigger than the fftSize', () => {
+      it("when samplesBetweenTransforms is bigger than the fftSize", () => {
         const fftSize = 4;
         const samplesBetweenTransforms = 8;
         const processor = createProcessor({
@@ -266,7 +266,7 @@ describe('AdvancedAnalyserProcessor', () => {
         processor._appendToBuffer(1);
         expect(processor._flushFrequencies).toHaveBeenCalledTimes(2);
       });
-      it('when samplesBetweenTransforms is bigger than and is not multiple of the fftSize', () => {
+      it("when samplesBetweenTransforms is bigger than and is not multiple of the fftSize", () => {
         const fftSize = 4;
         const samplesBetweenTransforms = 7;
         const processor = createProcessor({
@@ -287,10 +287,10 @@ describe('AdvancedAnalyserProcessor', () => {
       });
     });
   });
-  describe('_updateFftInput', () => {
+  describe("_updateFftInput", () => {
 
 
-    it('cherry pick the correct values from _fftInput from _buffer', () => {
+    it("cherry pick the correct values from _fftInput from _buffer", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
@@ -320,7 +320,7 @@ describe('AdvancedAnalyserProcessor', () => {
     });
 
     
-    it('gets the correct values on the buffer overflows', () => {
+    it("gets the correct values on the buffer overflows", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       const processor = createProcessor({
@@ -347,8 +347,8 @@ describe('AdvancedAnalyserProcessor', () => {
       expect(Array.from(processor._fftInput)).toEqual(expectedResult);
     });
   });
-  describe('_convertFrequenciesToDb', () => {
-    it('transform _lastTransform values to db and populate the array passed as argument', () => {
+  describe("_convertFrequenciesToDb", () => {
+    it("transform _lastTransform values to db and populate the array passed as argument", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
@@ -371,7 +371,7 @@ describe('AdvancedAnalyserProcessor', () => {
     });
     
 
-    it('calls the correct windowing function', () => {
+    it("calls the correct windowing function", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
@@ -393,8 +393,8 @@ describe('AdvancedAnalyserProcessor', () => {
     });
   });
   
-  describe('_convertFrequenciesToByteData', () => {
-    it('converts _lastTransform to a Uint8Array with 0 being equal to _minDecibels and 255 being equal to _maxDecibels', () => {
+  describe("_convertFrequenciesToByteData", () => {
+    it("converts _lastTransform to a Uint8Array with 0 being equal to _minDecibels and 255 being equal to _maxDecibels", () => {
       const fftSize = 32;
       const samplesBetweenTransforms = 4;
       
@@ -430,8 +430,8 @@ describe('AdvancedAnalyserProcessor', () => {
       });
     });
   });
-  describe('_convertTimeDomainDataToByteData', () => {
-    it('converts time domain data to byte data', () => {
+  describe("_convertTimeDomainDataToByteData", () => {
+    it("converts time domain data to byte data", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
     
@@ -446,8 +446,8 @@ describe('AdvancedAnalyserProcessor', () => {
       expect(Array.from(destinationArray)).toEqual([128, 0, 255]);
     });
   });
-  describe('_doFft', () => {
-    it('calls _updateFftInput', () => {
+  describe("_doFft", () => {
+    it("calls _updateFftInput", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
     
@@ -485,7 +485,7 @@ describe('AdvancedAnalyserProcessor', () => {
 
       expect(new Array(...processor._lastTransform)).toEqual([ 0.0625, 0.0625, 0.0625, 0.0625 ]);
     });
-    it('calls realTransform', () => {
+    it("calls realTransform", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
     
@@ -497,7 +497,7 @@ describe('AdvancedAnalyserProcessor', () => {
       processor._doFft();
       expect(fftRealTransformSpy).toHaveBeenCalledWith(processor._fftOutput, processor._fftInput);
     });
-    it('normalizes and updates _lastTransform', () => {
+    it("normalizes and updates _lastTransform", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
     
@@ -517,7 +517,7 @@ describe('AdvancedAnalyserProcessor', () => {
       processor._doFft();
       expect(new Array(...processor._lastTransform)).toEqual([ 0.125, 0.125, 0.125, 0.125 ]);
     });
-    it('smoothes transforms over time based on the smoothingTimeConstant', () => {
+    it("smoothes transforms over time based on the smoothingTimeConstant", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
     
@@ -552,8 +552,8 @@ describe('AdvancedAnalyserProcessor', () => {
       expect(new Array(...processor._lastTransform)).toEqual([ 0.0625, 0.0625, 0.0625, 0.0625 ]);
     });
   });
-  describe('_flushFrequencies', () => {
-    it ('calls _updateFftInput', () => {
+  describe("_flushFrequencies", () => {
+    it ("calls _updateFftInput", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
@@ -568,7 +568,7 @@ describe('AdvancedAnalyserProcessor', () => {
 
     });
     
-    it('calls doFft', ()=> {
+    it("calls doFft", ()=> {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
@@ -582,7 +582,7 @@ describe('AdvancedAnalyserProcessor', () => {
       expect(processor._doFft).toHaveBeenCalled();
     });
 
-    it('calls _updateFftInput', ()=> {
+    it("calls _updateFftInput", ()=> {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
@@ -595,7 +595,7 @@ describe('AdvancedAnalyserProcessor', () => {
       processor._flushFrequencies();
       expect(processor._updateFftInput).toHaveBeenCalled();
     });
-    it('returns the last N samples', () => {
+    it("returns the last N samples", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
@@ -625,8 +625,8 @@ describe('AdvancedAnalyserProcessor', () => {
       expect(Array.from(new Uint8Array(byteCall.payload))).toEqual([97, 97, 97, 97]);
     });
   });
-  describe('_flushTimeDomainSamples', () => {
-    it('returns the last N samples', () => {
+  describe("_flushTimeDomainSamples", () => {
+    it("returns the last N samples", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
@@ -657,8 +657,8 @@ describe('AdvancedAnalyserProcessor', () => {
     });
   });
 
-  describe('_getFloatFrequencyData', () => {
-    it('calls methods in the correct order', () => {
+  describe("_getFloatFrequencyData", () => {
+    it("calls methods in the correct order", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
@@ -679,7 +679,7 @@ describe('AdvancedAnalyserProcessor', () => {
       expect(processor._convertFrequenciesToDb).toHaveBeenCalledBefore(processor._postMessage as jest.Mock<unknown, never>);
 
     });
-    it('posts an identified message with the fft data', () => {
+    it("posts an identified message with the fft data", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
@@ -705,8 +705,8 @@ describe('AdvancedAnalyserProcessor', () => {
     });
 
   });
-  describe('_getByteFrequencyData', () => {
-    it('calls methods in the correct order', () => {
+  describe("_getByteFrequencyData", () => {
+    it("calls methods in the correct order", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
     
@@ -729,7 +729,7 @@ describe('AdvancedAnalyserProcessor', () => {
       expect(processor._convertFrequenciesToByteData).toHaveBeenCalledBefore(processor._postMessage as jest.Mock<unknown, never>);
 
     });
-    it('posts an identified message with the fft data', () => {
+    it("posts an identified message with the fft data", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
@@ -756,8 +756,8 @@ describe('AdvancedAnalyserProcessor', () => {
       expect(Array.from(new Uint8Array(payload))).toEqual([145, 145, 145, 145]);
     });
   });
-  describe('_getFloatTimeDomainData', () => {
-    it('returns the last N samples', () => {
+  describe("_getFloatTimeDomainData", () => {
+    it("returns the last N samples", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
@@ -778,8 +778,8 @@ describe('AdvancedAnalyserProcessor', () => {
       expect(Array.from(new Float32Array(payload))).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
     });
   });
-  describe('_getByteTimeDomainData', () => {
-    it('returns the last N samples as bytes', () => {
+  describe("_getByteTimeDomainData", () => {
+    it("returns the last N samples as bytes", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
@@ -800,8 +800,8 @@ describe('AdvancedAnalyserProcessor', () => {
       expect(Array.from(new Uint8Array(payload))).toEqual([128, 129, 130, 131, 133, 134, 135, 136]);
     });
   });
-  describe('process', () => {
-    it('calls _appendToBuffer for every input sample', () => {
+  describe("process", () => {
+    it("calls _appendToBuffer for every input sample", () => {
       const fftSize = 8;
       const samplesBetweenTransforms = 4;
       
@@ -824,7 +824,7 @@ describe('AdvancedAnalyserProcessor', () => {
 
     });
   });
-  describe('registerProcessor', () => {
+  describe("registerProcessor", () => {
     expect(registerProcessorSpy).toHaveBeenCalledWith(PROCESSOR_NAME, AdvancedAnalyserProcessor);
   });
 });

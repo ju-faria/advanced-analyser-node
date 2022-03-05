@@ -4,8 +4,8 @@ import { noop } from "lodash";
 import { MessageTypes, WindowFunctionTypes } from "../types";
 import { MAX_FFT_SIZE, MIN_FFT_SIZE, PROCESSOR_NAME } from "../constants";
 
-jest.mock('processor', () => ({
-  default: 'abc',
+jest.mock("processor", () => ({
+  default: "abc",
   __esModule: true,
 }), { virtual: true });
 const portPostMessageSpy = jest.fn();
@@ -91,14 +91,14 @@ global.CustomEvent = class CustomEvent<T> {
 } as unknown as typeof CustomEvent;
 import { AdvancedAnalyserNode } from "./advanced-analyser-node";
 
-describe('AdvancedAnalyserNode', () => {
+describe("AdvancedAnalyserNode", () => {
   beforeEach(() => {
     portPostMessageSpy.mockClear();
     addEventListenerSpy.mockClear();
     removeEventListenerSpy.mockClear();
     dispatchEventSpy.mockClear();
   });
-  it('called \'super\' with the expected arguments', () => {
+  it("called 'super' with the expected arguments", () => {
     new AdvancedAnalyserNode(context, {
       fftSize: 1024,
       samplesBetweenTransforms: 2048,
@@ -121,13 +121,13 @@ describe('AdvancedAnalyserNode', () => {
       numberOfInputs: 1,
       numberOfOutputs: 1,
       channelCount: 1,
-      channelCountMode: 'max',
-      channelInterpretation: 'speakers'
+      channelCountMode: "max",
+      channelInterpretation: "speakers"
     });
   });
-  describe('validates inputs', () => {
-    describe('fftSize', () => {
-      it('throws if fftSize is not power of 2', () => {
+  describe("validates inputs", () => {
+    describe("fftSize", () => {
+      it("throws if fftSize is not power of 2", () => {
         expect(() => {
           new AdvancedAnalyserNode(context, {
             fftSize: 1024,
@@ -140,7 +140,7 @@ describe('AdvancedAnalyserNode', () => {
         }).toThrow();
       });
 
-      it('throws if fftSize is above MAX_FFT_SIZE', () => {
+      it("throws if fftSize is above MAX_FFT_SIZE", () => {
         expect(() => {
           new AdvancedAnalyserNode(context, {
             fftSize: MAX_FFT_SIZE,
@@ -152,7 +152,7 @@ describe('AdvancedAnalyserNode', () => {
           });
         }).toThrow();
       });
-      it('throws if fftSize is below MIN_FFT_SIZE', () => {
+      it("throws if fftSize is below MIN_FFT_SIZE", () => {
         expect(() => {
           new AdvancedAnalyserNode(context, {
             fftSize: MIN_FFT_SIZE,
@@ -165,8 +165,8 @@ describe('AdvancedAnalyserNode', () => {
         }).toThrow();
       });
     });
-    describe('samplesBetweenTransforms', () => {
-      it('throw if it\'s below or equal to zero', () => {
+    describe("samplesBetweenTransforms", () => {
+      it("throw if it's below or equal to zero", () => {
         expect(() => {
           new AdvancedAnalyserNode(context, {
             samplesBetweenTransforms: 1,
@@ -179,8 +179,8 @@ describe('AdvancedAnalyserNode', () => {
         }).toThrow();      
       });
     });
-    describe('timeDomainSamplesCount', () => {
-      it('throw if it\'s below or equal to zero', () => {
+    describe("timeDomainSamplesCount", () => {
+      it("throw if it's below or equal to zero", () => {
         expect(() => {
           new AdvancedAnalyserNode(context, {
             timeDomainSamplesCount: 1,
@@ -193,8 +193,8 @@ describe('AdvancedAnalyserNode', () => {
         }).toThrow();      
       });
     });
-    describe('windowFunction', () => {
-      it('throw if windowFunction is not valid', () => {
+    describe("windowFunction", () => {
+      it("throw if windowFunction is not valid", () => {
         expect(() => {
           new AdvancedAnalyserNode(context, {
             windowFunction: WindowFunctionTypes.bartlett
@@ -203,16 +203,16 @@ describe('AdvancedAnalyserNode', () => {
         expect(() => {
           new AdvancedAnalyserNode(context, {
             // @ts-ignore
-            windowFunction: 'invalid'
+            windowFunction: "invalid"
           });
         }).toThrow();      
       });
     });
   });
 
-  describe('updating properties', () => {
-    describe('fftSize', () => {
-      it('post a message to update processor properties', () =>  {
+  describe("updating properties", () => {
+    describe("fftSize", () => {
+      it("post a message to update processor properties", () =>  {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024
         });
@@ -228,7 +228,7 @@ describe('AdvancedAnalyserNode', () => {
           }
         });
       });
-      it('calls validation', () => {
+      it("calls validation", () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024
         });
@@ -238,8 +238,8 @@ describe('AdvancedAnalyserNode', () => {
       });
     });
     
-    describe('samplesBetweenTransforms', () => {
-      it('post a message to update processor properties', () =>  {
+    describe("samplesBetweenTransforms", () => {
+      it("post a message to update processor properties", () =>  {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024
         });
@@ -252,7 +252,7 @@ describe('AdvancedAnalyserNode', () => {
         });
         expect(node.samplesBetweenTransforms).toEqual(2048);
       });
-      it('returns fftSize if it is undefined', () =>  {
+      it("returns fftSize if it is undefined", () =>  {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024
         });
@@ -261,7 +261,7 @@ describe('AdvancedAnalyserNode', () => {
         node.fftSize = 2048;
         expect(node.samplesBetweenTransforms).toEqual(2048);
       });
-      it('calls validation', () => {
+      it("calls validation", () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024
         });
@@ -271,8 +271,8 @@ describe('AdvancedAnalyserNode', () => {
       });
     });
     
-    describe('timeDomainSamplesCount', () => {
-      it('post a message to update processor properties', () =>  {
+    describe("timeDomainSamplesCount", () => {
+      it("post a message to update processor properties", () =>  {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024
         });
@@ -285,7 +285,7 @@ describe('AdvancedAnalyserNode', () => {
         });
         expect(node.timeDomainSamplesCount).toEqual(2048);
       });
-      it('returns fftSize if it is undefined', () =>  {
+      it("returns fftSize if it is undefined", () =>  {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024
         });
@@ -294,7 +294,7 @@ describe('AdvancedAnalyserNode', () => {
         node.fftSize = 2048;
         expect(node.timeDomainSamplesCount).toEqual(2048);
       });
-      it('calls validation', () => {
+      it("calls validation", () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024
         });
@@ -304,8 +304,8 @@ describe('AdvancedAnalyserNode', () => {
       });
     });
 
-    describe('windowFunction', () => {
-      it('post a message to update processor properties', () =>  {
+    describe("windowFunction", () => {
+      it("post a message to update processor properties", () =>  {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024
         });
@@ -319,18 +319,18 @@ describe('AdvancedAnalyserNode', () => {
         expect(node.windowFunction).toEqual(WindowFunctionTypes.hann);
       });
 
-      it('calls validation', () => {
+      it("calls validation", () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024
         });
         expect(() => {
           //@ts-ignore
-          node.windowFunction = 'invalid';
+          node.windowFunction = "invalid";
         }).toThrowError();
       });
     });
-    describe('frequencyBinCount', () => {
-      it('returns half the fftSize', () => {
+    describe("frequencyBinCount", () => {
+      it("returns half the fftSize", () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024
         });
@@ -340,7 +340,7 @@ describe('AdvancedAnalyserNode', () => {
       });
     });
   });
-  it('assigns fftSize, samplesBetweenTransforms, timeDomainSamplesCount and windowFunction', () => {
+  it("assigns fftSize, samplesBetweenTransforms, timeDomainSamplesCount and windowFunction", () => {
     const node = new AdvancedAnalyserNode(context, {
       fftSize: 1024,
       samplesBetweenTransforms: 2048,
@@ -353,7 +353,7 @@ describe('AdvancedAnalyserNode', () => {
     expect(node.windowFunction).toEqual(WindowFunctionTypes.hamming);
   });
 
-  it('assigns fftSize, samplesBetweenTransforms, timeDomainSamplesCount and windowFunction', () => {
+  it("assigns fftSize, samplesBetweenTransforms, timeDomainSamplesCount and windowFunction", () => {
     const node = new AdvancedAnalyserNode(context, {
       fftSize: 1024,
       samplesBetweenTransforms: 2048,
@@ -366,14 +366,14 @@ describe('AdvancedAnalyserNode', () => {
     expect(node.windowFunction).toEqual(WindowFunctionTypes.hamming);
   });
 
-  describe('getFloatFrequencyData', () => {
-    it('returns a promise', () => {
+  describe("getFloatFrequencyData", () => {
+    it("returns a promise", () => {
       const node = new AdvancedAnalyserNode(context, {
         fftSize: 1024,
       });
       expect(node.getFloatFrequencyData()).toBeInstanceOf(Promise);
     });
-    it('posts message requesting float frequency data', () => {
+    it("posts message requesting float frequency data", () => {
       const node = new AdvancedAnalyserNode(context, {
         fftSize: 1024,
       });
@@ -386,7 +386,7 @@ describe('AdvancedAnalyserNode', () => {
       });
       
     });
-    it('resolves to float frequency data', async () => {
+    it("resolves to float frequency data", async () => {
       const node = new AdvancedAnalyserNode(context, {
         fftSize: 1024,
       });
@@ -406,14 +406,14 @@ describe('AdvancedAnalyserNode', () => {
   });
 
 
-  describe('getByteFrequencyData', () => {
-    it('returns a promise', () => {
+  describe("getByteFrequencyData", () => {
+    it("returns a promise", () => {
       const node = new AdvancedAnalyserNode(context, {
         fftSize: 1024,
       });
       expect(node.getByteFrequencyData()).toBeInstanceOf(Promise);
     });
-    it('posts message requesting float frequency data', () => {
+    it("posts message requesting float frequency data", () => {
       const node = new AdvancedAnalyserNode(context, {
         fftSize: 1024,
       });
@@ -426,7 +426,7 @@ describe('AdvancedAnalyserNode', () => {
       });
       
     });
-    it('resolves to float frequency data', async () => {
+    it("resolves to float frequency data", async () => {
       const node = new AdvancedAnalyserNode(context, {
         fftSize: 1024,
       });
@@ -445,14 +445,14 @@ describe('AdvancedAnalyserNode', () => {
     });
   });
 
-  describe('getFloatTimeDomainData', () => {
-    it('returns a promise', () => {
+  describe("getFloatTimeDomainData", () => {
+    it("returns a promise", () => {
       const node = new AdvancedAnalyserNode(context, {
         fftSize: 1024,
       });
       expect(node.getFloatTimeDomainData()).toBeInstanceOf(Promise);
     });
-    it('posts message requesting float frequency data', () => {
+    it("posts message requesting float frequency data", () => {
       const node = new AdvancedAnalyserNode(context, {
         fftSize: 1024,
       });
@@ -465,7 +465,7 @@ describe('AdvancedAnalyserNode', () => {
       });
       
     });
-    it('resolves to float frequency data', async () => {
+    it("resolves to float frequency data", async () => {
       const node = new AdvancedAnalyserNode(context, {
         fftSize: 1024,
       });
@@ -485,14 +485,14 @@ describe('AdvancedAnalyserNode', () => {
   });
 
 
-  describe('getByteTimeDomainData', () => {
-    it('returns a promise', () => {
+  describe("getByteTimeDomainData", () => {
+    it("returns a promise", () => {
       const node = new AdvancedAnalyserNode(context, {
         fftSize: 1024,
       });
       expect(node.getByteTimeDomainData()).toBeInstanceOf(Promise);
     });
-    it('posts message requesting float frequency data', () => {
+    it("posts message requesting float frequency data", () => {
       const node = new AdvancedAnalyserNode(context, {
         fftSize: 1024,
       });
@@ -505,7 +505,7 @@ describe('AdvancedAnalyserNode', () => {
       });
       
     });
-    it('resolves to float frequency data', async () => {
+    it("resolves to float frequency data", async () => {
       const node = new AdvancedAnalyserNode(context, {
         fftSize: 1024,
       });
@@ -524,28 +524,28 @@ describe('AdvancedAnalyserNode', () => {
     });
   });
 
-  describe('Events', () => {
-    describe('frequencydata', () => {
-      it(`register event`, () => {
+  describe("Events", () => {
+    describe("frequencydata", () => {
+      it("register event", () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024,
         });
 
 
-        node.addEventListener('frequencydata', ({ detail }) => {
+        node.addEventListener("frequencydata", ({ detail }) => {
           console.log(detail);
         });
 
-        expect(addEventListenerSpy.mock.calls[0][0]).toEqual('frequencydata');
+        expect(addEventListenerSpy.mock.calls[0][0]).toEqual("frequencydata");
 
       });
 
-      it(`dispatches event`, () => {
+      it("dispatches event", () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024,
         });
 
-        node.addEventListener('frequencydata', ({ detail }:CustomEvent<Float32Array>) => {
+        node.addEventListener("frequencydata", ({ detail }:CustomEvent<Float32Array>) => {
           console.log(detail);
         });
         const payload =  Float32Array.from([0, 1, 2, 3]);
@@ -560,39 +560,39 @@ describe('AdvancedAnalyserNode', () => {
         expect(event.detail).toEqual(payload);
       });
 
-      it('removes event listener', () => {
+      it("removes event listener", () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024,
         });
         const listener =  ({ detail }:CustomEvent<Float32Array>) => {
           console.log(detail);
         };
-        node.removeEventListener('frequencydata', listener);
-        expect(removeEventListenerSpy).toHaveBeenLastCalledWith('frequencydata', listener, undefined);
+        node.removeEventListener("frequencydata", listener);
+        expect(removeEventListenerSpy).toHaveBeenLastCalledWith("frequencydata", listener, undefined);
       });
     });
 
 
-    describe('bytefrequencydata', () => {
-      it('register event', () => {
+    describe("bytefrequencydata", () => {
+      it("register event", () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024,
         });
   
-        node.addEventListener('bytefrequencydata', ({ detail }:CustomEvent<Uint8Array>) => {
+        node.addEventListener("bytefrequencydata", ({ detail }:CustomEvent<Uint8Array>) => {
           console.log(detail);
         });
   
-        expect(addEventListenerSpy.mock.calls[0][0]).toEqual('bytefrequencydata');
+        expect(addEventListenerSpy.mock.calls[0][0]).toEqual("bytefrequencydata");
   
       });
   
-      it('dispatches event', () => {
+      it("dispatches event", () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024,
         });
 
-        node.addEventListener('bytefrequencydata', ({ detail }:CustomEvent<Uint8Array>) => {
+        node.addEventListener("bytefrequencydata", ({ detail }:CustomEvent<Uint8Array>) => {
           console.log(detail);
         });
         const payload = Uint8Array.from([0, 1, 2, 3]);
@@ -608,37 +608,37 @@ describe('AdvancedAnalyserNode', () => {
       });
 
 
-      it('removes event listener', () => {
+      it("removes event listener", () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024,
         });
         const listener =  ({ detail }:CustomEvent<Uint8Array>) => {
           console.log(detail);
         };
-        node.removeEventListener('bytefrequencydata', listener);
-        expect(removeEventListenerSpy).toHaveBeenLastCalledWith('bytefrequencydata', listener, undefined);
+        node.removeEventListener("bytefrequencydata", listener);
+        expect(removeEventListenerSpy).toHaveBeenLastCalledWith("bytefrequencydata", listener, undefined);
       });
     });
-    describe('timedomaindata', () => {
-      it(`register event`, () => {
+    describe("timedomaindata", () => {
+      it("register event", () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024,
         });
 
-        node.addEventListener('timedomaindata', ({ detail }:CustomEvent<Float32Array>) => {
+        node.addEventListener("timedomaindata", ({ detail }:CustomEvent<Float32Array>) => {
           console.log(detail);
         });
 
-        expect(addEventListenerSpy.mock.calls[0][0]).toEqual('timedomaindata');
+        expect(addEventListenerSpy.mock.calls[0][0]).toEqual("timedomaindata");
 
       });
 
-      it(`dispatches event`, () => {
+      it("dispatches event", () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024,
         });
 
-        node.addEventListener('timedomaindata', ({ detail }:CustomEvent<Float32Array>) => {
+        node.addEventListener("timedomaindata", ({ detail }:CustomEvent<Float32Array>) => {
           console.log(detail);
         });
 
@@ -654,41 +654,41 @@ describe('AdvancedAnalyserNode', () => {
         expect(event.detail).toEqual(payload);
       });
 
-      it('removes event listener', () => {
+      it("removes event listener", () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024,
         });
         const listener =  ({ detail }:CustomEvent<Float32Array>) => {
           console.log(detail);
         };
-        node.removeEventListener('timedomaindata', listener);
-        expect(removeEventListenerSpy).toHaveBeenLastCalledWith('timedomaindata', listener, undefined);
+        node.removeEventListener("timedomaindata", listener);
+        expect(removeEventListenerSpy).toHaveBeenLastCalledWith("timedomaindata", listener, undefined);
       });
     });
 
 
-    describe('bytetimedomaindata', () => {
-      it('register event', () => {
+    describe("bytetimedomaindata", () => {
+      it("register event", () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024,
         });
   
         addEventListenerSpy.mockClear();
-        node.addEventListener('bytetimedomaindata', ({ detail }) => {
+        node.addEventListener("bytetimedomaindata", ({ detail }) => {
           console.log(detail);
         });
   
-        expect(addEventListenerSpy.mock.calls[0][0]).toEqual('bytetimedomaindata');
+        expect(addEventListenerSpy.mock.calls[0][0]).toEqual("bytetimedomaindata");
   
       });
   
-      it('dispatches event', () => {
+      it("dispatches event", () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024,
         });
         dispatchEventSpy.mockClear();
         addEventListenerSpy.mockClear();
-        node.addEventListener('bytetimedomaindata', ({ detail }) => {
+        node.addEventListener("bytetimedomaindata", ({ detail }) => {
           console.log(detail);
         });
         const payload = Uint8Array.from([0, 1, 2, 3]);
@@ -703,15 +703,15 @@ describe('AdvancedAnalyserNode', () => {
         expect(event.detail).toEqual(payload);
       });
 
-      it('removes event listener', () => {
+      it("removes event listener", () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024,
         });
         const listener =  ({ detail }:CustomEvent<Uint8Array>) => {
           console.log(detail);
         };
-        node.removeEventListener('bytetimedomaindata', listener);
-        expect(removeEventListenerSpy).toHaveBeenLastCalledWith('bytetimedomaindata', listener, undefined);
+        node.removeEventListener("bytetimedomaindata", listener);
+        expect(removeEventListenerSpy).toHaveBeenLastCalledWith("bytetimedomaindata", listener, undefined);
       });
     });
   });

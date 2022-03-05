@@ -12,8 +12,8 @@ const testWindowResult = (windowFn: (samples: Float32Array, alpha?:number) => vo
 };
 
 
-describe('Window functions', () => {
-  it('rectangular', () => {
+describe("Window functions", () => {
+  it("rectangular", () => {
     // rectangular window function does essentially nothing to the signal
     [
       [1, 1 ,1 ,1],
@@ -23,7 +23,7 @@ describe('Window functions', () => {
     });
 
   });
-  it('hann', () => {
+  it("hann", () => {
     [
       [0, 0.25, 0.75, 1.0, 0.75, 0.25,0],
       [0, 0.1882550990706332, 0.6112604669781572, 0.9504844339512095, 0.9504844339512095, 0.6112604669781572, 0.1882550990706332, 0],
@@ -32,7 +32,7 @@ describe('Window functions', () => {
       testWindowResult(windowFunctionsMap.hann, expected);
     });
   });
-  it('hamming', () => {
+  it("hamming", () => {
     [
       [0.08, 0.2531946911449826, 0.6423596296199047, 0.9544456792351128, 0.9544456792351128,  0.6423596296199047, 0.2531946911449826, 0.08],
       [0.08, 0.3978521825875242, 0.9121478174124757, 0.9121478174124757, 0.3978521825875242, 0.08],
@@ -41,7 +41,7 @@ describe('Window functions', () => {
       testWindowResult(windowFunctionsMap.hamming, expected);
     });
   });
-  it('bartlett', () => {
+  it("bartlett", () => {
     [
       [0, 0.4, 0.8, 0.8, 0.4, 0],
       [0, 1/3, 2/3, 1.0, 2/3, 1/3, 0],
@@ -49,8 +49,8 @@ describe('Window functions', () => {
       testWindowResult(windowFunctionsMap.bartlett, expected);
     });
   });
-  notImplemented('tukey');
-  it('blackman', () => {
+  notImplemented("tukey");
+  it("blackman", () => {
     const array = Float32Array.from(fill(new Array(7), 1));
     windowFunctionsMap.blackman(array);
     [
@@ -62,7 +62,7 @@ describe('Window functions', () => {
     });
   });
 
-  it('nuttall', () => {
+  it("nuttall", () => {
     [
       [0,0.09866506606340408,0.7907549142837524,0.7907549142837524,0.09866506606340408,0]
     ].forEach((expected) => {
@@ -70,7 +70,7 @@ describe('Window functions', () => {
     });
   });
 
-  it('blackmanNuttall', () => {
+  it("blackmanNuttall", () => {
     [
       [0.00036279999767430127,0.11051525175571442,0.7982581257820129,0.7982581257820129,0.11051525175571442,0.00036279999767430127]
     ].forEach((expected) => {
@@ -78,7 +78,7 @@ describe('Window functions', () => {
     });
   });
 
-  it('blackmanHarris', () => {
+  it("blackmanHarris", () => {
     [
       [0.00005999999848427251,0.10301148891448975,0.7938334941864014,0.7938334941864014,0.10301148891448975,0.00005999999848427251]
     ].forEach((expected) => {

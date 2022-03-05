@@ -1,7 +1,7 @@
-import FFT from 'fft.js';
-import { MAX_FFT_SIZE, PROCESSOR_NAME } from '../constants';
-import { EventListenerTypes, Message, MessageTypes, WindowFunctionTypes } from '../types';
-import { windowFunctionsMap } from './window-functions';
+import FFT from "fft.js";
+import { MAX_FFT_SIZE, PROCESSOR_NAME } from "../constants";
+import { EventListenerTypes, Message, MessageTypes, WindowFunctionTypes } from "../types";
+import { windowFunctionsMap } from "./window-functions";
 
 const linearToDb = (x: number) => {
   return 20.0 * Math.log10(x);
@@ -159,13 +159,13 @@ export class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
           maxDecibels,
           smoothingTimeConstant,
         } = message.payload;
-        if (typeof fftSize !== 'undefined') this._fftSize = fftSize;
-        if (typeof samplesBetweenTransforms !== 'undefined') this._samplesBetweenTransforms = samplesBetweenTransforms;
-        if (typeof timeDomainSamplesCount !== 'undefined') this._timeDomainSamplesCount = timeDomainSamplesCount;
-        if (typeof windowFunction !== 'undefined') this._windowFunction = windowFunction;
-        if (typeof minDecibels !== 'undefined') this._minDecibels = minDecibels;
-        if (typeof maxDecibels !== 'undefined') this._maxDecibels = maxDecibels;
-        if (typeof smoothingTimeConstant !== 'undefined') this._smoothingTimeConstant = smoothingTimeConstant;
+        if (typeof fftSize !== "undefined") this._fftSize = fftSize;
+        if (typeof samplesBetweenTransforms !== "undefined") this._samplesBetweenTransforms = samplesBetweenTransforms;
+        if (typeof timeDomainSamplesCount !== "undefined") this._timeDomainSamplesCount = timeDomainSamplesCount;
+        if (typeof windowFunction !== "undefined") this._windowFunction = windowFunction;
+        if (typeof minDecibels !== "undefined") this._minDecibels = minDecibels;
+        if (typeof maxDecibels !== "undefined") this._maxDecibels = maxDecibels;
+        if (typeof smoothingTimeConstant !== "undefined") this._smoothingTimeConstant = smoothingTimeConstant;
         break;
       }
     }

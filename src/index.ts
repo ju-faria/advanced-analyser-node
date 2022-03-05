@@ -1,6 +1,6 @@
-export * from './node';
+export * from "./node";
 export {
   WindowFunctionTypes,
   AdvancedAnalyserNodeProperties,
   EventListenerTypes,
-} from './types';
+} from "./types";
