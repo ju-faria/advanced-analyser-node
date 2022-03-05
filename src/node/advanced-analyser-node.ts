@@ -232,8 +232,8 @@ export class AdvancedAnalyserNode extends AudioWorkletNode  {
     });
     
     this.fftSize = fftSize;
-    if (typeof samplesBetweenTransforms !== 'undefined') this.samplesBetweenTransforms = samplesBetweenTransforms;
-    if (typeof timeDomainSamplesCount !== 'undefined') this.timeDomainSamplesCount = timeDomainSamplesCount;
+    if (typeof samplesBetweenTransforms !== "undefined") this.samplesBetweenTransforms = samplesBetweenTransforms;
+    if (typeof timeDomainSamplesCount !== "undefined") this.timeDomainSamplesCount = timeDomainSamplesCount;
     this.windowFunction = windowFunction;
     this.minDecibels = minDecibels;
     this.maxDecibels = maxDecibels;
@@ -257,19 +257,19 @@ export class AdvancedAnalyserNode extends AudioWorkletNode  {
   private _onmessage(event: Message) {
     switch(event.type) {
       case MessageTypes.frequencyDataAvailable: {
-        this.dispatchEvent(new CustomEvent<Float32Array>('frequencydata', { detail: new Float32Array(event.payload) }));
+        this.dispatchEvent(new CustomEvent<Float32Array>("frequencydata", { detail: new Float32Array(event.payload) }));
         break;
       }
       case MessageTypes.byteFrequencyDataAvailable: {
-        this.dispatchEvent(new CustomEvent<Uint8Array>('bytefrequencydata', { detail: new Uint8Array(event.payload) }));
+        this.dispatchEvent(new CustomEvent<Uint8Array>("bytefrequencydata", { detail: new Uint8Array(event.payload) }));
         break;
       }
       case MessageTypes.timeDomainDataAvailable: {
-        this.dispatchEvent(new CustomEvent<Float32Array>('timedomaindata', { detail: new Float32Array(event.payload) }));
+        this.dispatchEvent(new CustomEvent<Float32Array>("timedomaindata", { detail: new Float32Array(event.payload) }));
         break;
       }
       case MessageTypes.byteTimeDomainDataAvailable: {
-        this.dispatchEvent(new CustomEvent<Uint8Array>('bytetimedomaindata', { detail: new Uint8Array(event.payload) }));
+        this.dispatchEvent(new CustomEvent<Uint8Array>("bytetimedomaindata", { detail: new Uint8Array(event.payload) }));
         break;
       }
       case MessageTypes.requestedFloatFrequencyDataAvailable:
@@ -355,37 +355,37 @@ export class AdvancedAnalyserNode extends AudioWorkletNode  {
    * Listens to Time-domain data events. The interval between calls is defined the `timeDomainSamplesCount` property.
    * Returns a Uint8Array with the size defined by `timeDomainSamplesCount`, with the current time-domain data.
    */
-  addEventListener(type: 'bytetimedomaindata' , listener: Listener<Uint8Array>): void;
+  addEventListener(type: "bytetimedomaindata" , listener: Listener<Uint8Array>): void;
 
   /**
    * Listens to Frequency data events. The interval between calls is defined by the `samplesBetweenTransforms` property.
    * The data is represented in bytes
    * Returns a Uint8Array with half the `fftSize`, with the current frequency data.
    */
-  addEventListener(type: 'bytefrequencydata' , listener: Listener<Uint8Array>): void;
+  addEventListener(type: "bytefrequencydata" , listener: Listener<Uint8Array>): void;
 
   /**
    * Listens to Time-domain data events. The interval between calls is defined the `timeDomainSamplesCount` property.
    * Returns a Float32Array with the size defined by `timeDomainSamplesCount`, with the current time-domain data.
    */
-  addEventListener(type: 'timedomaindata', listener: Listener<Float32Array>): void;
+  addEventListener(type: "timedomaindata", listener: Listener<Float32Array>): void;
 
   /**
    * Listens to Frequency data events. The interval between calls is defined by the `samplesBetweenTransforms` property.
    * Returns a Float32Array with half the `fftSize`, with the current frequency data.
    */
-  addEventListener(type: 'frequencydata', listener: Listener<Float32Array>): void;
+  addEventListener(type: "frequencydata", listener: Listener<Float32Array>): void;
   
   addEventListener(type: "processorerror", listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void ;
   
   addEventListener(type: "processorerror" | EventListenerTypes, listener: EventListenerOrEventListenerObject | Listener<Float32Array | Uint8Array>, options?: boolean | AddEventListenerOptions): void { 
     super.addEventListener(type, listener as EventListenerOrEventListenerObject, options);
-    if (type !== 'processorerror') this._pushEventListener(type, listener);
+    if (type !== "processorerror") this._pushEventListener(type, listener);
   }
 
   removeEventListener(type:  "processorerror" | EventListenerTypes, listener: EventListenerOrEventListenerObject | Listener<ArrayBuffer>, options?: boolean | EventListenerOptions): void {
     super.removeEventListener(type, listener as EventListenerOrEventListenerObject, options);
-    if (type !== 'processorerror') this._removeEventListener(type, listener);
+    if (type !== "processorerror") this._removeEventListener(type, listener);
   }
 }
 

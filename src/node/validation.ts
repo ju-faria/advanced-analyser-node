@@ -44,7 +44,7 @@ export const validateWindowFunction = (value: WindowFunctionTypes) => {
       `${value} is not a valid windowFunction. Possible window functions are ${
         Object.values(WindowFunctionTypes)
           .map((windowFunction) => `'${windowFunction}'`)
-          .join(', ')}`);
+          .join(", ")}`);
   }
 };
 
@@ -61,7 +61,7 @@ export const validateMaxAndMinDecibels = (minDecibels: number, maxDecibels: numb
 export const validateSmoothingTimeConstant = (value: number) => {
   if (value < 0 && value > 1) {
     throw new Error(
-      'smoothingTimeConstant value must be between 0 and 1'
+      "smoothingTimeConstant value must be between 0 and 1"
     );
   }
 };

@@ -15,7 +15,8 @@
     "semi": ["error", "always"],
     "lines-between-class-members": ["error", "always"],
     "tsdoc/syntax": "warn",
-    "no-constant-condition": "off"
+    "no-constant-condition": "off",
+    "quotes": ["warn", "double"]
   },
   "ignorePatterns": [
     "rollup.config.js",

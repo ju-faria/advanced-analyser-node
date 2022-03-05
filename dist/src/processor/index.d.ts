@@ -1,5 +1,5 @@
-import FFT from 'fft.js';
-import { EventListenerTypes, Message, WindowFunctionTypes } from '../types';
+import FFT from "fft.js";
+import { EventListenerTypes, Message, WindowFunctionTypes } from "../types";
 export declare class AdvancedAnalyserProcessor extends AudioWorkletProcessor {
     _samplesCount: number;
     _count: number;

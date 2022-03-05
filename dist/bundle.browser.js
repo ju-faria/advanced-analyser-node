@@ -13,7 +13,7 @@
   */
   const createAdvancedAnalyserNode = async (context, options = {}) => {
       {
-          const processorUrl = 'data:application/javascript;base64,' + processor;
+          const processorUrl = "data:application/javascript;base64," + processor;
           await context.audioWorklet.addModule(processorUrl);
           const AdvancedAnalyserNode = (await Promise.resolve().then(function () { return advancedAnalyserNode; })).AdvancedAnalyserNode;
           const advancedAnalyser = new AdvancedAnalyserNode(context, {
@@ -91,7 +91,7 @@
 
   const MAX_FFT_SIZE = 32768;
   const MIN_FFT_SIZE = 32;
-  const PROCESSOR_NAME = 'AdvancedAnalyserProcessor';
+  const PROCESSOR_NAME = "AdvancedAnalyserProcessor";
 
   const validateFftSize = (value) => {
       if (value && (value & (value - 1)) !== 0) {
@@ -127,7 +127,7 @@
       if (!Object.values(WindowFunctionTypes).includes(value)) {
           throw new Error(`${value} is not a valid windowFunction. Possible window functions are ${Object.values(WindowFunctionTypes)
             .map((windowFunction) => `'${windowFunction}'`)
-            .join(', ')}`);
+            .join(", ")}`);
       }
   };
   const validateMaxAndMinDecibels = (minDecibels, maxDecibels) => {
@@ -137,7 +137,7 @@
   };
   const validateSmoothingTimeConstant = (value) => {
       if (value < 0 && value > 1) {
-          throw new Error('smoothingTimeConstant value must be between 0 and 1');
+          throw new Error("smoothingTimeConstant value must be between 0 and 1");
       }
   };
 
@@ -306,9 +306,9 @@
               channelInterpretation: "speakers",
           });
           this.fftSize = fftSize;
-          if (typeof samplesBetweenTransforms !== 'undefined')
+          if (typeof samplesBetweenTransforms !== "undefined")
               this.samplesBetweenTransforms = samplesBetweenTransforms;
-          if (typeof timeDomainSamplesCount !== 'undefined')
+          if (typeof timeDomainSamplesCount !== "undefined")
               this.timeDomainSamplesCount = timeDomainSamplesCount;
           this.windowFunction = windowFunction;
           this.minDecibels = minDecibels;
@@ -328,19 +328,19 @@
       _onmessage(event) {
           switch (event.type) {
               case MessageTypes.frequencyDataAvailable: {
-                  this.dispatchEvent(new CustomEvent('frequencydata', { detail: new Float32Array(event.payload) }));
+                  this.dispatchEvent(new CustomEvent("frequencydata", { detail: new Float32Array(event.payload) }));
                   break;
               }
               case MessageTypes.byteFrequencyDataAvailable: {
-                  this.dispatchEvent(new CustomEvent('bytefrequencydata', { detail: new Uint8Array(event.payload) }));
+                  this.dispatchEvent(new CustomEvent("bytefrequencydata", { detail: new Uint8Array(event.payload) }));
                   break;
               }
               case MessageTypes.timeDomainDataAvailable: {
-                  this.dispatchEvent(new CustomEvent('timedomaindata', { detail: new Float32Array(event.payload) }));
+                  this.dispatchEvent(new CustomEvent("timedomaindata", { detail: new Float32Array(event.payload) }));
                   break;
               }
               case MessageTypes.byteTimeDomainDataAvailable: {
-                  this.dispatchEvent(new CustomEvent('bytetimedomaindata', { detail: new Uint8Array(event.payload) }));
+                  this.dispatchEvent(new CustomEvent("bytetimedomaindata", { detail: new Uint8Array(event.payload) }));
                   break;
               }
               case MessageTypes.requestedFloatFrequencyDataAvailable:
@@ -408,12 +408,12 @@
       }
       addEventListener(type, listener, options) {
           super.addEventListener(type, listener, options);
-          if (type !== 'processorerror')
+          if (type !== "processorerror")
               this._pushEventListener(type, listener);
       }
       removeEventListener(type, listener, options) {
           super.removeEventListener(type, listener, options);
-          if (type !== 'processorerror')
+          if (type !== "processorerror")
               this._removeEventListener(type, listener);
       }
   }

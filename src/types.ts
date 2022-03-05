@@ -91,49 +91,49 @@ export type Message =
 
 
 export enum ProcessorParameters {
-  fftSize = 'fftSize',
-  samplesBetweenTransforms = 'samplesBetweenTransforms',
-  timeDomainSamplesCount = 'timeDomainSamplesCount',
-  windowFunction = 'windowFunction',
-  minDecibels = 'minDecibels',
-  maxDecibels = 'maxDecibels',
-  smoothingTimeConstant = 'smoothingTimeConstant',
+  fftSize = "fftSize",
+  samplesBetweenTransforms = "samplesBetweenTransforms",
+  timeDomainSamplesCount = "timeDomainSamplesCount",
+  windowFunction = "windowFunction",
+  minDecibels = "minDecibels",
+  maxDecibels = "maxDecibels",
+  smoothingTimeConstant = "smoothingTimeConstant",
 }  
-export type EventListenerTypes = 'frequencydata' | 'bytefrequencydata' | 'timedomaindata' | 'bytetimedomaindata'
+export type EventListenerTypes = "frequencydata" | "bytefrequencydata" | "timedomaindata" | "bytetimedomaindata"
 
 export enum WindowFunctionTypes {
   /**
    * Retangular window - Doesn't change the signal
    */
-  rectangular = 'rectangular',
+  rectangular = "rectangular",
   /**
    * [Blackmann window](https://en.wikipedia.org/wiki/Window_function#Blackman_window)
    */
-  blackman = 'blackman',
+  blackman = "blackman",
   /**
    * [Nuttall window](https://en.wikipedia.org/wiki/Window_function#Nuttall_window,_continuous_first_derivative)
    */
-  nuttall = 'nuttall',
+  nuttall = "nuttall",
   /**
    * [Blackman-Nutall window](https://en.wikipedia.org/wiki/Window_function#Blackman%E2%80%93Nuttall_window)
    */
-  blackmanNuttall = 'blackman-nuttall',
+  blackmanNuttall = "blackman-nuttall",
   /**
    * [Blackman-Harris window](https://en.wikipedia.org/wiki/Window_function#Blackman%E2%80%93Harris_window)
    */
-  blackmanHarris = 'blackman-harris',
+  blackmanHarris = "blackman-harris",
   /**
    * [Hann window](https://en.wikipedia.org/wiki/Window_function#Hann_and_Hamming_windows)
    */
-  hann = 'hann',
+  hann = "hann",
   /**
    * [Hamming window](https://en.wikipedia.org/wiki/Window_function#Hann_and_Hamming_windows)
    */
-  hamming = 'hamming',
+  hamming = "hamming",
   /**
    * Bartlett window
    */
-  bartlett = 'bartlett',
+  bartlett = "bartlett",
 }
 
 export type AdvancedAnalyserNodeProperties = {
