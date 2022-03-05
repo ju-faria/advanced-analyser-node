@@ -187,11 +187,11 @@ export class AdvancedAnalyserNode extends AudioWorkletNode  {
   }
 
 
-  private _eventListenersCount:Record<EventListenerTypes, (EventListenerOrEventListenerObject| Listener<ArrayBuffer>)[]> = {
-    [EventListenerTypes.frequencydata]: [],
-    [EventListenerTypes.bytefrequencydata]: [],
-    [EventListenerTypes.timedomaindata]: [],
-    [EventListenerTypes.bytetimedomaindata]: [],
+  private _eventListenersCount:Record<EventListenerTypes, (EventListenerOrEventListenerObject|Listener<ArrayBuffer>)[]> = {
+    frequencydata: [],
+    bytefrequencydata: [],
+    timedomaindata: [],
+    bytetimedomaindata: []
   };
   
 
@@ -257,19 +257,19 @@ export class AdvancedAnalyserNode extends AudioWorkletNode  {
   private _onmessage(event: Message) {
     switch(event.type) {
       case MessageTypes.frequencyDataAvailable: {
-        this.dispatchEvent(new CustomEvent<Float32Array>(EventListenerTypes.frequencydata, { detail: new Float32Array(event.payload) }));
+        this.dispatchEvent(new CustomEvent<Float32Array>('frequencydata', { detail: new Float32Array(event.payload) }));
         break;
       }
       case MessageTypes.byteFrequencyDataAvailable: {
-        this.dispatchEvent(new CustomEvent<Uint8Array>(EventListenerTypes.bytefrequencydata, { detail: new Uint8Array(event.payload) }));
+        this.dispatchEvent(new CustomEvent<Uint8Array>('bytefrequencydata', { detail: new Uint8Array(event.payload) }));
         break;
       }
       case MessageTypes.timeDomainDataAvailable: {
-        this.dispatchEvent(new CustomEvent<Float32Array>(EventListenerTypes.timedomaindata, { detail: new Float32Array(event.payload) }));
+        this.dispatchEvent(new CustomEvent<Float32Array>('timedomaindata', { detail: new Float32Array(event.payload) }));
         break;
       }
       case MessageTypes.byteTimeDomainDataAvailable: {
-        this.dispatchEvent(new CustomEvent<Uint8Array>(EventListenerTypes.bytetimedomaindata, { detail: new Uint8Array(event.payload) }));
+        this.dispatchEvent(new CustomEvent<Uint8Array>('bytetimedomaindata', { detail: new Uint8Array(event.payload) }));
         break;
       }
       case MessageTypes.requestedFloatFrequencyDataAvailable:
@@ -350,11 +350,31 @@ export class AdvancedAnalyserNode extends AudioWorkletNode  {
       });
     }
   }
+  
+  /**
+   * Listens to Time-domain data events. The interval between calls is defined the `timeDomainSamplesCount` property.
+   * Returns a Uint8Array with the size defined by `timeDomainSamplesCount`, with the current time-domain data.
+   */
+  addEventListener(type: 'bytetimedomaindata' , listener: Listener<Uint8Array>): void;
 
-  addEventListener(type: EventListenerTypes.bytefrequencydata | EventListenerTypes.bytetimedomaindata, listener: Listener<Uint8Array>): void;
+  /**
+   * Listens to Frequency data events. The interval between calls is defined by the `samplesBetweenTransforms` property.
+   * The data is represented in bytes
+   * Returns a Uint8Array with half the `fftSize`, with the current frequency data.
+   */
+  addEventListener(type: 'bytefrequencydata' , listener: Listener<Uint8Array>): void;
 
-  addEventListener(type: EventListenerTypes.frequencydata | EventListenerTypes.timedomaindata, listener: Listener<Float32Array>): void;
+  /**
+   * Listens to Time-domain data events. The interval between calls is defined the `timeDomainSamplesCount` property.
+   * Returns a Float32Array with the size defined by `timeDomainSamplesCount`, with the current time-domain data.
+   */
+  addEventListener(type: 'timedomaindata', listener: Listener<Float32Array>): void;
 
+  /**
+   * Listens to Frequency data events. The interval between calls is defined by the `samplesBetweenTransforms` property.
+   * Returns a Float32Array with half the `fftSize`, with the current frequency data.
+   */
+  addEventListener(type: 'frequencydata', listener: Listener<Float32Array>): void;
   
   addEventListener(type: "processorerror", listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void ;
   

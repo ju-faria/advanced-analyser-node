@@ -99,31 +99,7 @@ export enum ProcessorParameters {
   maxDecibels = 'maxDecibels',
   smoothingTimeConstant = 'smoothingTimeConstant',
 }  
-
-export enum EventListenerTypes {
-  /**
-   * Listens to Frequency data events. The interval between calls is defined by the `samplesBetweenTransforms` property.
-   * Returns a Float32Array with half the `fftSize`, with the current frequency data.
-   */
-  frequencydata = 'frequencydata',
-  /**
-   * Listens to Frequency data events. The interval between calls is defined by the `samplesBetweenTransforms` property.
-   * The data is represented in bytes
-   * Returns a Uint8Array with half the `fftSize`, with the current frequency data.
-   */
-  bytefrequencydata = 'bytefrequencydata',
-  /**
-   * Listens to Time-domain data events. The interval between calls is defined the `timeDomainSamplesCount` property.
-   * Returns a Float32Array with the size defined by `timeDomainSamplesCount`, with the current time-domain data.
-   */
-  timedomaindata = 'timedomaindata',
-  /**
-   * Listens to Time-domain data events. The interval between calls is defined the `timeDomainSamplesCount` property.
-   * Returns a Uint8Array with the size defined by `timeDomainSamplesCount`, with the current time-domain data.
-   */
-  bytetimedomaindata = 'bytetimedomaindata',
-}
-
+export type EventListenerTypes = 'frequencydata' | 'bytefrequencydata' | 'timedomaindata' | 'bytetimedomaindata'
 
 export enum WindowFunctionTypes {
   /**

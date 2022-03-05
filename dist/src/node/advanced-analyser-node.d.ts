@@ -85,8 +85,27 @@ export declare class AdvancedAnalyserNode extends AudioWorkletNode {
     getByteTimeDomainData(): Promise<Uint8Array>;
     private _pushEventListener;
     private _removeEventListener;
-    addEventListener(type: EventListenerTypes.bytefrequencydata | EventListenerTypes.bytetimedomaindata, listener: Listener<Uint8Array>): void;
-    addEventListener(type: EventListenerTypes.frequencydata | EventListenerTypes.timedomaindata, listener: Listener<Float32Array>): void;
+    /**
+     * Listens to Time-domain data events. The interval between calls is defined the `timeDomainSamplesCount` property.
+     * Returns a Uint8Array with the size defined by `timeDomainSamplesCount`, with the current time-domain data.
+     */
+    addEventListener(type: "bytetimedomaindata", listener: Listener<Uint8Array>): void;
+    /**
+     * Listens to Frequency data events. The interval between calls is defined by the `samplesBetweenTransforms` property.
+     * The data is represented in bytes
+     * Returns a Uint8Array with half the `fftSize`, with the current frequency data.
+     */
+    addEventListener(type: "bytefrequencydata", listener: Listener<Uint8Array>): void;
+    /**
+     * Listens to Time-domain data events. The interval between calls is defined the `timeDomainSamplesCount` property.
+     * Returns a Float32Array with the size defined by `timeDomainSamplesCount`, with the current time-domain data.
+     */
+    addEventListener(type: "timedomaindata", listener: Listener<Float32Array>): void;
+    /**
+     * Listens to Frequency data events. The interval between calls is defined by the `samplesBetweenTransforms` property.
+     * Returns a Float32Array with half the `fftSize`, with the current frequency data.
+     */
+    addEventListener(type: "frequencydata", listener: Listener<Float32Array>): void;
     addEventListener(type: "processorerror", listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
     removeEventListener(type: "processorerror" | EventListenerTypes, listener: EventListenerOrEventListenerObject | Listener<ArrayBuffer>, options?: boolean | EventListenerOptions): void;
 }

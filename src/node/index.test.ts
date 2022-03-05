@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 
 import { noop } from "lodash";
-import { EventListenerTypes, MessageTypes, WindowFunctionTypes } from "../types";
+import { MessageTypes, WindowFunctionTypes } from "../types";
 import { MAX_FFT_SIZE, MIN_FFT_SIZE, PROCESSOR_NAME } from "../constants";
 
 jest.mock('processor', () => ({
@@ -525,18 +525,18 @@ describe('AdvancedAnalyserNode', () => {
   });
 
   describe('Events', () => {
-    describe(EventListenerTypes.frequencydata, () => {
+    describe('frequencydata', () => {
       it(`register event`, () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024,
         });
 
 
-        node.addEventListener(EventListenerTypes.frequencydata, ({ detail }:CustomEvent<Float32Array>) => {
+        node.addEventListener('frequencydata', ({ detail }) => {
           console.log(detail);
         });
 
-        expect(addEventListenerSpy.mock.calls[0][0]).toEqual(EventListenerTypes.frequencydata);
+        expect(addEventListenerSpy.mock.calls[0][0]).toEqual('frequencydata');
 
       });
 
@@ -545,7 +545,7 @@ describe('AdvancedAnalyserNode', () => {
           fftSize: 1024,
         });
 
-        node.addEventListener(EventListenerTypes.frequencydata, ({ detail }:CustomEvent<Float32Array>) => {
+        node.addEventListener('frequencydata', ({ detail }:CustomEvent<Float32Array>) => {
           console.log(detail);
         });
         const payload =  Float32Array.from([0, 1, 2, 3]);
@@ -567,23 +567,23 @@ describe('AdvancedAnalyserNode', () => {
         const listener =  ({ detail }:CustomEvent<Float32Array>) => {
           console.log(detail);
         };
-        node.removeEventListener(EventListenerTypes.frequencydata, listener);
-        expect(removeEventListenerSpy).toHaveBeenLastCalledWith(EventListenerTypes.frequencydata, listener, undefined);
+        node.removeEventListener('frequencydata', listener);
+        expect(removeEventListenerSpy).toHaveBeenLastCalledWith('frequencydata', listener, undefined);
       });
     });
 
 
-    describe(EventListenerTypes.bytefrequencydata, () => {
+    describe('bytefrequencydata', () => {
       it('register event', () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024,
         });
   
-        node.addEventListener(EventListenerTypes.bytefrequencydata, ({ detail }:CustomEvent<Uint8Array>) => {
+        node.addEventListener('bytefrequencydata', ({ detail }:CustomEvent<Uint8Array>) => {
           console.log(detail);
         });
   
-        expect(addEventListenerSpy.mock.calls[0][0]).toEqual(EventListenerTypes.bytefrequencydata);
+        expect(addEventListenerSpy.mock.calls[0][0]).toEqual('bytefrequencydata');
   
       });
   
@@ -592,7 +592,7 @@ describe('AdvancedAnalyserNode', () => {
           fftSize: 1024,
         });
 
-        node.addEventListener(EventListenerTypes.bytefrequencydata, ({ detail }:CustomEvent<Uint8Array>) => {
+        node.addEventListener('bytefrequencydata', ({ detail }:CustomEvent<Uint8Array>) => {
           console.log(detail);
         });
         const payload = Uint8Array.from([0, 1, 2, 3]);
@@ -615,21 +615,21 @@ describe('AdvancedAnalyserNode', () => {
         const listener =  ({ detail }:CustomEvent<Uint8Array>) => {
           console.log(detail);
         };
-        node.removeEventListener(EventListenerTypes.bytefrequencydata, listener);
-        expect(removeEventListenerSpy).toHaveBeenLastCalledWith(EventListenerTypes.bytefrequencydata, listener, undefined);
+        node.removeEventListener('bytefrequencydata', listener);
+        expect(removeEventListenerSpy).toHaveBeenLastCalledWith('bytefrequencydata', listener, undefined);
       });
     });
-    describe(EventListenerTypes.timedomaindata, () => {
+    describe('timedomaindata', () => {
       it(`register event`, () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024,
         });
 
-        node.addEventListener(EventListenerTypes.timedomaindata, ({ detail }:CustomEvent<Float32Array>) => {
+        node.addEventListener('timedomaindata', ({ detail }:CustomEvent<Float32Array>) => {
           console.log(detail);
         });
 
-        expect(addEventListenerSpy.mock.calls[0][0]).toEqual(EventListenerTypes.timedomaindata);
+        expect(addEventListenerSpy.mock.calls[0][0]).toEqual('timedomaindata');
 
       });
 
@@ -638,7 +638,7 @@ describe('AdvancedAnalyserNode', () => {
           fftSize: 1024,
         });
 
-        node.addEventListener(EventListenerTypes.timedomaindata, ({ detail }:CustomEvent<Float32Array>) => {
+        node.addEventListener('timedomaindata', ({ detail }:CustomEvent<Float32Array>) => {
           console.log(detail);
         });
 
@@ -661,24 +661,24 @@ describe('AdvancedAnalyserNode', () => {
         const listener =  ({ detail }:CustomEvent<Float32Array>) => {
           console.log(detail);
         };
-        node.removeEventListener(EventListenerTypes.timedomaindata, listener);
-        expect(removeEventListenerSpy).toHaveBeenLastCalledWith(EventListenerTypes.timedomaindata, listener, undefined);
+        node.removeEventListener('timedomaindata', listener);
+        expect(removeEventListenerSpy).toHaveBeenLastCalledWith('timedomaindata', listener, undefined);
       });
     });
 
 
-    describe(EventListenerTypes.bytetimedomaindata, () => {
+    describe('bytetimedomaindata', () => {
       it('register event', () => {
         const node = new AdvancedAnalyserNode(context, {
           fftSize: 1024,
         });
   
         addEventListenerSpy.mockClear();
-        node.addEventListener(EventListenerTypes.bytetimedomaindata, ({ detail }) => {
+        node.addEventListener('bytetimedomaindata', ({ detail }) => {
           console.log(detail);
         });
   
-        expect(addEventListenerSpy.mock.calls[0][0]).toEqual(EventListenerTypes.bytetimedomaindata);
+        expect(addEventListenerSpy.mock.calls[0][0]).toEqual('bytetimedomaindata');
   
       });
   
@@ -688,7 +688,7 @@ describe('AdvancedAnalyserNode', () => {
         });
         dispatchEventSpy.mockClear();
         addEventListenerSpy.mockClear();
-        node.addEventListener(EventListenerTypes.bytetimedomaindata, ({ detail }) => {
+        node.addEventListener('bytetimedomaindata', ({ detail }) => {
           console.log(detail);
         });
         const payload = Uint8Array.from([0, 1, 2, 3]);
@@ -710,8 +710,8 @@ describe('AdvancedAnalyserNode', () => {
         const listener =  ({ detail }:CustomEvent<Uint8Array>) => {
           console.log(detail);
         };
-        node.removeEventListener(EventListenerTypes.bytetimedomaindata, listener);
-        expect(removeEventListenerSpy).toHaveBeenLastCalledWith(EventListenerTypes.bytetimedomaindata, listener, undefined);
+        node.removeEventListener('bytetimedomaindata', listener);
+        expect(removeEventListenerSpy).toHaveBeenLastCalledWith('bytetimedomaindata', listener, undefined);
       });
     });
   });
