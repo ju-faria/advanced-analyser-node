@@ -1,6 +1,6 @@
 {
   "name": "@soundui/advanced-analyser-node",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Advanced Analyser Node aims to be an enhanced version of the native Analyser Node. It provides real-time frequency and time-domain analysis information.",
   "main": "./dist/bundle.server.js",
   "browser": "./dist/bundle.browser.js",
@@ -9,9 +9,10 @@
     "dist"
   ],
   "repository": {
-    "type": "git",
-    "url": "https://github.com/julia-script/soundUI/tree/main/packages/advanced-analyser-node#readme"
+    "url": "julia-script/soundUI",
+    "directory": "packages/advanced-analyser-node"
   },
+  "homepage": "https://github.com/julia-script/soundUI/tree/main/packages/advanced-analyser-node#readme",
   "dependencies": {},
   "devDependencies": {
     "@microsoft/tsdoc-config": "^0.15.2",
