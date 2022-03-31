@@ -12,17 +12,14 @@ export enum MessageTypes {
   getFloatFrequencyData,
   requestedFloatFrequencyDataAvailable,
 
-
   getByteFrequencyData,
   requestedByteFrequencyDataAvailable,
-
 
   getFloatTimeDomainData,
   requestedFloatTimeDomainDataAvailable,
 
   getByteTimeDomainData,
   requestedByteTimeDomainDataAvailable,
-
 
   startedListeningTo,
   stoppedListeningTo,
