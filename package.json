@@ -1,6 +1,7 @@
 {
   "name": "soundui",
   "workspaces": [
-    "packages/advanced-analyser-node"
+    "packages/advanced-analyser-node",
+    "packages/react-spectrogram"
   ]
 }
