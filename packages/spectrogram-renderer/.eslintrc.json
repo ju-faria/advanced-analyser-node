@@ -1,0 +1,25 @@
+{
+  "root": true,
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": { "project": ["./tsconfig.json"] },
+  "plugins": [
+    "@typescript-eslint",
+    "eslint-plugin-tsdoc"
+  ],
+  "rules": {
+    "indent": ["error", 2, { "SwitchCase": 1 }],
+    "semi": ["error", "always"],
+    "lines-between-class-members": ["error", "always"],
+    "no-constant-condition": "off",
+    "tsdoc/syntax": "warn"
+  },
+  "ignorePatterns": [
+    "rollup.config.js",
+    "dist/**/*",
+    "coverage"
+  ]
+}

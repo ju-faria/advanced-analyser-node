@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo 1</title>
+</head>
+<body>
+  <style>
+    .spectrogram {
+      position: relative;
+      cursor: pointer;
+    }
+    .playhead {
+      height: 100%;
+      position: absolute;
+      width: 2px;
+      left: -1px;
+      top: 0;
+      background: red;
+    }
+  </style>
+  <div class="spectrogram">
+    <canvas width="1024" height="512"></canvas>
+    <div class="playhead"></div>
+  </div>
+  <audio src="./niccolo-paganini_24-caprices-for-solo-violin_no2-in-B-minor.mp3" controls style="width: 1024px;"></audio>
+  <br/>
+  <a
+    href="https://archive.org/details/cd_paganini-24-caprices_julia-fischer-niccol-paganini/disc1/02.+Niccol%C3%B2+Paganini+-+24+Caprices+for+Solo+Violin+-+No.+2+in+B+minor.flac"
+    target="_blank"
+  >Niccolò Paganini - 24 Caprices for Solo Violin: No. 2 in B minor</a>
+</body>
+<script src="../dist/bundle.js"></script>
+<script src="../../advanced-analyser-node/dist/bundle.browser.js"></script>
+<script>
+  (async () => {
+    const SpectrogramRenderer = spectrogramRenderer.SpectrogramRenderer
+    const createAdvancedAnalyserNode = advancedAnalyserNode.createAdvancedAnalyserNode
+    const DefaultFrequencyDataResolver = spectrogramRenderer.DefaultFrequencyDataResolver
+    
+
+    const canvas = document.querySelector('canvas')
+    const audioPlayer = document.querySelector('audio')
+    const playhead = document.querySelector('.playhead')
+
+    const offlineCtx = new OfflineAudioContext(2, 44100*30, 44100);
+
+    /*
+     * create advanced analyser node
+     */
+    const aaNode = await createAdvancedAnalyserNode(offlineCtx, { 
+      samplesBetweenTransforms: offlineCtx.sampleRate / 12
+    });
+
+    /*
+     * initialize data resolver and feed with byte frequency data from aaNode
+     */
+
+    const dataResolver = new DefaultFrequencyDataResolver({
+      sampleRate: offlineCtx.sampleRate,
+      frequencyBinCount: aaNode.frequencyBinCount,
+      samplesBetweenTransforms: aaNode.samplesBetweenTransforms,
+      maxDecibels: aaNode.maxDecibels,
+      minDecibels: aaNode.minDecibels,
+    })
+
+    aaNode.addEventListener("bytefrequencydata", ({ detail }) => {
+      dataResolver.push(detail)
+    });
+  
+    
+     /*
+     * Fetch audio, decode it, creates a buffer source node, and start rendering
+     */
+    const audioData = await fetch('./niccolo-paganini_24-caprices-for-solo-violin_no2-in-B-minor.mp3').then(res => res.arrayBuffer())
+    const buffer = await offlineCtx.decodeAudioData(audioData)
+    const source = offlineCtx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(aaNode);
+    aaNode.connect(offlineCtx.destination);
+
+    source.start(0);
+    await offlineCtx.startRendering()
+
+    /*
+     * initialize renderer and draw the spectrogram
+     */
+    const renderer = new SpectrogramRenderer({ canvas, dataResolver });
+    renderer.timeWindow = buffer.duration * 1000;
+    renderer.currentTime =  buffer.duration * 1000;
+
+    renderer.draw();
+
+    /*
+     * handle click on spectrogram
+     */
+    canvas.onclick = (e) => {
+      const x = e.offsetX
+      const time = x / canvas.width * audioPlayer.duration
+      audioPlayer.currentTime = time 
+    }
+
+    /*
+     * Animates playhead
+     */
+    const animatePlayhead = () => {
+      playhead.style.transform = `translateX(${1024 * (audioPlayer.currentTime / offlineCtx.duration)}px)`
+
+      window.requestAnimationFrame(animatePlayhead)
+    }
+    window.requestAnimationFrame(animatePlayhead)
+  })()
+</script>
+</html>

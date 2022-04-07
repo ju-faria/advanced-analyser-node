@@ -2,7 +2,8 @@
 
 import { noop } from "lodash";
 import { MessageTypes, WindowFunctionTypes } from "../types";
-import { MAX_FFT_SIZE, MIN_FFT_SIZE, PROCESSOR_NAME } from "../constants";
+import { PROCESSOR_NAME } from "../constants";
+import { MAX_FFT_SIZE, MIN_FFT_SIZE } from "@soundui/shared/constants";
 
 jest.mock("processor", () => ({
   default: "abc",

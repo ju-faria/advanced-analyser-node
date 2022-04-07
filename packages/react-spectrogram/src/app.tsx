@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Spectrogram } from './spectrogram';
 
 const useAsyncMemo = <T,>(asyncFn: () => Promise<T>, deps: unknown[]): T | null => {
@@ -19,7 +19,7 @@ export const App = () => {
   const [dynamicRangeTop, setDynamicRangeTop] = React.useState(-30);
 
   const [audioContext, setAudioContext] = useState<AudioContext>(null);
-  const audioSource = useAsyncMemo<AudioNode>(async () => { 
+  const audioSource = useAsyncMemo<AudioNode>(async () => {
     if (!audioContext) return;
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: true,
@@ -30,7 +30,7 @@ export const App = () => {
 
   return (
     <div>
-      {audioSource && (<Spectrogram 
+      {audioSource && (<Spectrogram
         width={512}
         height={512}
         minFrequency={minFrequency}
@@ -57,8 +57,8 @@ export const App = () => {
         Start
       </button>
       <br />
-      <input 
-        type="range" 
+      <input
+        type="range"
         value={dynamicRange}
         min={5}
         max={200}
@@ -73,14 +73,14 @@ export const App = () => {
         value={dynamicRangeTop}
         min={-50}
         max={0}
-      
+
         onChange={(e) => {
           setDynamicRangeTop(parseInt(e.target.value));
         }}
       />
       <p>dynamicRangeTop: {dynamicRangeTop}</p>
 
-  
+
     </div>
   );
 };

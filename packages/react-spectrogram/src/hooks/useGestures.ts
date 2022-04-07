@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 
 type GestureEvent = {
@@ -11,17 +11,19 @@ type GestureEvent = {
 
   deltaX: number,
   deltaY: number,
-  
+
   deltaWheel: number,
-  // pinchStartMagnitude: number,
+  wheelDeltaX: number,
+  wheelDeltaY: number,
+
   pinchStartMagnitudeX: number,
   pinchStartMagnitudeY: number,
-  
-  // pinchMagnitude: number,
+
+
   pinchMagnitudeX: number,
   pinchMagnitudeY: number,
-  
-  
+
+
   pinchMagnitudeMovementX: number,
   pinchMagnitudeMovementY: number,
 
@@ -33,7 +35,7 @@ type GestureEvent = {
   // event: any
 }
 type Pointer = {
-  x: number, 
+  x: number,
   y: number,
   relativeX: number,
   relativeY: number,
@@ -104,7 +106,7 @@ const pointersToGestureEvent = (pointers: { [key: number]: Pointer}): GestureEve
 
     movementX,
     movementY,
-    
+
     pinchStartMagnitudeX,
     pinchStartMagnitudeY,
     pinchMagnitudeX,
@@ -115,13 +117,15 @@ const pointersToGestureEvent = (pointers: { [key: number]: Pointer}): GestureEve
     deltaX: x - startX,
     deltaY: y - startY,
     deltaWheel: 0,
+    wheelDeltaX: 0,
+    wheelDeltaY: 0,
 
     pointerIds,
   };
 };
 
 export const useGestures = (
-  ref: React.RefObject<HTMLElement>,  
+  ref: HTMLElement,
   {
     onPanMove,
     onPanStart,
@@ -130,6 +134,7 @@ export const useGestures = (
     onPinchStart,
     onPinchEnd,
     onWheel,
+    onTrackpadPinch,
   }: {
 
   onPanMove?: (event: GestureEvent) => void,
@@ -141,33 +146,35 @@ export const useGestures = (
   onPinchEnd?: (event: GestureEvent) => void,
 
   onWheel?: (event: GestureEvent) => void,
+
+  onTrackpadPinch?: (event: GestureEvent) => void,
 }) => {
   const pointersRef = useRef<{[key: number]: Pointer}>({});
 
   useEffect(() => {
-    if (!ref.current) return;
-    const element = ref.current;
+    if (!ref) return;
+    const element = ref;
     const handlePointDown = (event: PointerEvent) => {
       element.setPointerCapture(event.pointerId);
       const pointers = pointersRef.current;
 
       const newPointers: typeof pointers = {};
       const pointerIds = Object.keys(pointers);
-      
+
 
       // end pan
       if (pointerIds.length === 1) {
         const pointerId = Number(pointerIds[0]);
         const pointerEvent = pointers[pointerId];
         onPanEnd && onPanEnd(pointersToGestureEvent({
-          [pointerId]: { 
+          [pointerId]: {
             ...pointerEvent,
             movementX: 0,
             movementY: 0,
           }
         }));
       }
-      // Resets all pointers 
+      // Resets all pointers
       for (const pointerId in pointers) {
         const pointer = pointers[pointerId];
         newPointers[pointerId] = {
@@ -177,7 +184,7 @@ export const useGestures = (
           deltaX: 0,
           deltaY: 0,
           movementX: 0,
-          movementY: 0,  
+          movementY: 0,
         };
       }
       // adds new pointer
@@ -206,7 +213,10 @@ export const useGestures = (
     };
 
     const handlePointMove = (event: PointerEvent) => {
+      event.preventDefault();
+
       const pointers = pointersRef.current;
+
 
       if (!pointers[event.pointerId]) return;
       const newPointers = {
@@ -247,10 +257,14 @@ export const useGestures = (
       pointersRef.current = newPointers;
     };
     const handleWheel = (event: WheelEvent) => {
-      onWheel && onWheel({
+      event.preventDefault();
+
+      const eventData:GestureEvent = {
         deltaX: 0,
         deltaY: 0,
-        deltaWheel: event.shiftKey ? event.deltaX : event.deltaY,
+        deltaWheel: Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY,
+        wheelDeltaX: event.deltaX,
+        wheelDeltaY: event.deltaY,
         x: event.clientX,
         y: event.clientY,
         relativeX: event.clientX - element.offsetLeft,
@@ -267,9 +281,15 @@ export const useGestures = (
         pinchMagnitudeMovementX: 0,
         pinchMagnitudeMovementY: 0,
         pointerIds: []
-      });
+      };
+
+      if (event.ctrlKey) {
+        onTrackpadPinch && onTrackpadPinch(eventData);
+      } else {
+        onWheel && onWheel(eventData);
+      }
     };
-    
+
     element.addEventListener('pointerdown', handlePointDown);
     element.addEventListener('pointermove', handlePointMove);
     element.addEventListener('pointerup', handlePointUp);
@@ -284,5 +304,5 @@ export const useGestures = (
     };
 
   }, [ref, onPanMove, onPanStart, onPanEnd, onPinchMove, onPinchStart, onPinchEnd]);
-  
+
 };

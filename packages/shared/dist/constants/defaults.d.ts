@@ -1,0 +1,9 @@
+export declare const DEFAULT_MIN_FREQUENCY = 20;
+export declare const DEFAULT_MAX_FREQUENCY = 44100;
+export declare const DEFAULT_MIN_DECIBELS = -100;
+export declare const DEFAULT_MAX_DECIBELS = -10;
+export declare const DEFAULT_TIME_WINDOW = 10000;
+export declare const DEFAULT_MIN_TIME_WINDOW = 1000;
+export declare const DEFAULT_MAX_TIME_WINDOW = 3600000;
+export declare const DEFAULT_DYNAMIC_RANGE = 70;
+export declare const DEFAULT_DYNAMIC_RANGE_TOP = -30;

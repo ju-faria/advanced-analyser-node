@@ -53,7 +53,8 @@ const registerProcessorSpy = jest.fn();
 
 global.registerProcessor = (name, processorCtor) => registerProcessorSpy(name, processorCtor);
 
-import { MAX_FFT_SIZE, PROCESSOR_NAME } from "../constants";
+import { PROCESSOR_NAME } from "../constants";
+import { MAX_FFT_SIZE } from '@soundui/shared/constants';
 import { AdvancedAnalyserProcessor } from "./";
 import { windowFunctionsMap } from "./window-functions";
 

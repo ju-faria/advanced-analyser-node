@@ -14,7 +14,7 @@ export const useKey = (keyCode: string) => {
         setIsPressed(false);
       }
     };
-    
+
     document.addEventListener("keydown", keydownHandler);
     document.addEventListener("keyup", keyupHandler);
     return () => {

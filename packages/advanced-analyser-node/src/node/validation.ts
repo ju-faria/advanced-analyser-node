@@ -1,5 +1,5 @@
 import { WindowFunctionTypes } from "../types";
-import { MAX_FFT_SIZE, MIN_FFT_SIZE } from "../constants";
+import { MAX_FFT_SIZE, MIN_FFT_SIZE } from "@soundui/shared/constants";
 
 export const validateFftSize = (value: number) => {
   if (value && (value & (value - 1)) !== 0) {

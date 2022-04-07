@@ -7,7 +7,7 @@ import processor from "processor";
 import { AdvancedAnalyserNodeProperties } from "../types";
 
 export const createAdvancedAnalyserNode = async (context: BaseAudioContext, options: AdvancedAnalyserNodeProperties = {}) => {
-  if (false) {
+  if (IS_SERVER) {
     throw new Error(`
       AudioWorkletNode does not exist in this environment: 
       This typically happens if you try to run 'createAdvancedAnalyserNode' in the server

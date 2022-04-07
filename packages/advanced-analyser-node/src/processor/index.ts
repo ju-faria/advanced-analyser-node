@@ -1,5 +1,6 @@
 import FFT from "fft.js";
-import { MAX_FFT_SIZE, PROCESSOR_NAME } from "../constants";
+import { MAX_FFT_SIZE } from "@soundui/shared/constants";
+import { PROCESSOR_NAME } from "../constants";
 import { EventListenerTypes, Message, MessageTypes, WindowFunctionTypes } from "../types";
 import { windowFunctionsMap } from "./window-functions";
 

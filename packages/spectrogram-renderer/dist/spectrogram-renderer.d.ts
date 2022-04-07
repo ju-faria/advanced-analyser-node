@@ -1,0 +1,41 @@
+import { FrequencyDataResolver } from './types';
+export declare type SpectrogramRendererProperties = {
+    canvas: HTMLCanvasElement;
+    dataResolver: FrequencyDataResolver;
+    currentTime?: number;
+};
+export declare class SpectrogramRenderer {
+    private _canvas;
+    private _dataResolver;
+    private _gl;
+    private _glParams;
+    private _currentTime;
+    private _textureBuffer;
+    private _timeWindow;
+    private _minFrequency;
+    private _maxFrequency;
+    private _dynamicRange;
+    private _dynamicRangeTop;
+    private _colorRamp;
+    set currentTime(value: number);
+    get currentTime(): number;
+    get visibleTransforms(): number;
+    set minFrequency(value: number);
+    get minFrequency(): number;
+    set maxFrequency(value: number);
+    get maxFrequency(): number;
+    set dynamicRange(value: number);
+    get dynamicRange(): number;
+    set dynamicRangeTop(value: number);
+    get dynamicRangeTop(): number;
+    set timeWindow(value: number);
+    get timeWindow(): number;
+    set colorRamp(value: [number, number, number][]);
+    get colorRamp(): [number, number, number][];
+    get fragmentShader(): string;
+    constructor({ canvas, dataResolver, currentTime, }: SpectrogramRendererProperties);
+    initGl(): void;
+    updatePlayheadPosition(currentTime: number): void;
+    draw(): void;
+    isFrequencyBinVisible(frequencyBin: number): boolean;
+}

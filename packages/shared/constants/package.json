@@ -1,0 +1,5 @@
+{
+    "internal": true,
+    "main": "../dist/constants.js",
+    "types": "../dist/constants/index.d.ts"
+}

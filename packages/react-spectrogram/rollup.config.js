@@ -11,7 +11,6 @@ import { string } from "rollup-plugin-string";
 
 
 const mainBundlePlugins = [
-  del({ targets: 'dist/*' }),
   eslint({ fix: true }),
   string({
     include: "**/*.glsl",
@@ -24,13 +23,12 @@ const mainBundlePlugins = [
     'process.env.NODE_ENV': JSON.stringify( 'production' )
   }),
   typescript(),
-
 ]
 
 export default (commandLineArgs) => {
   return [
     {
-      input: 'src/index.tsx',
+      input: 'src/index.ts',
       
       output: {
         file: 'dist/bundle.js',
@@ -38,7 +36,21 @@ export default (commandLineArgs) => {
         name: 'spectrogram',
       },
 
-      plugins: [...mainBundlePlugins,   ...(commandLineArgs.environment === 'dev' ? [serve('./')] : [])    ]
-    }
+      plugins: [
+        del({ targets: 'dist/*' }),
+        ...mainBundlePlugins,   
+        ...(commandLineArgs.environment === 'dev' ? [serve('../')] : [])    
+      ]
+    },
+    ...['demo1', 'demo2'].map((filename) => ({
+      input: `src/demo/${filename}.tsx`,
+      output: {
+        file: `dist/demo/${filename}.js`,
+        format: "umd",
+        name: 'demo',
+      },
+      plugins: mainBundlePlugins
+
+    }))
   ]
 }

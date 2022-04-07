@@ -3,124 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Demo 1</title>
+  <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+
+  <title>Demo 2</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      /* overflow: hidden; */
+      font-family: sans-serif;
+      font-size: 12px;
+      background-color: #f0f0f0;
+    }
+  </style>
 </head>
+<!-- <script crossorigin src="https://unpkg.com/react@17.0.2/umd/react.development.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@17.0.2/umd/react-dom.development.js"></script> -->
+
 <body>
-  <canvas></canvas>
-  <br />
-  <button>get float frequency data</button>
-  <button>draw byte frequency data</button>
-  <button>get float time domain data</button>
-  <button>draw byte time domain data</button>
-  <br />
-
-  <canvas></canvas>
-  <pre></pre>
+  <div id="root"></div>
 </body>
-<script src="../dist/bundle.js"></script>
-<script>
-  (async () => {
-    const FFT_SIZE = 1024 * 2
-    const SAMPLE_RATE = 44100
+<script src="../../advanced-analyser-node/dist/bundle.browser.js"></script>
+<script src="../../spectrogram-renderer/dist/bundle.js"></script>
 
-    const [canvas, snapshotCanvas] = document.querySelectorAll('canvas')
-    const context2d =  canvas.getContext('2d')
-    const snapshotContext2d =  snapshotCanvas.getContext('2d')
-    const output = document.querySelector('pre')
-
-    const [floatFrequencyButton, byteFrequencyButton, floatTimeDomainButton, byteTimeDomainButton] = document.querySelectorAll('button')
-
-    const stream = await  navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: false
-    })
-    
-    canvas.height = 300
-    canvas.width = 1024
-    
-
-    snapshotCanvas.height = 300
-    snapshotCanvas.width = 1024
-    
-    const context = new AudioContext({ sampleRate: SAMPLE_RATE })
-    
-    const audioSource = context.createMediaStreamSource(stream);
-
-    const bottomMargin = 30
-    const analyserNode = await advancedAnalyserNode.createAdvancedAnalyserNode(context, {
-      fftSize: FFT_SIZE,
-      samplesBetweenTransforms: FFT_SIZE,
-      windowFunction: 'rectangular'
-    })
-    
-    const drawFrame = (canvas, context2d, data) => {
-      context2d.clearRect(0, 0, canvas.width, canvas.height)
-      context2d.beginPath()
-      for(let i = 0; i < data.length; i ++) {
-        if (i === 0) {
-          context2d.moveTo(canvas.width / data.length * i, canvas.height -  bottomMargin - data[i] ) 
-        } else {
-          context2d.lineTo(canvas.width / data.length * i, canvas.height -  bottomMargin - data[i] ) 
-        }
-      }
-      context2d.stroke()
-    }
-    analyserNode.addEventListener('bytetimedomaindata', ({ detail }) => {
-        console.log(detail)
-      drawFrame(canvas, context2d, detail)
-    })
-    audioSource.connect(analyserNode)
-
-    floatFrequencyButton.onclick = async () => {
-      const response = await analyserNode.getFloatFrequencyData()
-
-      output.innerHTML = 
-      `
-        \nFloat Frequency Data
-
-        \nSize: ${response.length}
-        \n${response.toString().replace(/,/g, '\n')}
-      `
-    }
-
-    byteFrequencyButton.onclick = async () => {
-      const response = await analyserNode.getByteFrequencyData()
-      drawFrame(snapshotCanvas, snapshotContext2d, response)
-      output.innerHTML = 
-      `
-        \nByte Frequency Data
-
-        \nSize: ${response.length}
-        \n${response.toString().replace(/,/g, '\n')}
-      `
-    }
-
-    floatTimeDomainButton.onclick = async () => {
-      const response = await analyserNode.getFloatTimeDomainData()
-
-      output.innerHTML = 
-      `
-        \nFloat Time Domain Data
-
-        \nSize: ${response.length}
-        \n${response.toString().replace(/,/g, '\n')}
-      `
-    }
-
-    byteTimeDomainButton.onclick = async () => {
-      const response = await analyserNode.getByteTimeDomainData()
-      drawFrame(snapshotCanvas, snapshotContext2d, response)
-      output.innerHTML = 
-      `
-        \nByte Time Domain Data
-
-        \nSize: ${response.length}
-        \n${response.toString().replace(/,/g, '\n')}
-      `
-    }
-
-    
-  })()
-</script>
+<script src="../dist/demo/demo2.js"></script>
 </html>

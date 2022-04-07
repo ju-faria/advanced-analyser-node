@@ -1,0 +1,5 @@
+{
+    "internal": true,
+    "main": "../dist/utils.js",
+    "types": "../dist/utils/index.d.ts"
+}

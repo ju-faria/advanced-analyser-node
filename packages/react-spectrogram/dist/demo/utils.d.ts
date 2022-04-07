@@ -1,0 +1,9 @@
+export declare const generateLogLabels: (min: number, max: number) => number[];
+export declare const lerpLog: (from: number, to: number, rel: number) => number;
+export declare const inverseLerpLog: (from: number, to: number, rel: number) => number;
+export declare const lerp: (from: number, to: number, rel: number) => number;
+export declare const inverseLerp: (from: number, to: number, rel: number) => number;
+export declare const remap: (origFrom: number, origTo: number, targetFrom: number, targetTo: number, rel: number) => number;
+export declare const getTimeFromRender: (currentTime: number, timeWindow: number, renderPoint: number) => number;
+export declare const getRenderPointFromTime: (currentTime: number, timeWindow: number, time: number) => number;
+export declare const clamp: (value: number, min: number, max: number) => number;

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Demo 1</title>
+</head>
+<body>
+  <canvas></canvas>
+
+</body>
+<script src="../dist/bundle.browser.js"></script>
+<script>
+  (async () => {
+
+    
+
+    const audioData = await fetch('./demo-sound.wav').then(res => res.arrayBuffer())
+    const offlineCtx = new OfflineAudioContext(2,44100*40,44100);
+    const source = offlineCtx.createBufferSource();
+
+    const buffer = await offlineCtx.decodeAudioData(audioData)
+    console.log(buffer)
+    source.buffer = buffer;
+
+    const analyserNode = await advancedAnalyserNode.createAdvancedAnalyserNode(offlineCtx, {
+      samplesBetweenTransforms: 44100 / 12,
+    })
+    source.connect(analyserNode)
+    analyserNode.connect(offlineCtx.destination);
+
+    analyserNode.addEventListener('bytefrequencydata', ({ detail }) => {
+      console.log(detail)
+    })
+
+    console.log(analyserNode)
+    source.start(0)
+    await offlineCtx.startRendering()
+
+
+
+  })()
+</script>
+</html>

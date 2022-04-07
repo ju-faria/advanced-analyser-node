@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist/",
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "module": "esnext",
+    "target": "esnext",
+    "allowSyntheticDefaultImports": true,
+    "jsx": "react",
+    "allowJs": true,
+    "moduleResolution": "node",
+    "declaration": true,
+    "baseUrl": "./",
+  },
+  "include": [
+    "**/*.tsx",
+    "**/*.ts",
+    "**/*.js",
+  ],
+  "exclude": [
+    "**/*.glsl",
+    "dist/**/*",
+    "coverage",
+    "tests"
+  ]
+}
