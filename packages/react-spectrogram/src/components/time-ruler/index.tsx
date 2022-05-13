@@ -40,8 +40,6 @@ export const TimeRuler = forwardRef<HTMLDivElement, TimeRulerProps>(({
   height,
   timeWindow,
   currentTime,
-  color = "#000",
-  backgroundColor,
   dividers = true,
   orientation = 'horizontal',
   position = 'inset',
@@ -70,6 +68,7 @@ export const TimeRuler = forwardRef<HTMLDivElement, TimeRulerProps>(({
 
   return (
     <div
+      className="time-ruler"
       ref={ref}
       style={{
         width,
@@ -82,7 +81,7 @@ export const TimeRuler = forwardRef<HTMLDivElement, TimeRulerProps>(({
         width={width}
         height={height}
       >
-        {dividers && orientation === 'horizontal' && (
+        {/* {dividers && orientation === 'horizontal' && (
           <>
             <line x1={0} y1={0} x2={width} y2={0} stroke={color} strokeWidth={1} />
             <line x1={0} y1={height} x2={width} y2={height} stroke={color} strokeWidth={1} />
@@ -96,44 +95,57 @@ export const TimeRuler = forwardRef<HTMLDivElement, TimeRulerProps>(({
         )}
         {backgroundColor && (
           <rect x={0} y={0} width={width} height={height} fill={backgroundColor} />
-        )}
+        )} */}
         {orientation === 'horizontal' && labels.map((timeStep) => (
-          <g key={timeStep} transform={`translate(${width * getRenderPointFromTime(currentTime, timeWindow, startTime + timeStep)}, 0)`}>
-            {(<text
-              x={0}
-              y={(position === 'inset') ? height * 0.2 : height - height * 0.2}
-              fill={color}
-              text-anchor="middle"
-              fontSize={12}
-              alignmentBaseline={(position === 'inset') ? 'hanging' :  'baseline' }
-              fontFamily="sans-serif"
-            >{formatTime((startTime + timeStep) / 1000)}</text>)}
+          <g
+            key={timeStep}
+            transform={`translate(${width * getRenderPointFromTime(currentTime, timeWindow, startTime + timeStep)}, 0)`}
+          >
+            {(
+              <text
+                className="time-ruler-label"
+                x={0}
+                y={(position === 'inset') ? height * 0.2 : height - height * 0.2}
+                text-anchor="middle"
+                fontSize={12}
+                alignmentBaseline={(position === 'inset') ? 'hanging' :  'baseline'}
+                fontFamily="sans-serif"
+              >
+                {formatTime((startTime + timeStep) / 1000)}
+              </text>
+            )}
             <path
+              className="time-ruler-label-marks"
               d={rulerPath}
-              stroke={color}
             />
           </g>
         ))}
         {orientation === 'vertical' && labels.map((timeStep) => (
-          <g key={timeStep} transform={`translate(0, ${height * getRenderPointFromTime(currentTime, timeWindow, startTime + timeStep)})`}>
-            {(<text
-              y={0}
-              x={(position === 'inset') ? width * 0.2 : width - width * 0.2}
-              fill={color}
-              text-anchor="middle"
-              fontSize={12}
-              alignmentBaseline={'hanging'}
-              fontFamily="sans-serif"
-              transform={`rotate(${position === 'inset' ? -90 : 90}, ${position === 'inset' ? width * 0.2 : width - width * 0.2}, 0)`}
-            >{formatTime((startTime + timeStep) / 1000)}</text>)}
+          <g
+            key={timeStep}
+            transform={`translate(0, ${height * getRenderPointFromTime(currentTime, timeWindow, startTime + timeStep)})`}
+          >
+            {(
+              <text
+                className="time-ruler-label"
+                y={0}
+                x={(position === 'inset') ? width * 0.2 : width - width * 0.2}
+                text-anchor="middle"
+                fontSize={12}
+                alignmentBaseline={'hanging'}
+                fontFamily="sans-serif"
+                transform={`rotate(${position === 'inset' ? -90 : 90}, ${position === 'inset' ? width * 0.2 : width - width * 0.2}, 0)`}
+              >
+                {formatTime((startTime + timeStep) / 1000)}
+              </text>
+            )}
             <path
+              className="time-ruler-label-marks"
               d={rulerPath}
-              stroke={color}
             />
           </g>
         ))}
       </svg>
     </div>
   );
-
 });

@@ -5,6 +5,8 @@ import ReactDOM from 'react-dom';
 import { useAsyncMemo } from '../hooks/useAsyncMemo';
 import { Spectrogram } from '../';
 import { useAnimationFrame } from 'src/hooks/useAnimationFrame';
+import { DEFAULT_FREQUENCY_SCALE } from '@soundui/shared/constants';
+import { FrequencyScale } from '@soundui/shared/constants';
 
 export const App = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -15,6 +17,7 @@ export const App = () => {
   const [dynamicRange, setDynamicRange] = React.useState(70);
   const [dynamicRangeTop, setDynamicRangeTop] = React.useState(-30);
   const [playheadPosition, setPlayheadPosition] = React.useState(0);
+  const [frequencyScale, setFrequencyScale] = React.useState(DEFAULT_FREQUENCY_SCALE);
 
   const offlineCtx = useMemo(() => new OfflineAudioContext(2, 44100*30, 44100), []);
   const aaNode = useAsyncMemo(() => {
@@ -80,6 +83,7 @@ export const App = () => {
         onDynamicRangeChange={setDynamicRange}
         onDynamicRangeTopChange={setDynamicRangeTop}
         dataResolver={dataResolver}
+        frequencyScale={frequencyScale}
       >
         <span
           style={{
@@ -126,6 +130,18 @@ export const App = () => {
         }}
       />
       <span>{dynamicRangeTop}</span>
+      <br />
+      <select
+        value={frequencyScale}
+        onChange={(e) => {
+          const value = e.target.value as FrequencyScale;
+          setFrequencyScale(value);
+        }}
+      >
+        {Object.values(FrequencyScale).map((value) => (
+          <option key={value} value={value}>{value}</option>
+        ))}
+      </select>
       <hr />
       <a
         href="https://archive.org/details/cd_paganini-24-caprices_julia-fischer-niccol-paganini/disc1/02.+Niccol%C3%B2+Paganini+-+24+Caprices+for+Solo+Violin+-+No.+2+in+B+minor.flac"

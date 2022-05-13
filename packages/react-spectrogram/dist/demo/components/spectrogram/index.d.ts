@@ -1,10 +1,12 @@
 import React from 'react';
 import { FrequencyDataResolver } from '@soundui/spectrogram-renderer';
+import { FrequencyScale } from '@soundui/shared/constants';
 declare type SpectrogramProps = React.HTMLAttributes<HTMLDivElement> & {
     width: number;
     height: number;
     minFrequency: number;
     maxFrequency: number;
+    frequencyScale?: FrequencyScale;
     timeWindow: number;
     currentTime: number;
     dynamicRange: number;
@@ -26,5 +28,5 @@ declare type SpectrogramProps = React.HTMLAttributes<HTMLDivElement> & {
     onTimeWindowChange: (timeWindow: number) => void;
     onCurrentTimeChange: (currentTime: number) => void;
 };
-export declare const Spectrogram: ({ width, height, minFrequency, maxFrequency, timeWindow, currentTime, dynamicRange, dynamicRangeTop, modifierKeyCode, dataResolver, displayFrequencyRuler, frequencyRulerAsOverlay, frequencyRulerPosition, frequencyRulerSize, displayTimeRuler, timeRulerAsOverlay, timeRulerPosition, timeRulerSize, onMaxFrequencyChange, onMinFrequencyChange, onTimeWindowChange, onCurrentTimeChange, children, ...props }: SpectrogramProps) => JSX.Element;
+export declare const Spectrogram: ({ width, height, minFrequency, maxFrequency, frequencyScale, timeWindow, currentTime, dynamicRange, dynamicRangeTop, modifierKeyCode, dataResolver, displayFrequencyRuler, frequencyRulerAsOverlay, frequencyRulerPosition, frequencyRulerSize, displayTimeRuler, timeRulerAsOverlay, timeRulerPosition, timeRulerSize, onMaxFrequencyChange, onMinFrequencyChange, onTimeWindowChange, onCurrentTimeChange, children, ...props }: SpectrogramProps) => JSX.Element;
 export {};

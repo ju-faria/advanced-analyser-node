@@ -6,12 +6,14 @@ import { SpectrogramContext } from '../spectrogram-context';
 import { FrequencyRuler } from '../frequency-ruler';
 import { TimeRuler } from '../time-ruler';
 import { useControls } from './hooks/use-controls';
+import { DEFAULT_FREQUENCY_SCALE, FrequencyScale } from '@soundui/shared/constants';
 
 type SpectrogramProps = React.HTMLAttributes<HTMLDivElement> & {
   width: number,
   height: number,
   minFrequency: number,
   maxFrequency: number,
+  frequencyScale?: FrequencyScale,
   timeWindow: number,
   currentTime: number,
   dynamicRange: number,
@@ -42,6 +44,7 @@ export const Spectrogram = ({
   height,
   minFrequency,
   maxFrequency,
+  frequencyScale = DEFAULT_FREQUENCY_SCALE,
   timeWindow,
   currentTime,
   dynamicRange,
@@ -52,7 +55,7 @@ export const Spectrogram = ({
   displayFrequencyRuler = true,
   frequencyRulerAsOverlay = true,
   frequencyRulerPosition = 'start',
-  frequencyRulerSize = 40,
+  frequencyRulerSize = 50,
 
   displayTimeRuler = true,
   timeRulerAsOverlay = true,
@@ -68,6 +71,7 @@ export const Spectrogram = ({
   const [canvasRef, canvas] = useImmutableRef<HTMLCanvasElement>(null);
   const [frequencyRulerRef, frequencyRuler] = useImmutableRef<HTMLElement>(null);
   const [timeRulerRef, timeRuler] = useImmutableRef<HTMLElement>(null);
+
   const canvasWidth = frequencyRulerAsOverlay ? width : width - frequencyRulerSize;
   const canvasHeight = timeRulerAsOverlay ? height : height - timeRulerSize;
   const controlProps = {
@@ -82,6 +86,7 @@ export const Spectrogram = ({
     maxFrequency,
     timeWindow,
     currentTime,
+    frequencyScale,
     modifierKeyCode,
   };
   useControls({
@@ -117,9 +122,11 @@ export const Spectrogram = ({
     setCurrentTime,
     setDynamicRange,
     setDynamicRangeTop,
+    setFrequencyScale,
   } = useSpectrogramRenderer({
     canvas,
     dataResolver,
+    frequencyScale,
   }, []);
 
   useLayoutEffect(() => {
@@ -146,6 +153,10 @@ export const Spectrogram = ({
     setDynamicRangeTop(dynamicRangeTop);
   }, [dynamicRangeTop, spectrogramRenderer]);
 
+  useLayoutEffect(() => {
+    setFrequencyScale(frequencyScale);
+  }, [frequencyScale, spectrogramRenderer]);
+
   const canvasTopOffset = displayTimeRuler && !timeRulerAsOverlay && timeRulerPosition === 'start' ? timeRulerSize : 0;
   const canvasLeftOffset = displayFrequencyRuler && !frequencyRulerAsOverlay && frequencyRulerPosition === 'start' ? frequencyRulerSize : 0;
 
@@ -160,7 +171,7 @@ export const Spectrogram = ({
     >
       <canvas
         ref={canvasRef}
-        width={canvasWidth }
+        width={canvasWidth}
         height={canvasHeight}
         style={{
           touchAction: 'none',
@@ -171,13 +182,12 @@ export const Spectrogram = ({
       {displayFrequencyRuler && (
         <FrequencyRuler
           ref={frequencyRulerRef}
-          width={40}
+          width={frequencyRulerSize}
           height={canvasHeight}
           minFrequency={minFrequency}
           maxFrequency={maxFrequency}
-          color={'#fff'}
-          backgroundColor={'rgba(0, 0, 0, 0.5)'}
-          position={'offset'}
+          // position={'offset'}
+          frequencyScale={frequencyScale}
           style={{
             position: 'absolute',
             top: canvasTopOffset,
@@ -189,7 +199,7 @@ export const Spectrogram = ({
         <TimeRuler
           ref={timeRulerRef}
           width={canvasWidth}
-          height={30}
+          height={timeRulerSize}
           timeWindow={timeWindow}
           currentTime={currentTime}
           position={'inset'}

@@ -13,7 +13,7 @@ export declare type TranslationFunctions = {
     scaleFrequencies: (scaleFactor: number, origin: number) => TransformFn;
     scaleTimeWindow: (scaleFactor: number, origin: number) => TransformFn;
 };
-export declare const translateFrequency: (frequencyAxisSize: number, delta: number) => (properties: TransformProperties) => {
+export declare const translateFrequencyLog: (frequencyAxisSize: number, delta: number) => (properties: TransformProperties) => {
     minFrequency: number;
     maxFrequency: number;
     currentTime: number;
@@ -31,7 +31,19 @@ export declare const scaleTimeWindow: (scaleFactor: number, origin: number) => (
     minFrequency: number;
     maxFrequency: number;
 };
-export declare const scaleFrequencies: (scaleFactor: number, origin: number) => (properties: TransformProperties) => {
+export declare const scaleFrequenciesLog: (scaleFactor: number, origin: number) => (properties: TransformProperties) => {
+    minFrequency: number;
+    maxFrequency: number;
+    currentTime: number;
+    timeWindow: number;
+};
+export declare const translateFrequencyLin: (frequencyAxisSize: number, delta: number) => (properties: TransformProperties) => {
+    minFrequency: number;
+    maxFrequency: number;
+    currentTime: number;
+    timeWindow: number;
+};
+export declare const scaleFrequenciesLin: (scaleFactor: number, origin: number) => (properties: TransformProperties) => {
     minFrequency: number;
     maxFrequency: number;
     currentTime: number;

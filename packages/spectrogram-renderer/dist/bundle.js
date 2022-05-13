@@ -26,7 +26,7 @@
       return `vec3 color_ramp(float value) {${[...colorVars, ...colorRampBody].join('')}}`;
   };
 
-  var fragmentShaderCode = "precision highp float;\n\nuniform sampler2D fft;\nuniform float u_visibleTransforms;\nuniform float u_xTransformOffset;\nuniform float u_minFrequency;\nuniform float u_maxFrequency;\nuniform float u_dynamicRange;\nuniform float u_dynamicRangeTop;\nuniform float u_minDecibels;\nuniform float u_maxDecibels;\nuniform float u_sampleRate;\nuniform vec2 u_textureSize;\nuniform vec2 u_viewportSize;\n\n\nfloat lerp(float from, float to, float rel){\n  return ((1. - rel) * from) + (rel * to);\n}\nfloat invLerp(float from, float to, float value){\n  return (value - from) / (to - from);\n}\n\nfloat remap(float origFrom, float origTo, float targetFrom, float targetTo, float value){\n  float rel = invLerp(origFrom, origTo, value);\n  return lerp(targetFrom, targetTo, rel);\n} \n\n{{COLOR_RAMP}}\n\nvoid main() {\n  vec2 normCoord = (gl_FragCoord.xy + vec2(0., 0.))/ u_viewportSize.xy;\n  float xOffset = u_xTransformOffset / u_visibleTransforms;\n  float xScale =  u_visibleTransforms / u_textureSize.x;\n  float x = (normCoord.x + xOffset ) * xScale ;\n  \n  float minLog = log2(u_minFrequency);\n  float maxLog = log2(u_maxFrequency);\n\n  float hz = pow(2., lerp(minLog, maxLog, normCoord.y));\n  float y = (hz / u_sampleRate ) * 2.;\n\n  float color = texture2D(fft, vec2(x, y )).x;\n\n  gl_FragColor = vec4(color_ramp(\n    clamp(invLerp( u_dynamicRangeTop - u_dynamicRange, u_dynamicRangeTop, lerp(u_minDecibels, u_maxDecibels, color)), 0., 1.)\n  ), 1.);\n}\n";
+  var fragmentShaderCode = "precision highp float;\n\nuniform sampler2D fft;\nuniform int u_scale;\nuniform float u_visibleTransforms;\nuniform float u_xTransformOffset;\nuniform float u_minFrequency;\nuniform float u_maxFrequency;\nuniform float u_dynamicRange;\nuniform float u_dynamicRangeTop;\nuniform float u_minDecibels;\nuniform float u_maxDecibels;\nuniform float u_sampleRate;\nuniform vec2 u_textureSize;\nuniform vec2 u_viewportSize;\n\n\nfloat lerp(float from, float to, float rel){\n  return ((1. - rel) * from) + (rel * to);\n}\nfloat invLerp(float from, float to, float value){\n  return (value - from) / (to - from);\n}\n\nfloat remap(float origFrom, float origTo, float targetFrom, float targetTo, float value){\n  float rel = invLerp(origFrom, origTo, value);\n  return lerp(targetFrom, targetTo, rel);\n} \n\nfloat getY(float y) {\n  // LIN\n  if (u_scale == 0) {\n    float hz = lerp(u_minFrequency, u_maxFrequency, y);\n    return (hz / u_sampleRate);\n  }\n  // LOG \n  if (u_scale == 1) {\n    float minLog = log2(u_minFrequency);\n    float maxLog = log2(u_maxFrequency);\n\n    float hz = pow(2., lerp(minLog, maxLog, y));\n    return (hz / u_sampleRate ) * 2.;\n  }\n}\n\n{{COLOR_RAMP}}\n\nvoid main() {\n  vec2 normCoord = (gl_FragCoord.xy + vec2(0., 0.))/ u_viewportSize.xy;\n  float xOffset = u_xTransformOffset / u_visibleTransforms;\n  float xScale =  u_visibleTransforms / u_textureSize.x;\n  float x = (normCoord.x + xOffset ) * xScale ;\n\n  float y = getY(normCoord.y);\n\n  float color = texture2D(fft, vec2(x, y )).x;\n\n  gl_FragColor = vec4(color_ramp(\n    clamp(invLerp( u_dynamicRangeTop - u_dynamicRange, u_dynamicRangeTop, lerp(u_minDecibels, u_maxDecibels, color)), 0., 1.)\n  ), 1.);\n}\n";
 
   var vertexShaderCode = "\n  precision mediump float;\n\n  attribute vec2 vertPosition;\n  attribute vec3 vertColor;\n  varying vec3 fragColor;\n\n  void main()\n  {\n    fragColor = vertColor;\n    gl_Position = vec4(vertPosition, 0.0, 1.0);\n  }";
 
@@ -76,6 +76,12 @@
   (function (global, factory) {
     factory(exports) ;
   })(commonjsGlobal, (function (exports) {
+    exports.FrequencyScale = void 0;
+    (function (FrequencyScale) {
+        FrequencyScale["linear"] = "linear";
+        FrequencyScale["logarithmic"] = "logarithmic";
+    })(exports.FrequencyScale || (exports.FrequencyScale = {}));
+
     const DEFAULT_MIN_FREQUENCY = 20;
     const DEFAULT_MAX_FREQUENCY = 44100;
     const DEFAULT_MIN_DECIBELS = -100;
@@ -85,20 +91,16 @@
     const DEFAULT_MAX_TIME_WINDOW = 3600_000;
     const DEFAULT_DYNAMIC_RANGE = 70;
     const DEFAULT_DYNAMIC_RANGE_TOP = -30;
+    const DEFAULT_FREQUENCY_SCALE = exports.FrequencyScale.logarithmic;
 
     const MAX_FFT_SIZE = 32768;
     const MIN_FFT_SIZE = 32;
     const MIN_FREQUENCY = 20;
     const MAX_FREQUENCY = 44100;
 
-    exports.FrequencyScale = void 0;
-    (function (FrequencyScale) {
-        FrequencyScale["linear"] = "linear";
-        FrequencyScale["logarithmic"] = "logarithmic";
-    })(exports.FrequencyScale || (exports.FrequencyScale = {}));
-
     exports.DEFAULT_DYNAMIC_RANGE = DEFAULT_DYNAMIC_RANGE;
     exports.DEFAULT_DYNAMIC_RANGE_TOP = DEFAULT_DYNAMIC_RANGE_TOP;
+    exports.DEFAULT_FREQUENCY_SCALE = DEFAULT_FREQUENCY_SCALE;
     exports.DEFAULT_MAX_DECIBELS = DEFAULT_MAX_DECIBELS;
     exports.DEFAULT_MAX_FREQUENCY = DEFAULT_MAX_FREQUENCY;
     exports.DEFAULT_MAX_TIME_WINDOW = DEFAULT_MAX_TIME_WINDOW;
@@ -130,6 +132,7 @@
       _maxFrequency = constants.exports.DEFAULT_MAX_FREQUENCY;
       _dynamicRange = constants.exports.DEFAULT_DYNAMIC_RANGE;
       _dynamicRangeTop = constants.exports.DEFAULT_DYNAMIC_RANGE_TOP;
+      _frequencyScale = constants.exports.DEFAULT_FREQUENCY_SCALE;
       _colorRamp = [
           [0, 0, 0],
           [0, 0, 200],
@@ -151,6 +154,13 @@
           // TODO: VALIDATE
           this._minFrequency = utils.exports.clamp(value, constants.exports.MIN_FREQUENCY, constants.exports.MAX_FREQUENCY);
           this._gl.uniform1f(this._glParams.uMinFrequencyLocation, this._minFrequency);
+      }
+      set frequencyScale(frequencyScale) {
+          this._frequencyScale = frequencyScale;
+          this._gl.uniform1i(this._glParams.uScale, frequencyScale === constants.exports.FrequencyScale.logarithmic ? 1 : 0);
+      }
+      get frequencyScale() {
+          return this._frequencyScale;
       }
       get minFrequency() {
           return this._minFrequency;
@@ -194,10 +204,11 @@
       get fragmentShader() {
           return fragmentShaderCode.replace('{{COLOR_RAMP}}', generateColorRampCode(this.colorRamp));
       }
-      constructor({ canvas, dataResolver, currentTime = 0, }) {
+      constructor({ canvas, dataResolver, currentTime = 0, frequencyScale = constants.exports.DEFAULT_FREQUENCY_SCALE, }) {
           this._canvas = canvas;
           this._gl = canvas.getContext('webgl');
           this._dataResolver = dataResolver;
+          this._frequencyScale = frequencyScale;
           this.currentTime = currentTime;
           this.initGl();
       }
@@ -224,6 +235,20 @@
           gl.attachShader(program, fragmentShader);
           gl.linkProgram(program);
           /*
+           * for debugging shaders
+           */
+          {
+              if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                  console.error("ERROR linking program!", gl.getProgramInfoLog(program));
+                  return;
+              }
+              gl.validateProgram(program);
+              if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) {
+                  console.error("ERROR validating program!", gl.getProgramInfoLog(program));
+                  return;
+              }
+          }
+          /*
            * Creates quad to paint on
            */
           const backgroundVertices = [
@@ -243,6 +268,7 @@
            */
           this._glParams = {
               uVisibleTransformLocation: gl.getUniformLocation(program, "u_visibleTransforms"),
+              uScale: gl.getUniformLocation(program, "u_scale"),
               uXTransformOffsetLocation: gl.getUniformLocation(program, "u_xTransformOffset"),
               uTextureSizeLocation: gl.getUniformLocation(program, "u_textureSize"),
               uMinFrequencyLocation: gl.getUniformLocation(program, "u_minFrequency"),
@@ -264,6 +290,7 @@
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
           gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+          gl.uniform1i(this._glParams.uScale, 1);
           gl.uniform2f(this._glParams.uTextureSizeLocation, textureWidth, textureHeight);
           gl.uniform2f(this._glParams.uViewportSize, width, height);
           gl.uniform1f(this._glParams.uMinFrequencyLocation, this._minFrequency);

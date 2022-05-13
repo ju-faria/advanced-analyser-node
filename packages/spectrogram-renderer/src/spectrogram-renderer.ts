@@ -1,16 +1,18 @@
 import { generateColorRampCode } from './shaders/generate-color-ramp-code';
-import fragmentShaderCode from './shaders/fragment.glsl';
+import fragmentShaderCode from './shaders/lin/fragment.glsl';
 import vertexShaderCode from './shaders/vertex.glsl';
 import { FrequencyDataResolver } from './types';
 import { clamp } from '@soundui/shared/utils';
 import {
   DEFAULT_DYNAMIC_RANGE,
   DEFAULT_DYNAMIC_RANGE_TOP,
+  DEFAULT_FREQUENCY_SCALE,
   DEFAULT_MAX_FREQUENCY,
   DEFAULT_MAX_TIME_WINDOW,
   DEFAULT_MIN_FREQUENCY,
   DEFAULT_MIN_TIME_WINDOW,
   DEFAULT_TIME_WINDOW,
+  FrequencyScale,
   MAX_FREQUENCY,
   MIN_FREQUENCY
 } from '@soundui/shared/constants';
@@ -20,6 +22,7 @@ export type SpectrogramRendererProperties = {
   canvas: HTMLCanvasElement
   dataResolver: FrequencyDataResolver
   currentTime?: number
+  frequencyScale?: FrequencyScale
 }
 
 export class SpectrogramRenderer {
@@ -31,6 +34,7 @@ export class SpectrogramRenderer {
 
   private _glParams: {
     uVisibleTransformLocation: WebGLUniformLocation;
+    uScale: WebGLUniformLocation; // 0: Linear, 1: Logarithmic
     uXTransformOffsetLocation: WebGLUniformLocation;
     uTextureSizeLocation: WebGLUniformLocation;
     uMinFrequencyLocation: WebGLUniformLocation;
@@ -57,6 +61,8 @@ export class SpectrogramRenderer {
   private _dynamicRange = DEFAULT_DYNAMIC_RANGE;
 
   private _dynamicRangeTop = DEFAULT_DYNAMIC_RANGE_TOP;
+
+  private _frequencyScale = DEFAULT_FREQUENCY_SCALE;
 
   private _colorRamp: [number, number, number][] = [
     [0, 0, 0],
@@ -86,6 +92,15 @@ export class SpectrogramRenderer {
     this._gl.uniform1f(this._glParams.uMinFrequencyLocation, this._minFrequency);                
   }
 
+  set frequencyScale(frequencyScale: FrequencyScale) {
+    this._frequencyScale = frequencyScale;
+    this._gl.uniform1i(this._glParams.uScale, frequencyScale === FrequencyScale.logarithmic ? 1 : 0);                
+  }
+
+  get frequencyScale() {
+    return this._frequencyScale;
+  }
+
   get minFrequency() {
     return this._minFrequency;
   }
@@ -109,7 +124,6 @@ export class SpectrogramRenderer {
   get dynamicRange() {
     return this._dynamicRange;
   }
-
 
   set dynamicRangeTop(value: number) {
     this._dynamicRangeTop = value;
@@ -149,10 +163,12 @@ export class SpectrogramRenderer {
     canvas,
     dataResolver,
     currentTime = 0,
+    frequencyScale = DEFAULT_FREQUENCY_SCALE,
   }:SpectrogramRendererProperties) {
     this._canvas = canvas;
     this._gl = canvas.getContext('webgl');
     this._dataResolver = dataResolver;
+    this._frequencyScale = frequencyScale;
     this.currentTime = currentTime;
 
     this.initGl();
@@ -241,6 +257,7 @@ export class SpectrogramRenderer {
      */
     this._glParams = {
       uVisibleTransformLocation: gl.getUniformLocation(program, "u_visibleTransforms"),
+      uScale: gl.getUniformLocation(program, "u_scale"),
       uXTransformOffsetLocation: gl.getUniformLocation(program, "u_xTransformOffset"),
       uTextureSizeLocation: gl.getUniformLocation(program, "u_textureSize"),
       uMinFrequencyLocation: gl.getUniformLocation(program, "u_minFrequency"),
@@ -267,6 +284,8 @@ export class SpectrogramRenderer {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   
+    gl.uniform1i(this._glParams.uScale, 1); 
+
     gl.uniform2f(this._glParams.uTextureSizeLocation, textureWidth, textureHeight);    
     gl.uniform2f(this._glParams.uViewportSize, width, height);    
   

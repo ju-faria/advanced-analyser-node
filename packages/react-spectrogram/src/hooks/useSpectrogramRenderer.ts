@@ -1,16 +1,19 @@
 import React, { useEffect, useMemo } from "react";
 import { DataUpdateEvent, FrequencyDataResolver, SpectrogramRenderer } from "@soundui/spectrogram-renderer";
 import { Nullable } from '@soundui/shared/utils';
+import { FrequencyScale } from "@soundui/shared/constants";
 
 export type SpectrogramRendererHookProperties = {
   canvas: Nullable<HTMLCanvasElement>,
   dataResolver: FrequencyDataResolver,
+  frequencyScale?: FrequencyScale,
 }
 
 export const useSpectrogramRenderer = (
   {
     canvas,
     dataResolver,
+    frequencyScale = FrequencyScale.logarithmic,
   }:SpectrogramRendererHookProperties,
   deps: React.DependencyList
 ) => {
@@ -19,6 +22,7 @@ export const useSpectrogramRenderer = (
     return new SpectrogramRenderer({
       canvas,
       dataResolver,
+      frequencyScale,
     });
   }, [canvas, dataResolver]);
   useEffect(() => {
@@ -34,7 +38,6 @@ export const useSpectrogramRenderer = (
      * Redraws when data is updated
      */
     const dataUpdateHandler = (event: CustomEventInit<DataUpdateEvent>) => {
-
       if (!spectrogramRenderer) return;
       if (!spectrogramRenderer.isFrequencyBinVisible(event.detail.frequencyBinIndex)) return;
       spectrogramRenderer.draw();
@@ -80,6 +83,11 @@ export const useSpectrogramRenderer = (
     setDynamicRangeTop: (dynamicRangeTop: number) => {
       if (!spectrogramRenderer) return;
       spectrogramRenderer.dynamicRangeTop = dynamicRangeTop;
+      spectrogramRenderer.draw();
+    },
+    setFrequencyScale: (frequencyScale: FrequencyScale) => {
+      if (!spectrogramRenderer) return;
+      spectrogramRenderer.frequencyScale = frequencyScale;
       spectrogramRenderer.draw();
     },
   };

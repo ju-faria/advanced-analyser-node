@@ -1,6 +1,7 @@
 import { clamp } from "lodash";
-import { FrequencyScale } from '@soundui/shared/constants';
-import { lerpLog, inverseLerpLog, getTimeFromRender } from "src/utils";
+import { FrequencyScale, MAX_FREQUENCY, MIN_FREQUENCY } from '@soundui/shared/constants';
+import { getTimeFromRender } from "src/utils";
+import { lerpLog, inverseLerpLog, lerp, inverseLerp } from '@soundui/shared/utils';
 
 export type TransformProperties = {
   minFrequency: number,
@@ -25,7 +26,7 @@ export type TranslationFunctions = {
 }
 
 
-export const translateFrequency = (
+export const translateFrequencyLog = (
   frequencyAxisSize: number,
   delta: number,
 ) => (properties:TransformProperties) => {
@@ -42,13 +43,13 @@ export const translateFrequency = (
     (frequencyAxisSize + delta) / frequencyAxisSize,
   );
 
-  if(newMaxFrequency > 44100) {
-    newMaxFrequency = 44100;
-    const pos = inverseLerpLog(minFrequency, maxFrequency, 44100);
+  if(newMaxFrequency > MAX_FREQUENCY) {
+    newMaxFrequency = MAX_FREQUENCY;
+    const pos = inverseLerpLog(minFrequency, maxFrequency, MAX_FREQUENCY);
     newMinFrequency = lerpLog(minFrequency, maxFrequency, pos - 1);
-  } else if (newMinFrequency < 20) {
-    newMinFrequency = 20;
-    const pos = inverseLerpLog(minFrequency, maxFrequency, 20);
+  } else if (newMinFrequency < MIN_FREQUENCY) {
+    newMinFrequency = MIN_FREQUENCY;
+    const pos = inverseLerpLog(minFrequency, maxFrequency, MIN_FREQUENCY);
     newMaxFrequency = lerpLog(minFrequency, maxFrequency, pos + 1);
   }
 
@@ -94,7 +95,7 @@ export const scaleTimeWindow = (
   };
 };
 
-export const scaleFrequencies = (
+export const scaleFrequenciesLog = (
   scaleFactor: number,
   origin: number,
 ) => (properties: TransformProperties) => {
@@ -113,32 +114,84 @@ export const scaleFrequencies = (
   );
   return {
     ...properties,
-    minFrequency: clamp(newMinFrequency, 20, 44100),
-    maxFrequency: clamp(newMaxFrequency, 20, 44100),
+    minFrequency: clamp(newMinFrequency, MIN_FREQUENCY, MAX_FREQUENCY),
+    maxFrequency: clamp(newMaxFrequency, MIN_FREQUENCY, MAX_FREQUENCY),
   };
 };
 
 
+
+export const translateFrequencyLin = (
+  frequencyAxisSize: number,
+  delta: number,
+) => (properties:TransformProperties) => {
+  const { minFrequency, maxFrequency } = properties;
+  let newMinFrequency = lerp(
+    minFrequency,
+    maxFrequency,
+    delta / frequencyAxisSize,
+  );
+
+  let newMaxFrequency = lerp(
+    minFrequency,
+    maxFrequency,
+    (frequencyAxisSize + delta) / frequencyAxisSize,
+  );
+
+  if(newMaxFrequency > MAX_FREQUENCY) {
+    newMaxFrequency = MAX_FREQUENCY;
+    const pos = inverseLerp(minFrequency, maxFrequency, MAX_FREQUENCY);
+    newMinFrequency = lerp(minFrequency, maxFrequency, pos - 1);
+  } else if (newMinFrequency < MIN_FREQUENCY) {
+    newMinFrequency = MIN_FREQUENCY;
+    const pos = inverseLerp(minFrequency, maxFrequency, MIN_FREQUENCY);
+    newMaxFrequency = lerp(minFrequency, maxFrequency, pos + 1);
+  }
+
+  return {
+    ...properties,
+    minFrequency: Math.round(newMinFrequency * 100) / 100,
+    maxFrequency: Math.round(newMaxFrequency * 100) / 100,
+  };
+};
+
+
+export const scaleFrequenciesLin = (
+  scaleFactor: number,
+  origin: number,
+) => (properties: TransformProperties) => {
+  const { minFrequency, maxFrequency } = properties;
+  const inverseOrigin = (1 - origin);
+  const newMinFrequency = lerp(
+    minFrequency,
+    maxFrequency,
+    -((inverseOrigin*scaleFactor + origin)-1)
+  );
+
+  const newMaxFrequency = lerp(
+    minFrequency,
+    maxFrequency,
+    origin * scaleFactor + inverseOrigin
+  );
+  return {
+    ...properties,
+    minFrequency: clamp(newMinFrequency, MIN_FREQUENCY, MAX_FREQUENCY),
+    maxFrequency: clamp(newMaxFrequency, MIN_FREQUENCY, MAX_FREQUENCY),
+  };
+};
+
 export const transformFn:Record<FrequencyScale, TranslationFunctions> = {
   logarithmic: {
-    translateFrequency: translateFrequency,
-    translateCurrentTime: translateCurrentTime,
-    scaleFrequencies: scaleFrequencies,
-    scaleTimeWindow: scaleTimeWindow,
+    translateFrequency: translateFrequencyLog,
+    scaleFrequencies: scaleFrequenciesLog,
+    translateCurrentTime,
+    scaleTimeWindow,
   },
   linear: {
-    translateFrequency: function (): TransformFn {
-      throw new Error("Function not implemented.");
-    },
-    translateCurrentTime: function (): TransformFn {
-      throw new Error("Function not implemented.");
-    },
-    scaleFrequencies: function (): TransformFn {
-      throw new Error("Function not implemented.");
-    },
-    scaleTimeWindow: function (): TransformFn {
-      throw new Error("Function not implemented.");
-    }
+    translateFrequency: translateFrequencyLin,
+    scaleFrequencies: scaleFrequenciesLin,
+    translateCurrentTime,
+    scaleTimeWindow,
   }
 };
 

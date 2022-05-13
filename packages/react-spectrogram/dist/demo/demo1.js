@@ -1,8 +1,8 @@
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@soundui/advanced-analyser-node')) :
-	typeof define === 'function' && define.amd ? define(['exports', '@soundui/advanced-analyser-node'], factory) :
-	(global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.demo = {}, global.advancedAnalyserNode));
-})(this, (function (exports, advancedAnalyserNode) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@soundui/advanced-analyser-node'), require('@soundui/shared/dist/constants/defaults')) :
+	typeof define === 'function' && define.amd ? define(['exports', '@soundui/advanced-analyser-node', '@soundui/shared/dist/constants/defaults'], factory) :
+	(global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.demo = {}, global.advancedAnalyserNode, global.defaults));
+})(this, (function (exports, advancedAnalyserNode, defaults) { 'use strict';
 
 	var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
@@ -34,7 +34,7 @@
 	      return `vec3 color_ramp(float value) {${[...colorVars, ...colorRampBody].join('')}}`;
 	  };
 
-	  var fragmentShaderCode = "precision highp float;\n\nuniform sampler2D fft;\nuniform float u_visibleTransforms;\nuniform float u_xTransformOffset;\nuniform float u_minFrequency;\nuniform float u_maxFrequency;\nuniform float u_dynamicRange;\nuniform float u_dynamicRangeTop;\nuniform float u_minDecibels;\nuniform float u_maxDecibels;\nuniform float u_sampleRate;\nuniform vec2 u_textureSize;\nuniform vec2 u_viewportSize;\n\n\nfloat lerp(float from, float to, float rel){\n  return ((1. - rel) * from) + (rel * to);\n}\nfloat invLerp(float from, float to, float value){\n  return (value - from) / (to - from);\n}\n\nfloat remap(float origFrom, float origTo, float targetFrom, float targetTo, float value){\n  float rel = invLerp(origFrom, origTo, value);\n  return lerp(targetFrom, targetTo, rel);\n} \n\n{{COLOR_RAMP}}\n\nvoid main() {\n  vec2 normCoord = (gl_FragCoord.xy + vec2(0., 0.))/ u_viewportSize.xy;\n  float xOffset = u_xTransformOffset / u_visibleTransforms;\n  float xScale =  u_visibleTransforms / u_textureSize.x;\n  float x = (normCoord.x + xOffset ) * xScale ;\n  \n  float minLog = log2(u_minFrequency);\n  float maxLog = log2(u_maxFrequency);\n\n  float hz = pow(2., lerp(minLog, maxLog, normCoord.y));\n  float y = (hz / u_sampleRate ) * 2.;\n\n  float color = texture2D(fft, vec2(x, y )).x;\n\n  gl_FragColor = vec4(color_ramp(\n    clamp(invLerp( u_dynamicRangeTop - u_dynamicRange, u_dynamicRangeTop, lerp(u_minDecibels, u_maxDecibels, color)), 0., 1.)\n  ), 1.);\n}\n";
+	  var fragmentShaderCode = "precision highp float;\n\nuniform sampler2D fft;\nuniform int u_scale;\nuniform float u_visibleTransforms;\nuniform float u_xTransformOffset;\nuniform float u_minFrequency;\nuniform float u_maxFrequency;\nuniform float u_dynamicRange;\nuniform float u_dynamicRangeTop;\nuniform float u_minDecibels;\nuniform float u_maxDecibels;\nuniform float u_sampleRate;\nuniform vec2 u_textureSize;\nuniform vec2 u_viewportSize;\n\n\nfloat lerp(float from, float to, float rel){\n  return ((1. - rel) * from) + (rel * to);\n}\nfloat invLerp(float from, float to, float value){\n  return (value - from) / (to - from);\n}\n\nfloat remap(float origFrom, float origTo, float targetFrom, float targetTo, float value){\n  float rel = invLerp(origFrom, origTo, value);\n  return lerp(targetFrom, targetTo, rel);\n} \n\nfloat getY(float y) {\n  // LIN\n  if (u_scale == 0) {\n    float hz = lerp(u_minFrequency, u_maxFrequency, y);\n    return (hz / u_sampleRate);\n  }\n  // LOG \n  if (u_scale == 1) {\n    float minLog = log2(u_minFrequency);\n    float maxLog = log2(u_maxFrequency);\n\n    float hz = pow(2., lerp(minLog, maxLog, y));\n    return (hz / u_sampleRate ) * 2.;\n  }\n}\n\n{{COLOR_RAMP}}\n\nvoid main() {\n  vec2 normCoord = (gl_FragCoord.xy + vec2(0., 0.))/ u_viewportSize.xy;\n  float xOffset = u_xTransformOffset / u_visibleTransforms;\n  float xScale =  u_visibleTransforms / u_textureSize.x;\n  float x = (normCoord.x + xOffset ) * xScale ;\n\n  float y = getY(normCoord.y);\n\n  float color = texture2D(fft, vec2(x, y )).x;\n\n  gl_FragColor = vec4(color_ramp(\n    clamp(invLerp( u_dynamicRangeTop - u_dynamicRange, u_dynamicRangeTop, lerp(u_minDecibels, u_maxDecibels, color)), 0., 1.)\n  ), 1.);\n}\n";
 
 	  var vertexShaderCode = "\n  precision mediump float;\n\n  attribute vec2 vertPosition;\n  attribute vec3 vertColor;\n  varying vec3 fragColor;\n\n  void main()\n  {\n    fragColor = vertColor;\n    gl_Position = vec4(vertPosition, 0.0, 1.0);\n  }";
 
@@ -84,6 +84,12 @@
 	  (function (global, factory) {
 	    factory(exports) ;
 	  })(commonjsGlobal$1, (function (exports) {
+	    exports.FrequencyScale = void 0;
+	    (function (FrequencyScale) {
+	        FrequencyScale["linear"] = "linear";
+	        FrequencyScale["logarithmic"] = "logarithmic";
+	    })(exports.FrequencyScale || (exports.FrequencyScale = {}));
+
 	    const DEFAULT_MIN_FREQUENCY = 20;
 	    const DEFAULT_MAX_FREQUENCY = 44100;
 	    const DEFAULT_MIN_DECIBELS = -100;
@@ -93,20 +99,16 @@
 	    const DEFAULT_MAX_TIME_WINDOW = 3600_000;
 	    const DEFAULT_DYNAMIC_RANGE = 70;
 	    const DEFAULT_DYNAMIC_RANGE_TOP = -30;
+	    const DEFAULT_FREQUENCY_SCALE = exports.FrequencyScale.logarithmic;
 
 	    const MAX_FFT_SIZE = 32768;
 	    const MIN_FFT_SIZE = 32;
 	    const MIN_FREQUENCY = 20;
 	    const MAX_FREQUENCY = 44100;
 
-	    exports.FrequencyScale = void 0;
-	    (function (FrequencyScale) {
-	        FrequencyScale["linear"] = "linear";
-	        FrequencyScale["logarithmic"] = "logarithmic";
-	    })(exports.FrequencyScale || (exports.FrequencyScale = {}));
-
 	    exports.DEFAULT_DYNAMIC_RANGE = DEFAULT_DYNAMIC_RANGE;
 	    exports.DEFAULT_DYNAMIC_RANGE_TOP = DEFAULT_DYNAMIC_RANGE_TOP;
+	    exports.DEFAULT_FREQUENCY_SCALE = DEFAULT_FREQUENCY_SCALE;
 	    exports.DEFAULT_MAX_DECIBELS = DEFAULT_MAX_DECIBELS;
 	    exports.DEFAULT_MAX_FREQUENCY = DEFAULT_MAX_FREQUENCY;
 	    exports.DEFAULT_MAX_TIME_WINDOW = DEFAULT_MAX_TIME_WINDOW;
@@ -138,6 +140,7 @@
 	      _maxFrequency = constants.exports.DEFAULT_MAX_FREQUENCY;
 	      _dynamicRange = constants.exports.DEFAULT_DYNAMIC_RANGE;
 	      _dynamicRangeTop = constants.exports.DEFAULT_DYNAMIC_RANGE_TOP;
+	      _frequencyScale = constants.exports.DEFAULT_FREQUENCY_SCALE;
 	      _colorRamp = [
 	          [0, 0, 0],
 	          [0, 0, 200],
@@ -159,6 +162,13 @@
 	          // TODO: VALIDATE
 	          this._minFrequency = utils.exports.clamp(value, constants.exports.MIN_FREQUENCY, constants.exports.MAX_FREQUENCY);
 	          this._gl.uniform1f(this._glParams.uMinFrequencyLocation, this._minFrequency);
+	      }
+	      set frequencyScale(frequencyScale) {
+	          this._frequencyScale = frequencyScale;
+	          this._gl.uniform1i(this._glParams.uScale, frequencyScale === constants.exports.FrequencyScale.logarithmic ? 1 : 0);
+	      }
+	      get frequencyScale() {
+	          return this._frequencyScale;
 	      }
 	      get minFrequency() {
 	          return this._minFrequency;
@@ -202,10 +212,11 @@
 	      get fragmentShader() {
 	          return fragmentShaderCode.replace('{{COLOR_RAMP}}', generateColorRampCode(this.colorRamp));
 	      }
-	      constructor({ canvas, dataResolver, currentTime = 0, }) {
+	      constructor({ canvas, dataResolver, currentTime = 0, frequencyScale = constants.exports.DEFAULT_FREQUENCY_SCALE, }) {
 	          this._canvas = canvas;
 	          this._gl = canvas.getContext('webgl');
 	          this._dataResolver = dataResolver;
+	          this._frequencyScale = frequencyScale;
 	          this.currentTime = currentTime;
 	          this.initGl();
 	      }
@@ -232,6 +243,20 @@
 	          gl.attachShader(program, fragmentShader);
 	          gl.linkProgram(program);
 	          /*
+	           * for debugging shaders
+	           */
+	          {
+	              if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+	                  console.error("ERROR linking program!", gl.getProgramInfoLog(program));
+	                  return;
+	              }
+	              gl.validateProgram(program);
+	              if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) {
+	                  console.error("ERROR validating program!", gl.getProgramInfoLog(program));
+	                  return;
+	              }
+	          }
+	          /*
 	           * Creates quad to paint on
 	           */
 	          const backgroundVertices = [
@@ -251,6 +276,7 @@
 	           */
 	          this._glParams = {
 	              uVisibleTransformLocation: gl.getUniformLocation(program, "u_visibleTransforms"),
+	              uScale: gl.getUniformLocation(program, "u_scale"),
 	              uXTransformOffsetLocation: gl.getUniformLocation(program, "u_xTransformOffset"),
 	              uTextureSizeLocation: gl.getUniformLocation(program, "u_textureSize"),
 	              uMinFrequencyLocation: gl.getUniformLocation(program, "u_minFrequency"),
@@ -272,6 +298,7 @@
 	          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 	          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	          gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	          gl.uniform1i(this._glParams.uScale, 1);
 	          gl.uniform2f(this._glParams.uTextureSizeLocation, textureWidth, textureHeight);
 	          gl.uniform2f(this._glParams.uViewportSize, width, height);
 	          gl.uniform1f(this._glParams.uMinFrequencyLocation, this._minFrequency);
@@ -878,13 +905,62 @@
 	    return result;
 	};
 
-	const useSpectrogramRenderer = ({ canvas, dataResolver, }, deps) => {
+	var constants = {exports: {}};
+
+	(function (module, exports) {
+	(function (global, factory) {
+	  factory(exports) ;
+	})(commonjsGlobal, (function (exports) {
+	  exports.FrequencyScale = void 0;
+	  (function (FrequencyScale) {
+	      FrequencyScale["linear"] = "linear";
+	      FrequencyScale["logarithmic"] = "logarithmic";
+	  })(exports.FrequencyScale || (exports.FrequencyScale = {}));
+
+	  const DEFAULT_MIN_FREQUENCY = 20;
+	  const DEFAULT_MAX_FREQUENCY = 44100;
+	  const DEFAULT_MIN_DECIBELS = -100;
+	  const DEFAULT_MAX_DECIBELS = -10;
+	  const DEFAULT_TIME_WINDOW = 10_000;
+	  const DEFAULT_MIN_TIME_WINDOW = 1000;
+	  const DEFAULT_MAX_TIME_WINDOW = 3600_000;
+	  const DEFAULT_DYNAMIC_RANGE = 70;
+	  const DEFAULT_DYNAMIC_RANGE_TOP = -30;
+	  const DEFAULT_FREQUENCY_SCALE = exports.FrequencyScale.logarithmic;
+
+	  const MAX_FFT_SIZE = 32768;
+	  const MIN_FFT_SIZE = 32;
+	  const MIN_FREQUENCY = 20;
+	  const MAX_FREQUENCY = 44100;
+
+	  exports.DEFAULT_DYNAMIC_RANGE = DEFAULT_DYNAMIC_RANGE;
+	  exports.DEFAULT_DYNAMIC_RANGE_TOP = DEFAULT_DYNAMIC_RANGE_TOP;
+	  exports.DEFAULT_FREQUENCY_SCALE = DEFAULT_FREQUENCY_SCALE;
+	  exports.DEFAULT_MAX_DECIBELS = DEFAULT_MAX_DECIBELS;
+	  exports.DEFAULT_MAX_FREQUENCY = DEFAULT_MAX_FREQUENCY;
+	  exports.DEFAULT_MAX_TIME_WINDOW = DEFAULT_MAX_TIME_WINDOW;
+	  exports.DEFAULT_MIN_DECIBELS = DEFAULT_MIN_DECIBELS;
+	  exports.DEFAULT_MIN_FREQUENCY = DEFAULT_MIN_FREQUENCY;
+	  exports.DEFAULT_MIN_TIME_WINDOW = DEFAULT_MIN_TIME_WINDOW;
+	  exports.DEFAULT_TIME_WINDOW = DEFAULT_TIME_WINDOW;
+	  exports.MAX_FFT_SIZE = MAX_FFT_SIZE;
+	  exports.MAX_FREQUENCY = MAX_FREQUENCY;
+	  exports.MIN_FFT_SIZE = MIN_FFT_SIZE;
+	  exports.MIN_FREQUENCY = MIN_FREQUENCY;
+
+	  Object.defineProperty(exports, '__esModule', { value: true });
+
+	}));
+	}(constants, constants.exports));
+
+	const useSpectrogramRenderer = ({ canvas, dataResolver, frequencyScale = constants.exports.FrequencyScale.logarithmic, }, deps) => {
 	    const spectrogramRenderer = react.exports.useMemo(() => {
 	        if (!canvas)
 	            return null;
 	        return new bundle.exports.SpectrogramRenderer({
 	            canvas,
 	            dataResolver,
+	            frequencyScale,
 	        });
 	    }, [canvas, dataResolver]);
 	    react.exports.useEffect(() => {
@@ -951,6 +1027,12 @@
 	            if (!spectrogramRenderer)
 	                return;
 	            spectrogramRenderer.dynamicRangeTop = dynamicRangeTop;
+	            spectrogramRenderer.draw();
+	        },
+	        setFrequencyScale: (frequencyScale) => {
+	            if (!spectrogramRenderer)
+	                return;
+	            spectrogramRenderer.frequencyScale = frequencyScale;
 	            spectrogramRenderer.draw();
 	        },
 	    };
@@ -18185,92 +18267,131 @@
 	    dataResolver: null,
 	});
 
-	const lerpLog = (from, to, rel) => {
-	    return Math.pow(Math.E, lerp(Math.log(from), Math.log(to), rel));
+	var utils = {exports: {}};
+
+	(function (module, exports) {
+	(function (global, factory) {
+	  factory(exports) ;
+	})(commonjsGlobal, (function (exports) {
+	  const lerp = (from, to, rel) => {
+	      return (1 - rel) * from + rel * to;
+	  };
+	  const inverseLerp = (from, to, rel) => {
+	      return (rel - from) / (to - from);
+	  };
+	  const lerpLog = (from, to, rel) => {
+	      return Math.pow(Math.E, lerp(Math.log(from), Math.log(to), rel));
+	  };
+	  const inverseLerpLog = (from, to, rel) => {
+	      return inverseLerp(Math.log(from), Math.log(to), Math.log(rel));
+	  };
+	  const remap = (origFrom, origTo, targetFrom, targetTo, rel) => {
+	      return lerp(targetFrom, targetTo, inverseLerp(origFrom, origTo, rel));
+	  };
+
+	  const clamp = (value, min, max) => {
+	      return Math.min(Math.max(value, min), max);
+	  };
+
+	  exports.clamp = clamp;
+	  exports.inverseLerp = inverseLerp;
+	  exports.inverseLerpLog = inverseLerpLog;
+	  exports.lerp = lerp;
+	  exports.lerpLog = lerpLog;
+	  exports.remap = remap;
+
+	  Object.defineProperty(exports, '__esModule', { value: true });
+
+	}));
+	}(utils, utils.exports));
+
+	const generateLogLabels = (min, max, rulerSize) => {
+	    const labels = [];
+	    let lastVisibleFreqPosition = 0;
+	    for (let freq = 100000, step = 10000; freq >= 1; freq = freq - step) {
+	        if (freq <= 10000)
+	            step = 1000;
+	        if (freq <= 1000)
+	            step = 100;
+	        if (freq <= 100)
+	            step = 10;
+	        if (freq <= 10)
+	            step = 1;
+	        // if (freq < 100000) step = 10000;
+	        // if (freq < 1000000) step = 100000;
+	        const position = rulerSize - rulerSize * utils.exports.inverseLerpLog(min, max, freq);
+	        const distance = Math.abs(position - lastVisibleFreqPosition);
+	        const isLabelVisible = freq === 100000 ? true : distance > 25;
+	        if (isLabelVisible) {
+	            lastVisibleFreqPosition = position;
+	        }
+	        labels.push({
+	            label: String(freq).replace(/000$/, 'k'),
+	            position,
+	            isLabelVisible,
+	        });
+	    }
+	    return labels;
 	};
-	const inverseLerpLog = (from, to, rel) => {
-	    return inverseLerp(Math.log(from), Math.log(to), Math.log(rel));
+	const generateLinLabels = (min, max, rulerSize) => {
+	    const labels = [];
+	    const minDistance = 25;
+	    const freqDistance = ((max - min) / (rulerSize / minDistance));
+	    let freqStep = 10;
+	    if (freqDistance >= 10)
+	        freqStep = 50;
+	    if (freqDistance >= 50)
+	        freqStep = 100;
+	    if (freqDistance >= 100)
+	        freqStep = 500;
+	    if (freqDistance >= 500)
+	        freqStep = 1000;
+	    if (freqDistance >= 1000)
+	        freqStep = 5000;
+	    if (freqDistance >= 5000)
+	        freqStep = 10000;
+	    for (let freq = Math.floor(min / freqStep) * freqStep; freq <= Math.ceil(max / freqStep) * freqStep; freq = freq + freqStep) {
+	        labels.push({
+	            label: String(freq),
+	            position: rulerSize - rulerSize * utils.exports.inverseLerp(min, max, freq),
+	            isLabelVisible: true,
+	        });
+	    }
+	    return labels;
 	};
-	// export const inverseLerpLog = (from: number, to: number, rel: number) => {
-	//   return Math.log(lerp(from, to, rel));
-	// };
-	// export const inverseLerpLog = (from: number, to: number, rel: number) => {
-	//   return lerp(Math.log(from), Math.log(to), rel);
-	// };
-	const lerp = (from, to, rel) => {
-	    return (1 - rel) * from + rel * to;
+	const generateLabels = {
+	    logarithmic: generateLogLabels,
+	    linear: generateLinLabels,
 	};
-	const inverseLerp = (from, to, rel) => {
-	    return (rel - from) / (to - from);
-	};
+	const FrequencyRuler = react.exports.forwardRef(({ width, height, minFrequency, maxFrequency, frequencyScale = constants.exports.DEFAULT_FREQUENCY_SCALE, color = "#000", orientation = 'vertical', position = 'inset', direction = 'descending', style = {}, ...rest }, ref) => {
+	    const rulerSize = orientation === 'horizontal' ? width : height;
+	    const labels = react.exports.useMemo(() => generateLabels[frequencyScale](minFrequency, maxFrequency, rulerSize), [minFrequency, maxFrequency, height, width, orientation, frequencyScale]);
+	    const marksLength = 4;
+	    return (React.createElement("div", { className: "frequency-ruler", ref: ref, style: {
+	            width,
+	            height,
+	            ...style,
+	        }, ...rest },
+	        React.createElement("svg", { width: width, height: height }, labels.map(({ label, position: freqPosition, isLabelVisible }, i) => (React.createElement("g", { key: label, transform: orientation === 'vertical' ? `translate(0, ${freqPosition})` : `translate(${freqPosition}, 0)` },
+	            label && isLabelVisible && (React.createElement("text", { className: "frequency-ruler-label", fill: color, fontSize: 11, fontFamily: "sans-serif", ...(orientation === 'vertical' ? {
+	                    x: position === 'inset' ? width - marksLength - 1 : marksLength + 1,
+	                    textAnchor: position === 'inset' ? "end" : "start",
+	                    alignmentBaseline: 'central'
+	                } : {
+	                    y: position === 'inset' ? height - marksLength - 1 : marksLength + 1,
+	                    textAnchor: "middle",
+	                    alignmentBaseline: position === 'inset' ? 'baseline' : 'hanging'
+	                }) }, String(label))),
+	            orientation === 'vertical' && (React.createElement("line", { className: "frequency-ruler-label-marks", x1: position === 'inset' ? width - marksLength : 0, x2: position === 'inset' ? width : marksLength, y1: 0, y2: 0, stroke: color })),
+	            orientation === 'horizontal' && (React.createElement("line", { className: "frequency-ruler-label-marks", x1: 0, x2: 0, y1: position === 'inset' ? height - marksLength : 0, y2: position === 'inset' ? height : marksLength, stroke: color }))))))));
+	});
+
 	const getTimeFromRender = (currentTime, timeWindow, renderPoint) => {
 	    return currentTime + timeWindow * renderPoint;
 	};
 	const getRenderPointFromTime = (currentTime, timeWindow, time) => {
 	    return (time - currentTime) / timeWindow;
 	};
-
-	const generateLogLabels = (min, max) => {
-	    const labels = [];
-	    for (let i = min, step = 1; i <= max; i = i + step) {
-	        if (i >= 10)
-	            step = 10;
-	        if (i >= 100)
-	            step = 100;
-	        if (i >= 1000)
-	            step = 1000;
-	        if (i >= 10000)
-	            step = 10000;
-	        if (i >= 100000)
-	            step = 100000;
-	        labels.push(i);
-	    }
-	    return labels;
-	};
-	const FrequencyRuler = react.exports.forwardRef(({ width, height, minFrequency, maxFrequency, color = "#000", backgroundColor, dividers = true, orientation = 'vertical', position = 'inset', direction = 'descending', style = {}, ...rest }, ref) => {
-	    const rulerSize = orientation === 'horizontal' ? width : height;
-	    const labels = react.exports.useMemo(() => {
-	        let lastVisibleFreqPosition = 0;
-	        return generateLogLabels(1, 44100).map((label, i) => {
-	            const position = rulerSize - rulerSize * inverseLerpLog(minFrequency, maxFrequency, label);
-	            const labelIsVisible = i === 0 || lastVisibleFreqPosition - position > 25;
-	            if (labelIsVisible) {
-	                lastVisibleFreqPosition = position;
-	            }
-	            return {
-	                position: direction === 'ascending' ? rulerSize - position : position,
-	                label: String(label).replace(/000$/, 'k'),
-	                labelIsVisible,
-	            };
-	        });
-	    }, [minFrequency, maxFrequency, height, width, orientation]);
-	    const marksLength = orientation === 'horizontal' ? height * 0.2 : width * 0.2;
-	    return (React.createElement("div", { ref: ref, style: {
-	            width,
-	            height,
-	            ...style,
-	        }, ...rest },
-	        React.createElement("svg", { width: width, height: height },
-	            backgroundColor && (React.createElement("rect", { x: 0, y: 0, width: width, height: height, fill: backgroundColor })),
-	            dividers && orientation === 'horizontal' && (React.createElement(React.Fragment, null,
-	                React.createElement("line", { x1: 0, y1: 0, x2: width, y2: 0, stroke: color, strokeWidth: 1 }),
-	                React.createElement("line", { x1: 0, y1: height, x2: width, y2: height, stroke: color, strokeWidth: 1 }))),
-	            dividers && orientation === 'vertical' && (React.createElement(React.Fragment, null,
-	                React.createElement("line", { x1: 0, y1: 0, x2: 0, y2: height, stroke: color, strokeWidth: 1 }),
-	                React.createElement("line", { x1: width, y1: 0, x2: width, y2: height, stroke: color, strokeWidth: 1 }))),
-	            labels.map(({ label, position: freqPosition, labelIsVisible }) => (React.createElement("g", { key: label, transform: orientation === 'vertical' ? `translate(0, ${freqPosition})` : `translate(${freqPosition}, 0)` },
-	                labelIsVisible && (React.createElement("text", { fill: "#fff", fontSize: 12, fontFamily: "sans-serif", ...(orientation === 'vertical' ? {
-	                        x: position === 'inset' ? width - marksLength - 5 : marksLength + 5,
-	                        textAnchor: position === 'inset' ? "end" : "start",
-	                        alignmentBaseline: 'central'
-	                    } : {
-	                        y: position === 'inset' ? height - marksLength - 5 : marksLength + 5,
-	                        textAnchor: "middle",
-	                        alignmentBaseline: position === 'inset' ? 'baseline' : 'hanging'
-	                    }) }, String(label).replace(/000$/, 'k'))),
-	                orientation === 'vertical' && (React.createElement("line", { x1: position === 'inset' ? width - marksLength : 0, x2: position === 'inset' ? width : marksLength, y1: 0, y2: 0, stroke: '#fff' })),
-	                orientation === 'horizontal' && (React.createElement("line", { x1: 0, x2: 0, y1: position === 'inset' ? height - marksLength : 0, y2: position === 'inset' ? height : marksLength, stroke: '#fff' }))))))));
-	});
 
 	const generateTimeRuler = (timeWindow, width) => {
 	    const timeRuler = [];
@@ -18288,7 +18409,7 @@
 	    const seconds = (time % 60).toFixed(1);
 	    return `${hours}:${minutes}:${seconds}`;
 	};
-	const TimeRuler = react.exports.forwardRef(({ width, height, timeWindow, currentTime, color = "#000", backgroundColor, dividers = true, orientation = 'horizontal', position = 'inset', style = {}, ...rest }, ref) => {
+	const TimeRuler = react.exports.forwardRef(({ width, height, timeWindow, currentTime, dividers = true, orientation = 'horizontal', position = 'inset', style = {}, ...rest }, ref) => {
 	    const labels = react.exports.useMemo(() => {
 	        return generateTimeRuler(timeWindow, orientation === 'horizontal' ? width : height);
 	    }, [timeWindow, width, height]);
@@ -18309,49 +18430,36 @@
 	            return `M ${width} ${timeAxis}  L  ${width - width * length} ${timeAxis}`;
 	    }).join(' ');
 	    const startTime = Math.floor(currentTime / rulerStep) * rulerStep;
-	    return (React.createElement("div", { ref: ref, style: {
+	    return (React.createElement("div", { className: "time-ruler", ref: ref, style: {
 	            width,
 	            height,
 	            ...style,
 	        }, ...rest },
 	        React.createElement("svg", { width: width, height: height },
-	            dividers && orientation === 'horizontal' && (React.createElement(React.Fragment, null,
-	                React.createElement("line", { x1: 0, y1: 0, x2: width, y2: 0, stroke: color, strokeWidth: 1 }),
-	                React.createElement("line", { x1: 0, y1: height, x2: width, y2: height, stroke: color, strokeWidth: 1 }))),
-	            dividers && orientation === 'vertical' && (React.createElement(React.Fragment, null,
-	                React.createElement("line", { x1: 0, y1: 0, x2: 0, y2: height, stroke: color, strokeWidth: 1 }),
-	                React.createElement("line", { x1: width, y1: 0, x2: width, y2: height, stroke: color, strokeWidth: 1 }))),
-	            backgroundColor && (React.createElement("rect", { x: 0, y: 0, width: width, height: height, fill: backgroundColor })),
 	            orientation === 'horizontal' && labels.map((timeStep) => (React.createElement("g", { key: timeStep, transform: `translate(${width * getRenderPointFromTime(currentTime, timeWindow, startTime + timeStep)}, 0)` },
-	                (React.createElement("text", { x: 0, y: (position === 'inset') ? height * 0.2 : height - height * 0.2, fill: color, "text-anchor": "middle", fontSize: 12, alignmentBaseline: (position === 'inset') ? 'hanging' : 'baseline', fontFamily: "sans-serif" }, formatTime((startTime + timeStep) / 1000))),
-	                React.createElement("path", { d: rulerPath, stroke: color })))),
+	                (React.createElement("text", { className: "time-ruler-label", x: 0, y: (position === 'inset') ? height * 0.2 : height - height * 0.2, "text-anchor": "middle", fontSize: 12, alignmentBaseline: (position === 'inset') ? 'hanging' : 'baseline', fontFamily: "sans-serif" }, formatTime((startTime + timeStep) / 1000))),
+	                React.createElement("path", { className: "time-ruler-label-marks", d: rulerPath })))),
 	            orientation === 'vertical' && labels.map((timeStep) => (React.createElement("g", { key: timeStep, transform: `translate(0, ${height * getRenderPointFromTime(currentTime, timeWindow, startTime + timeStep)})` },
-	                (React.createElement("text", { y: 0, x: (position === 'inset') ? width * 0.2 : width - width * 0.2, fill: color, "text-anchor": "middle", fontSize: 12, alignmentBaseline: 'hanging', fontFamily: "sans-serif", transform: `rotate(${position === 'inset' ? -90 : 90}, ${position === 'inset' ? width * 0.2 : width - width * 0.2}, 0)` }, formatTime((startTime + timeStep) / 1000))),
-	                React.createElement("path", { d: rulerPath, stroke: color })))))));
+	                (React.createElement("text", { className: "time-ruler-label", y: 0, x: (position === 'inset') ? width * 0.2 : width - width * 0.2, "text-anchor": "middle", fontSize: 12, alignmentBaseline: 'hanging', fontFamily: "sans-serif", transform: `rotate(${position === 'inset' ? -90 : 90}, ${position === 'inset' ? width * 0.2 : width - width * 0.2}, 0)` }, formatTime((startTime + timeStep) / 1000))),
+	                React.createElement("path", { className: "time-ruler-label-marks", d: rulerPath })))))));
 	});
-
-	var FrequencyScale;
-	(function (FrequencyScale) {
-	    FrequencyScale["linear"] = "linear";
-	    FrequencyScale["logarithmic"] = "logarithmic";
-	})(FrequencyScale || (FrequencyScale = {}));
 
 	const composeTransforms = (...transformFns) => (properties) => {
 	    return transformFns.reduce((acc, fn) => fn(acc), properties);
 	};
-	const translateFrequency = (frequencyAxisSize, delta) => (properties) => {
+	const translateFrequencyLog = (frequencyAxisSize, delta) => (properties) => {
 	    const { minFrequency, maxFrequency } = properties;
-	    let newMinFrequency = lerpLog(minFrequency, maxFrequency, delta / frequencyAxisSize);
-	    let newMaxFrequency = lerpLog(minFrequency, maxFrequency, (frequencyAxisSize + delta) / frequencyAxisSize);
-	    if (newMaxFrequency > 44100) {
-	        newMaxFrequency = 44100;
-	        const pos = inverseLerpLog(minFrequency, maxFrequency, 44100);
-	        newMinFrequency = lerpLog(minFrequency, maxFrequency, pos - 1);
+	    let newMinFrequency = utils.exports.lerpLog(minFrequency, maxFrequency, delta / frequencyAxisSize);
+	    let newMaxFrequency = utils.exports.lerpLog(minFrequency, maxFrequency, (frequencyAxisSize + delta) / frequencyAxisSize);
+	    if (newMaxFrequency > constants.exports.MAX_FREQUENCY) {
+	        newMaxFrequency = constants.exports.MAX_FREQUENCY;
+	        const pos = utils.exports.inverseLerpLog(minFrequency, maxFrequency, constants.exports.MAX_FREQUENCY);
+	        newMinFrequency = utils.exports.lerpLog(minFrequency, maxFrequency, pos - 1);
 	    }
-	    else if (newMinFrequency < 20) {
-	        newMinFrequency = 20;
-	        const pos = inverseLerpLog(minFrequency, maxFrequency, 20);
-	        newMaxFrequency = lerpLog(minFrequency, maxFrequency, pos + 1);
+	    else if (newMinFrequency < constants.exports.MIN_FREQUENCY) {
+	        newMinFrequency = constants.exports.MIN_FREQUENCY;
+	        const pos = utils.exports.inverseLerpLog(minFrequency, maxFrequency, constants.exports.MIN_FREQUENCY);
+	        newMaxFrequency = utils.exports.lerpLog(minFrequency, maxFrequency, pos + 1);
 	    }
 	    return {
 	        ...properties,
@@ -18378,37 +18486,60 @@
 	        timeWindow: timeWindow + timeWindowDelta,
 	    };
 	};
-	const scaleFrequencies = (scaleFactor, origin) => (properties) => {
+	const scaleFrequenciesLog = (scaleFactor, origin) => (properties) => {
 	    const { minFrequency, maxFrequency } = properties;
 	    const inverseOrigin = (1 - origin);
-	    const newMinFrequency = lerpLog(minFrequency, maxFrequency, -((inverseOrigin * scaleFactor + origin) - 1));
-	    const newMaxFrequency = lerpLog(minFrequency, maxFrequency, origin * scaleFactor + inverseOrigin);
+	    const newMinFrequency = utils.exports.lerpLog(minFrequency, maxFrequency, -((inverseOrigin * scaleFactor + origin) - 1));
+	    const newMaxFrequency = utils.exports.lerpLog(minFrequency, maxFrequency, origin * scaleFactor + inverseOrigin);
 	    return {
 	        ...properties,
-	        minFrequency: lodash.exports.clamp(newMinFrequency, 20, 44100),
-	        maxFrequency: lodash.exports.clamp(newMaxFrequency, 20, 44100),
+	        minFrequency: lodash.exports.clamp(newMinFrequency, constants.exports.MIN_FREQUENCY, constants.exports.MAX_FREQUENCY),
+	        maxFrequency: lodash.exports.clamp(newMaxFrequency, constants.exports.MIN_FREQUENCY, constants.exports.MAX_FREQUENCY),
+	    };
+	};
+	const translateFrequencyLin = (frequencyAxisSize, delta) => (properties) => {
+	    const { minFrequency, maxFrequency } = properties;
+	    let newMinFrequency = utils.exports.lerp(minFrequency, maxFrequency, delta / frequencyAxisSize);
+	    let newMaxFrequency = utils.exports.lerp(minFrequency, maxFrequency, (frequencyAxisSize + delta) / frequencyAxisSize);
+	    if (newMaxFrequency > constants.exports.MAX_FREQUENCY) {
+	        newMaxFrequency = constants.exports.MAX_FREQUENCY;
+	        const pos = utils.exports.inverseLerp(minFrequency, maxFrequency, constants.exports.MAX_FREQUENCY);
+	        newMinFrequency = utils.exports.lerp(minFrequency, maxFrequency, pos - 1);
+	    }
+	    else if (newMinFrequency < constants.exports.MIN_FREQUENCY) {
+	        newMinFrequency = constants.exports.MIN_FREQUENCY;
+	        const pos = utils.exports.inverseLerp(minFrequency, maxFrequency, constants.exports.MIN_FREQUENCY);
+	        newMaxFrequency = utils.exports.lerp(minFrequency, maxFrequency, pos + 1);
+	    }
+	    return {
+	        ...properties,
+	        minFrequency: Math.round(newMinFrequency * 100) / 100,
+	        maxFrequency: Math.round(newMaxFrequency * 100) / 100,
+	    };
+	};
+	const scaleFrequenciesLin = (scaleFactor, origin) => (properties) => {
+	    const { minFrequency, maxFrequency } = properties;
+	    const inverseOrigin = (1 - origin);
+	    const newMinFrequency = utils.exports.lerp(minFrequency, maxFrequency, -((inverseOrigin * scaleFactor + origin) - 1));
+	    const newMaxFrequency = utils.exports.lerp(minFrequency, maxFrequency, origin * scaleFactor + inverseOrigin);
+	    return {
+	        ...properties,
+	        minFrequency: lodash.exports.clamp(newMinFrequency, constants.exports.MIN_FREQUENCY, constants.exports.MAX_FREQUENCY),
+	        maxFrequency: lodash.exports.clamp(newMaxFrequency, constants.exports.MIN_FREQUENCY, constants.exports.MAX_FREQUENCY),
 	    };
 	};
 	const transformFn = {
 	    logarithmic: {
-	        translateFrequency: translateFrequency,
-	        translateCurrentTime: translateCurrentTime,
-	        scaleFrequencies: scaleFrequencies,
-	        scaleTimeWindow: scaleTimeWindow,
+	        translateFrequency: translateFrequencyLog,
+	        scaleFrequencies: scaleFrequenciesLog,
+	        translateCurrentTime,
+	        scaleTimeWindow,
 	    },
 	    linear: {
-	        translateFrequency: function () {
-	            throw new Error("Function not implemented.");
-	        },
-	        translateCurrentTime: function () {
-	            throw new Error("Function not implemented.");
-	        },
-	        scaleFrequencies: function () {
-	            throw new Error("Function not implemented.");
-	        },
-	        scaleTimeWindow: function () {
-	            throw new Error("Function not implemented.");
-	        }
+	        translateFrequency: translateFrequencyLin,
+	        scaleFrequencies: scaleFrequenciesLin,
+	        translateCurrentTime,
+	        scaleTimeWindow,
 	    }
 	};
 
@@ -18669,8 +18800,8 @@
 	    return isPressed;
 	};
 
-	const useControls = ({ modifierKeyCode = 'ShiftLeft', lockFrequencyPanning = false, lockTimePanning = false, lockFrequencyScaling = false, lockTimeWindowScaling = false, onMaxFrequencyChange, onMinFrequencyChange, onTimeWindowChange, onCurrentTimeChange, width, height, canvas, minFrequency, maxFrequency, timeWindow, currentTime, }) => {
-	    const { translateFrequency, translateCurrentTime, scaleFrequencies, scaleTimeWindow, } = transformFn[FrequencyScale.logarithmic];
+	const useControls = ({ modifierKeyCode = 'ShiftLeft', lockFrequencyPanning = false, lockTimePanning = false, lockFrequencyScaling = false, lockTimeWindowScaling = false, onMaxFrequencyChange, onMinFrequencyChange, onTimeWindowChange, onCurrentTimeChange, width, height, canvas, minFrequency, maxFrequency, timeWindow, currentTime, frequencyScale = defaults.DEFAULT_FREQUENCY_SCALE, }) => {
+	    const { translateFrequency, translateCurrentTime, scaleFrequencies, scaleTimeWindow, } = transformFn[frequencyScale];
 	    const [activePinchEvent, setActivePinchEvent] = react.exports.useState(null);
 	    const [activePanEvent, setActivePanEvent] = react.exports.useState(null);
 	    const updateChanges = react.exports.useCallback((updated) => {
@@ -18842,7 +18973,7 @@
 	    });
 	};
 
-	const Spectrogram = ({ width, height, minFrequency, maxFrequency, timeWindow, currentTime, dynamicRange, dynamicRangeTop, modifierKeyCode = 'ShiftLeft', dataResolver, displayFrequencyRuler = true, frequencyRulerAsOverlay = true, frequencyRulerPosition = 'start', frequencyRulerSize = 40, displayTimeRuler = true, timeRulerAsOverlay = true, timeRulerPosition = 'end', timeRulerSize = 30, onMaxFrequencyChange, onMinFrequencyChange, onTimeWindowChange, onCurrentTimeChange, children, ...props }) => {
+	const Spectrogram = ({ width, height, minFrequency, maxFrequency, frequencyScale = constants.exports.DEFAULT_FREQUENCY_SCALE, timeWindow, currentTime, dynamicRange, dynamicRangeTop, modifierKeyCode = 'ShiftLeft', dataResolver, displayFrequencyRuler = true, frequencyRulerAsOverlay = true, frequencyRulerPosition = 'start', frequencyRulerSize = 50, displayTimeRuler = true, timeRulerAsOverlay = true, timeRulerPosition = 'end', timeRulerSize = 30, onMaxFrequencyChange, onMinFrequencyChange, onTimeWindowChange, onCurrentTimeChange, children, ...props }) => {
 	    const [canvasRef, canvas] = useImmutableRef(null);
 	    const [frequencyRulerRef, frequencyRuler] = useImmutableRef(null);
 	    const [timeRulerRef, timeRuler] = useImmutableRef(null);
@@ -18859,6 +18990,7 @@
 	        maxFrequency,
 	        timeWindow,
 	        currentTime,
+	        frequencyScale,
 	        modifierKeyCode,
 	    };
 	    useControls({
@@ -18881,9 +19013,10 @@
 	        lockFrequencyPanning: true,
 	        modifierKeyCode: null,
 	    });
-	    const { spectrogramRenderer, setMinFrequency, setMaxFrequency, setTimeWindow, setCurrentTime, setDynamicRange, setDynamicRangeTop, } = useSpectrogramRenderer({
+	    const { spectrogramRenderer, setMinFrequency, setMaxFrequency, setTimeWindow, setCurrentTime, setDynamicRange, setDynamicRangeTop, setFrequencyScale, } = useSpectrogramRenderer({
 	        canvas,
 	        dataResolver,
+	        frequencyScale,
 	    }, []);
 	    react.exports.useLayoutEffect(() => {
 	        setMinFrequency(minFrequency);
@@ -18903,6 +19036,9 @@
 	    react.exports.useLayoutEffect(() => {
 	        setDynamicRangeTop(dynamicRangeTop);
 	    }, [dynamicRangeTop, spectrogramRenderer]);
+	    react.exports.useLayoutEffect(() => {
+	        setFrequencyScale(frequencyScale);
+	    }, [frequencyScale, spectrogramRenderer]);
 	    const canvasTopOffset = displayTimeRuler && !timeRulerAsOverlay && timeRulerPosition === 'start' ? timeRulerSize : 0;
 	    const canvasLeftOffset = displayFrequencyRuler && !frequencyRulerAsOverlay && frequencyRulerPosition === 'start' ? frequencyRulerSize : 0;
 	    return (React.createElement("div", { style: {
@@ -18915,12 +19051,14 @@
 	                marginTop: canvasTopOffset,
 	                marginLeft: canvasLeftOffset,
 	            } }),
-	        displayFrequencyRuler && (React.createElement(FrequencyRuler, { ref: frequencyRulerRef, width: 40, height: canvasHeight, minFrequency: minFrequency, maxFrequency: maxFrequency, color: '#fff', backgroundColor: 'rgba(0, 0, 0, 0.5)', position: 'offset', style: {
+	        displayFrequencyRuler && (React.createElement(FrequencyRuler, { ref: frequencyRulerRef, width: frequencyRulerSize, height: canvasHeight, minFrequency: minFrequency, maxFrequency: maxFrequency, 
+	            // position={'offset'}
+	            frequencyScale: frequencyScale, style: {
 	                position: 'absolute',
 	                top: canvasTopOffset,
 	                [frequencyRulerPosition === 'start' ? 'left' : 'right']: 0,
 	            } })),
-	        displayTimeRuler && (React.createElement(TimeRuler, { ref: timeRulerRef, width: canvasWidth, height: 30, timeWindow: timeWindow, currentTime: currentTime, position: 'inset', backgroundColor: 'rgba(0, 0, 0, 0.5)', color: "#fff", style: {
+	        displayTimeRuler && (React.createElement(TimeRuler, { ref: timeRulerRef, width: canvasWidth, height: timeRulerSize, timeWindow: timeWindow, currentTime: currentTime, position: 'inset', backgroundColor: 'rgba(0, 0, 0, 0.5)', color: "#fff", style: {
 	                position: 'absolute',
 	                bottom: 0,
 	                left: canvasLeftOffset,
@@ -18962,6 +19100,7 @@
 	    const [dynamicRange, setDynamicRange] = React.useState(70);
 	    const [dynamicRangeTop, setDynamicRangeTop] = React.useState(-30);
 	    const [playheadPosition, setPlayheadPosition] = React.useState(0);
+	    const [frequencyScale, setFrequencyScale] = React.useState(constants.exports.DEFAULT_FREQUENCY_SCALE);
 	    const offlineCtx = react.exports.useMemo(() => new OfflineAudioContext(2, 44100 * 30, 44100), []);
 	    const aaNode = useAsyncMemo(() => {
 	        if (!offlineCtx)
@@ -19008,7 +19147,7 @@
 	        }
 	    });
 	    return (React.createElement("div", null,
-	        dataResolver && (React.createElement(Spectrogram, { width: 1024, height: 512, minFrequency: minFrequency, maxFrequency: maxFrequency, timeWindow: timeWindow, currentTime: currentTime, onMaxFrequencyChange: setMaxFrequency, onMinFrequencyChange: setMinFrequency, onTimeWindowChange: setTimeWindow, onCurrentTimeChange: setCurrentTime, dynamicRange: dynamicRange, dynamicRangeTop: dynamicRangeTop, onDynamicRangeChange: setDynamicRange, onDynamicRangeTopChange: setDynamicRangeTop, dataResolver: dataResolver },
+	        dataResolver && (React.createElement(Spectrogram, { width: 1024, height: 512, minFrequency: minFrequency, maxFrequency: maxFrequency, timeWindow: timeWindow, currentTime: currentTime, onMaxFrequencyChange: setMaxFrequency, onMinFrequencyChange: setMinFrequency, onTimeWindowChange: setTimeWindow, onCurrentTimeChange: setCurrentTime, dynamicRange: dynamicRange, dynamicRangeTop: dynamicRangeTop, onDynamicRangeChange: setDynamicRange, onDynamicRangeTopChange: setDynamicRangeTop, dataResolver: dataResolver, frequencyScale: frequencyScale },
 	            React.createElement("span", { style: {
 	                    position: 'absolute',
 	                    top: 0,
@@ -19032,6 +19171,11 @@
 	                setDynamicRangeTop(parseInt(e.target.value));
 	            } }),
 	        React.createElement("span", null, dynamicRangeTop),
+	        React.createElement("br", null),
+	        React.createElement("select", { value: frequencyScale, onChange: (e) => {
+	                const value = e.target.value;
+	                setFrequencyScale(value);
+	            } }, Object.values(constants.exports.FrequencyScale).map((value) => (React.createElement("option", { key: value, value: value }, value)))),
 	        React.createElement("hr", null),
 	        React.createElement("a", { href: "https://archive.org/details/cd_paganini-24-caprices_julia-fischer-niccol-paganini/disc1/02.+Niccol%C3%B2+Paganini+-+24+Caprices+for+Solo+Violin+-+No.+2+in+B+minor.flac", target: "_blank" }, "Niccol\u00F2 Paganini - 24 Caprices for Solo Violin: No. 2 in B minor")));
 	};

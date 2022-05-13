@@ -27,6 +27,11 @@
   </div>
   <audio src="./niccolo-paganini_24-caprices-for-solo-violin_no2-in-B-minor.mp3" controls style="width: 1024px;"></audio>
   <br/>
+  <select class="frequency-scale">
+    <option value="logarithmic" selected>Logarithmic</option>
+    <option value="linear">Linear</option>
+  </select>
+  <br/>
   <a
     href="https://archive.org/details/cd_paganini-24-caprices_julia-fischer-niccol-paganini/disc1/02.+Niccol%C3%B2+Paganini+-+24+Caprices+for+Solo+Violin+-+No.+2+in+B+minor.flac"
     target="_blank"
@@ -44,6 +49,7 @@
     const canvas = document.querySelector('canvas')
     const audioPlayer = document.querySelector('audio')
     const playhead = document.querySelector('.playhead')
+    const frequencyScaleSelector = document.querySelector('.frequency-scale')
 
     const offlineCtx = new OfflineAudioContext(2, 44100*30, 44100);
 
@@ -71,9 +77,9 @@
     });
   
     
-     /*
-     * Fetch audio, decode it, creates a buffer source node, and start rendering
-     */
+    /*
+    * Fetch audio, decode it, creates a buffer source node, and start rendering
+    */
     const audioData = await fetch('./niccolo-paganini_24-caprices-for-solo-violin_no2-in-B-minor.mp3').then(res => res.arrayBuffer())
     const buffer = await offlineCtx.decodeAudioData(audioData)
     const source = offlineCtx.createBufferSource();
@@ -87,9 +93,10 @@
     /*
      * initialize renderer and draw the spectrogram
      */
+    console.log(dataResolver)
     const renderer = new SpectrogramRenderer({ canvas, dataResolver });
     renderer.timeWindow = buffer.duration * 1000;
-    renderer.currentTime =  buffer.duration * 1000;
+    renderer.currentTime =  0;
 
     renderer.draw();
 
@@ -102,6 +109,11 @@
       audioPlayer.currentTime = time 
     }
 
+    frequencyScaleSelector.onchange = (e) => {
+      console.log(e.target.value)
+      renderer.frequencyScale = e.target.value
+      renderer.draw()
+    }
     /*
      * Animates playhead
      */

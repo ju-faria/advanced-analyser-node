@@ -1,8 +1,10 @@
 import { FrequencyDataResolver } from './types';
+import { FrequencyScale } from '@soundui/shared/constants';
 export declare type SpectrogramRendererProperties = {
     canvas: HTMLCanvasElement;
     dataResolver: FrequencyDataResolver;
     currentTime?: number;
+    frequencyScale?: FrequencyScale;
 };
 export declare class SpectrogramRenderer {
     private _canvas;
@@ -16,11 +18,14 @@ export declare class SpectrogramRenderer {
     private _maxFrequency;
     private _dynamicRange;
     private _dynamicRangeTop;
+    private _frequencyScale;
     private _colorRamp;
     set currentTime(value: number);
     get currentTime(): number;
     get visibleTransforms(): number;
     set minFrequency(value: number);
+    set frequencyScale(frequencyScale: FrequencyScale);
+    get frequencyScale(): FrequencyScale;
     get minFrequency(): number;
     set maxFrequency(value: number);
     get maxFrequency(): number;
@@ -33,7 +38,7 @@ export declare class SpectrogramRenderer {
     set colorRamp(value: [number, number, number][]);
     get colorRamp(): [number, number, number][];
     get fragmentShader(): string;
-    constructor({ canvas, dataResolver, currentTime, }: SpectrogramRendererProperties);
+    constructor({ canvas, dataResolver, currentTime, frequencyScale, }: SpectrogramRendererProperties);
     initGl(): void;
     updatePlayheadPosition(currentTime: number): void;
     draw(): void;

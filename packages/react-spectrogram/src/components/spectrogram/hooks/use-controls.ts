@@ -1,4 +1,5 @@
 import { FrequencyScale } from "@soundui/shared/constants/types";
+import { DEFAULT_FREQUENCY_SCALE } from "@soundui/shared/dist/constants/defaults";
 import { Nullable } from "@soundui/shared/utils/types";
 import { useCallback, useState } from "react";
 import { transformFn, composeTransforms, TransformProperties } from "src/components/spectrogram/hooks/transformations";
@@ -25,6 +26,7 @@ type ControlsProperties = {
   maxFrequency: number,
   timeWindow: number,
   currentTime: number,
+  frequencyScale?: FrequencyScale,
 }
 
 export const useControls = ({
@@ -45,13 +47,14 @@ export const useControls = ({
   maxFrequency,
   timeWindow,
   currentTime,
+  frequencyScale = DEFAULT_FREQUENCY_SCALE,
 }:ControlsProperties) => {
   const {
     translateFrequency,
     translateCurrentTime,
     scaleFrequencies,
     scaleTimeWindow,
-  } = transformFn[FrequencyScale.logarithmic];
+  } = transformFn[frequencyScale];
 
   const [activePinchEvent, setActivePinchEvent] = useState<{
     startFrequencies: { min: number, max: number },

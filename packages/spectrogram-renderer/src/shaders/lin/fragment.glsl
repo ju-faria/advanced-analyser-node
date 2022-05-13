@@ -1,6 +1,7 @@
 precision highp float;
 
 uniform sampler2D fft;
+uniform int u_scale;
 uniform float u_visibleTransforms;
 uniform float u_xTransformOffset;
 uniform float u_minFrequency;
@@ -26,6 +27,22 @@ float remap(float origFrom, float origTo, float targetFrom, float targetTo, floa
   return lerp(targetFrom, targetTo, rel);
 } 
 
+float getY(float y) {
+  // LIN
+  if (u_scale == 0) {
+    float hz = lerp(u_minFrequency, u_maxFrequency, y);
+    return (hz / u_sampleRate);
+  }
+  // LOG 
+  if (u_scale == 1) {
+    float minLog = log2(u_minFrequency);
+    float maxLog = log2(u_maxFrequency);
+
+    float hz = pow(2., lerp(minLog, maxLog, y));
+    return (hz / u_sampleRate ) * 2.;
+  }
+}
+
 {{COLOR_RAMP}}
 
 void main() {
@@ -33,12 +50,8 @@ void main() {
   float xOffset = u_xTransformOffset / u_visibleTransforms;
   float xScale =  u_visibleTransforms / u_textureSize.x;
   float x = (normCoord.x + xOffset ) * xScale ;
-  
-  float minLog = log2(u_minFrequency);
-  float maxLog = log2(u_maxFrequency);
 
-  float hz = pow(2., lerp(minLog, maxLog, normCoord.y));
-  float y = (hz / u_sampleRate ) * 2.;
+  float y = getY(normCoord.y);
 
   float color = texture2D(fft, vec2(x, y )).x;
 
