@@ -264,6 +264,8 @@
 	      _dynamicRange = constants.exports.DEFAULT_DYNAMIC_RANGE;
 	      _dynamicRangeTop = constants.exports.DEFAULT_DYNAMIC_RANGE_TOP;
 	      _frequencyScale = constants.exports.DEFAULT_FREQUENCY_SCALE;
+	      _width;
+	      _height;
 	      _colorRamp = [
 	          [0, 0, 0],
 	          [0, 0, 200],
@@ -340,6 +342,8 @@
 	          this._gl = canvas.getContext('webgl');
 	          this._dataResolver = dataResolver;
 	          this._frequencyScale = frequencyScale;
+	          this._width = canvas.width;
+	          this._height = canvas.height;
 	          this.currentTime = currentTime;
 	          this.initGl();
 	      }
@@ -365,20 +369,6 @@
 	          gl.attachShader(program, vertexShader);
 	          gl.attachShader(program, fragmentShader);
 	          gl.linkProgram(program);
-	          /*
-	           * for debugging shaders
-	           */
-	          {
-	              if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-	                  console.error("ERROR linking program!", gl.getProgramInfoLog(program));
-	                  return;
-	              }
-	              gl.validateProgram(program);
-	              if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) {
-	                  console.error("ERROR validating program!", gl.getProgramInfoLog(program));
-	                  return;
-	              }
-	          }
 	          /*
 	           * Creates quad to paint on
 	           */
@@ -436,7 +426,21 @@
 	      updatePlayheadPosition(currentTime) {
 	          this.currentTime = currentTime;
 	      }
+	      _resize(width, height) {
+	          const gl = this._gl;
+	          const textureWidth = width;
+	          this._width = width;
+	          this._height = height;
+	          const textureHeight = this._dataResolver.frequencyBinCount;
+	          this._textureBuffer = new Uint8Array(textureWidth * textureHeight);
+	          gl.viewport(0, 0, width, height);
+	          gl.uniform2f(this._glParams.uTextureSizeLocation, textureWidth, textureHeight);
+	          gl.uniform2f(this._glParams.uViewportSize, width, height);
+	      }
 	      draw() {
+	          if (this._width === this._canvas.width || this._height === this._canvas.height) {
+	              this._resize(this._canvas.width, this._canvas.height);
+	          }
 	          const sampleRate = this._dataResolver.sampleRate;
 	          const frequencyBinCount = this._dataResolver.frequencyBinCount;
 	          const gl = this._gl;
@@ -444,7 +448,7 @@
 	          const visibleTransforms = this.visibleTransforms;
 	          const firstVisibleTransform = getFirstVisibleTransform(currentTime, this._dataResolver.samplesBetweenTransforms, sampleRate);
 	          const timeXOffset = firstVisibleTransform % 1;
-	          const textureWidth = this._canvas.width;
+	          const textureWidth = this._width;
 	          let x = 0;
 	          let y = 0;
 	          let transformI = 0;
@@ -459,6 +463,7 @@
 	          }
 	          gl.bindTexture(gl.TEXTURE_2D, this._glParams.fftTexture);
 	          gl.uniform1f(this._glParams.uXTransformOffsetLocation, timeXOffset);
+	          gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 	          gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, textureWidth, frequencyBinCount, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, this._textureBuffer);
 	          gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 	          gl.finish();
@@ -17985,7 +17990,7 @@
 	    logarithmic: generateLogLabels,
 	    linear: generateLinLabels,
 	};
-	const FrequencyRuler = react.exports.forwardRef(({ width, height, minFrequency, maxFrequency, frequencyScale = constants.exports.DEFAULT_FREQUENCY_SCALE, color = "#000", orientation = 'vertical', position = 'inset', direction = 'descending', style = {}, ...rest }, ref) => {
+	const FrequencyRuler = react.exports.forwardRef(({ width, height, minFrequency, maxFrequency, frequencyScale = constants.exports.DEFAULT_FREQUENCY_SCALE, orientation = 'vertical', position = 'inset', direction = 'descending', color = "#000", style = {}, ...rest }, ref) => {
 	    const rulerSize = orientation === 'horizontal' ? width : height;
 	    const labels = react.exports.useMemo(() => generateLabels[frequencyScale](minFrequency, maxFrequency, rulerSize), [minFrequency, maxFrequency, height, width, orientation, frequencyScale]);
 	    const marksLength = 4;
@@ -17995,7 +18000,7 @@
 	            ...style,
 	        }, ...rest },
 	        React.createElement("svg", { width: width, height: height }, labels.map(({ label, position: freqPosition, isLabelVisible }, i) => (React.createElement("g", { key: label, transform: orientation === 'vertical' ? `translate(0, ${freqPosition})` : `translate(${freqPosition}, 0)` },
-	            label && isLabelVisible && (React.createElement("text", { className: "frequency-ruler-label", fill: color, fontSize: 11, fontFamily: "sans-serif", ...(orientation === 'vertical' ? {
+	            label && isLabelVisible && (React.createElement("text", { className: "frequency-ruler-label", color: color, fontSize: 11, fontFamily: "sans-serif", ...(orientation === 'vertical' ? {
 	                    x: position === 'inset' ? width - marksLength - 1 : marksLength + 1,
 	                    textAnchor: position === 'inset' ? "end" : "start",
 	                    alignmentBaseline: 'central'
@@ -18015,6 +18020,66 @@
 	    return (time - currentTime) / timeWindow;
 	};
 
+	var classnames$1 = {exports: {}};
+
+	/*!
+	  Copyright (c) 2018 Jed Watson.
+	  Licensed under the MIT License (MIT), see
+	  http://jedwatson.github.io/classnames
+	*/
+
+	(function (module) {
+	/* global define */
+
+	(function () {
+
+		var hasOwn = {}.hasOwnProperty;
+
+		function classNames() {
+			var classes = [];
+
+			for (var i = 0; i < arguments.length; i++) {
+				var arg = arguments[i];
+				if (!arg) continue;
+
+				var argType = typeof arg;
+
+				if (argType === 'string' || argType === 'number') {
+					classes.push(arg);
+				} else if (Array.isArray(arg)) {
+					if (arg.length) {
+						var inner = classNames.apply(null, arg);
+						if (inner) {
+							classes.push(inner);
+						}
+					}
+				} else if (argType === 'object') {
+					if (arg.toString === Object.prototype.toString) {
+						for (var key in arg) {
+							if (hasOwn.call(arg, key) && arg[key]) {
+								classes.push(key);
+							}
+						}
+					} else {
+						classes.push(arg.toString());
+					}
+				}
+			}
+
+			return classes.join(' ');
+		}
+
+		if (module.exports) {
+			classNames.default = classNames;
+			module.exports = classNames;
+		} else {
+			window.classNames = classNames;
+		}
+	}());
+	}(classnames$1));
+
+	var classnames = classnames$1.exports;
+
 	const generateTimeRuler = (timeWindow, width) => {
 	    const timeRuler = [];
 	    const minimumStepInPixels = 100;
@@ -18031,39 +18096,41 @@
 	    const seconds = (time % 60).toFixed(1);
 	    return `${hours}:${minutes}:${seconds}`;
 	};
-	const TimeRuler = react.exports.forwardRef(({ width, height, timeWindow, currentTime, dividers = true, orientation = 'horizontal', position = 'inset', style = {}, ...rest }, ref) => {
-	    const labels = react.exports.useMemo(() => {
-	        return generateTimeRuler(timeWindow, orientation === 'horizontal' ? width : height);
-	    }, [timeWindow, width, height]);
+	const TimeRuler = react.exports.forwardRef(({ className, width, height, timeWindow, currentTime, dividers = true, position = 'inset', style = {}, color = '#000', ...rest }, ref) => {
+	    const labels = react.exports.useMemo(() => generateTimeRuler(timeWindow, width), [timeWindow, width, height]);
 	    const rulerStep = labels[1];
-	    const rulerPath = (new Array(9)).fill('').map((_, i) => {
-	        const timeAxis = i * ((orientation === 'horizontal' ? width : height) / (timeWindow / rulerStep) / 9);
-	        let length = i === 0 ? 0.4 : 0.2;
-	        if (i === 5) {
-	            length = 0.3;
-	        }
-	        if (position === 'inset' && orientation === 'horizontal')
-	            return `M ${timeAxis} ${height}  L ${timeAxis} ${height - height * length}`;
-	        if (position === 'offset' && orientation === 'horizontal')
-	            return `M ${timeAxis} 0  L ${timeAxis} ${height * length}`;
-	        if (position === 'offset' && orientation === 'vertical')
-	            return `M 0 ${timeAxis}  L ${width * length} ${timeAxis}`;
-	        if (position === 'inset' && orientation === 'vertical')
-	            return `M ${width} ${timeAxis}  L  ${width - width * length} ${timeAxis}`;
-	    }).join(' ');
 	    const startTime = Math.floor(currentTime / rulerStep) * rulerStep;
-	    return (React.createElement("div", { className: "time-ruler", ref: ref, style: {
+	    const marksLength = 4;
+	    const fontSize = 12;
+	    return (React.createElement("div", { className: classnames("time-ruler", className), ref: ref, style: {
 	            width,
 	            height,
 	            ...style,
 	        }, ...rest },
-	        React.createElement("svg", { width: width, height: height },
-	            orientation === 'horizontal' && labels.map((timeStep) => (React.createElement("g", { key: timeStep, transform: `translate(${width * getRenderPointFromTime(currentTime, timeWindow, startTime + timeStep)}, 0)` },
-	                (React.createElement("text", { className: "time-ruler-label", x: 0, y: (position === 'inset') ? height * 0.2 : height - height * 0.2, "text-anchor": "middle", fontSize: 12, alignmentBaseline: (position === 'inset') ? 'hanging' : 'baseline', fontFamily: "sans-serif" }, formatTime((startTime + timeStep) / 1000))),
-	                React.createElement("path", { className: "time-ruler-label-marks", d: rulerPath })))),
-	            orientation === 'vertical' && labels.map((timeStep) => (React.createElement("g", { key: timeStep, transform: `translate(0, ${height * getRenderPointFromTime(currentTime, timeWindow, startTime + timeStep)})` },
-	                (React.createElement("text", { className: "time-ruler-label", y: 0, x: (position === 'inset') ? width * 0.2 : width - width * 0.2, "text-anchor": "middle", fontSize: 12, alignmentBaseline: 'hanging', fontFamily: "sans-serif", transform: `rotate(${position === 'inset' ? -90 : 90}, ${position === 'inset' ? width * 0.2 : width - width * 0.2}, 0)` }, formatTime((startTime + timeStep) / 1000))),
-	                React.createElement("path", { className: "time-ruler-label-marks", d: rulerPath })))))));
+	        React.createElement("svg", { width: width, height: height }, labels.map((timeStep) => (React.createElement("g", { key: timeStep, transform: `translate(${width * getRenderPointFromTime(currentTime, timeWindow, startTime + timeStep)}, 0)` },
+	            (React.createElement("text", { className: "time-ruler-label", x: 0, y: (position === 'inset') ? height - marksLength - 2 - fontSize : height - marksLength - 2, "text-anchor": "middle", fontSize: fontSize, alignmentBaseline: (position === 'inset') ? 'hanging' : 'baseline', fontFamily: "sans-serif", color: color }, formatTime((startTime + timeStep) / 1000))),
+	            (new Array(9)).fill('').map((_, i) => {
+	                const timeAxis = i * (width / (timeWindow / rulerStep) / 9);
+	                let length = i === 0 ? marksLength : marksLength * 0.5;
+	                if (i === 5) {
+	                    length = marksLength * 0.7;
+	                }
+	                return (React.createElement("line", { className: classnames('time-ruler-label-marks', {
+	                        'time-ruler-label-marks-main': i === 0,
+	                        'time-ruler-label-marks-short': i !== 0 && i !== 5,
+	                        'time-ruler-label-marks-middle': i === 5,
+	                    }), stroke: color, ...(position === 'inset' ? {
+	                        x1: timeAxis,
+	                        y1: height,
+	                        x2: timeAxis,
+	                        y2: height - length,
+	                    } : {
+	                        x1: timeAxis,
+	                        y1: 0,
+	                        x2: timeAxis,
+	                        y2: length,
+	                    }) }));
+	            })))))));
 	});
 
 	const composeTransforms = (...transformFns) => (properties) => {
@@ -18595,6 +18662,11 @@
 	    });
 	};
 
+	// const useControllableState = <T = any>(controlledValue: Nullable<T>, defaultValue: T) => {
+	//   const [value, setValue] = React.useState<T>(defaultValue);
+	//   useEffect(() => {
+	//   }, [controlledValue]);
+	// }
 	const Spectrogram = ({ width, height, minFrequency, maxFrequency, frequencyScale = constants.exports.DEFAULT_FREQUENCY_SCALE, timeWindow, currentTime, dynamicRange, dynamicRangeTop, modifierKeyCode = 'ShiftLeft', dataResolver, displayFrequencyRuler = true, frequencyRulerAsOverlay = true, frequencyRulerPosition = 'start', frequencyRulerSize = 50, displayTimeRuler = true, timeRulerAsOverlay = true, timeRulerPosition = 'end', timeRulerSize = 30, onMaxFrequencyChange, onMinFrequencyChange, onTimeWindowChange, onCurrentTimeChange, children, ...props }) => {
 	    const [canvasRef, canvas] = useImmutableRef(null);
 	    const [frequencyRulerRef, frequencyRuler] = useImmutableRef(null);
@@ -18639,7 +18711,7 @@
 	        canvas,
 	        dataResolver,
 	        frequencyScale,
-	    }, []);
+	    }, [width, height]);
 	    react.exports.useLayoutEffect(() => {
 	        setMinFrequency(minFrequency);
 	    }, [minFrequency, spectrogramRenderer]);
@@ -18673,27 +18745,17 @@
 	                marginTop: canvasTopOffset,
 	                marginLeft: canvasLeftOffset,
 	            } }),
-	        displayFrequencyRuler && (React.createElement(FrequencyRuler, { ref: frequencyRulerRef, width: frequencyRulerSize, height: canvasHeight, minFrequency: minFrequency, maxFrequency: maxFrequency, 
-	            // position={'offset'}
-	            frequencyScale: frequencyScale, style: {
+	        displayFrequencyRuler && (React.createElement(FrequencyRuler, { ref: frequencyRulerRef, width: frequencyRulerSize, height: canvasHeight, minFrequency: minFrequency, maxFrequency: maxFrequency, position: frequencyRulerPosition === 'start' ? 'inset' : 'offset', frequencyScale: frequencyScale, style: {
 	                position: 'absolute',
 	                top: canvasTopOffset,
 	                [frequencyRulerPosition === 'start' ? 'left' : 'right']: 0,
 	            } })),
-	        displayTimeRuler && (React.createElement(TimeRuler, { ref: timeRulerRef, width: canvasWidth, height: timeRulerSize, timeWindow: timeWindow, currentTime: currentTime, position: 'inset', backgroundColor: 'rgba(0, 0, 0, 0.5)', color: "#fff", style: {
+	        displayTimeRuler && (React.createElement(TimeRuler, { ref: timeRulerRef, width: canvasWidth, height: timeRulerSize, timeWindow: timeWindow, currentTime: currentTime, position: timeRulerPosition === 'start' ? 'inset' : 'offset', style: {
 	                position: 'absolute',
 	                bottom: 0,
 	                left: canvasLeftOffset,
 	                [timeRulerPosition === 'start' ? 'top' : 'bottom']: 0,
 	            } })),
-	        !timeRulerAsOverlay && !frequencyRulerAsOverlay && displayFrequencyRuler && displayTimeRuler && (React.createElement("svg", { height: timeRulerSize, width: frequencyRulerSize, style: {
-	                position: 'absolute',
-	                [timeRulerPosition === 'start' ? 'top' : 'bottom']: 0,
-	                [frequencyRulerPosition === 'start' ? 'left' : 'right']: 0,
-	            } },
-	            React.createElement("rect", { height: timeRulerSize, width: frequencyRulerSize, style: {
-	                    fill: "rgba(0, 0, 0, 0.5)",
-	                } }))),
 	        children && (React.createElement(SpectrogramContext.Provider, { value: {
 	                spectrogramRenderer,
 	                onMaxFrequencyChange,

@@ -1,0 +1,23 @@
+import { FrequencyScale } from "@soundui/shared/constants/types";
+import { Nullable } from "@soundui/shared/utils/types";
+declare type ControlsProperties = {
+    modifierKeyCode?: Nullable<string>;
+    lockFrequencyPanning?: boolean;
+    lockTimePanning?: boolean;
+    lockFrequencyScaling?: boolean;
+    lockTimeWindowScaling?: boolean;
+    onMaxFrequencyChange: (maxFrequency: number) => void;
+    onMinFrequencyChange: (minFrequency: number) => void;
+    onTimeWindowChange: (timeWindow: number) => void;
+    onCurrentTimeChange: (currentTime: number) => void;
+    width: number;
+    height: number;
+    canvas: HTMLElement;
+    minFrequency: number;
+    maxFrequency: number;
+    timeWindow: number;
+    currentTime: number;
+    frequencyScale?: FrequencyScale;
+};
+export declare const useControls: ({ modifierKeyCode, lockFrequencyPanning, lockTimePanning, lockFrequencyScaling, lockTimeWindowScaling, onMaxFrequencyChange, onMinFrequencyChange, onTimeWindowChange, onCurrentTimeChange, width, height, canvas, minFrequency, maxFrequency, timeWindow, currentTime, frequencyScale, }: ControlsProperties) => void;
+export {};

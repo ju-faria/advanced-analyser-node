@@ -76,10 +76,10 @@ export const FrequencyRuler = forwardRef<HTMLDivElement, FrequencyRulerProps>(({
   minFrequency,
   maxFrequency,
   frequencyScale = DEFAULT_FREQUENCY_SCALE,
-  color = "#000",
   orientation = 'vertical',
   position = 'inset',
   direction = 'descending',
+  color = "#000",
   style = {},
   ...rest
 }, ref) => {
@@ -88,7 +88,6 @@ export const FrequencyRuler = forwardRef<HTMLDivElement, FrequencyRulerProps>(({
     () => generateLabels[frequencyScale](minFrequency, maxFrequency, rulerSize),
     [minFrequency, maxFrequency, height, width, orientation, frequencyScale]
   );
-
   const marksLength = 4;
   return (
     <div
@@ -105,21 +104,6 @@ export const FrequencyRuler = forwardRef<HTMLDivElement, FrequencyRulerProps>(({
         width={width}
         height={height}
       >
-        {/* {backgroundColor && (
-          <rect x={0} y={0} width={width} height={height} fill={backgroundColor} />
-        )}
-        {dividers && orientation === 'horizontal' && (
-          <>
-            <line x1={0} y1={0} x2={width} y2={0} stroke={color} strokeWidth={1} />
-            <line x1={0} y1={height} x2={width} y2={height} stroke={color} strokeWidth={1} />
-          </>
-        )}
-        {dividers && orientation === 'vertical' && (
-          <>
-            <line x1={0} y1={0} x2={0} y2={height} stroke={color} strokeWidth={1} />
-            <line x1={width} y1={0} x2={width} y2={height} stroke={color} strokeWidth={1} />
-          </>
-        )} */}
         {labels.map(({label, position: freqPosition, isLabelVisible}, i) =>  (
           <g
             key={label}
@@ -129,7 +113,7 @@ export const FrequencyRuler = forwardRef<HTMLDivElement, FrequencyRulerProps>(({
               <text
                 className="frequency-ruler-label"
 
-                fill={color}
+                color={color}
                 fontSize={11}
                 fontFamily="sans-serif"
                 {...(orientation === 'vertical' ? {
@@ -145,8 +129,8 @@ export const FrequencyRuler = forwardRef<HTMLDivElement, FrequencyRulerProps>(({
                 {String(label)}
               </text>
             )}
-            {orientation === 'vertical' && (<line className="frequency-ruler-label-marks" x1={position === 'inset' ? width - marksLength : 0} x2={position === 'inset' ? width : marksLength} y1={0} y2={0}  stroke={color} />)}
-            {orientation === 'horizontal' && (<line className="frequency-ruler-label-marks" x1={0} x2={0} y1={position === 'inset' ? height - marksLength : 0} y2={position === 'inset' ? height : marksLength}  stroke={color} />)}
+            {orientation === 'vertical' && (<line className="frequency-ruler-label-marks" x1={position === 'inset' ? width - marksLength : 0} x2={position === 'inset' ? width : marksLength} y1={0} y2={0} stroke={color}/>)}
+            {orientation === 'horizontal' && (<line className="frequency-ruler-label-marks" x1={0} x2={0} y1={position === 'inset' ? height - marksLength : 0} y2={position === 'inset' ? height : marksLength} stroke={color}/>)}
           </g>
         ))}
       </svg>

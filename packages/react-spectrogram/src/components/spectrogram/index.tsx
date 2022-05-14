@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from 'react';
+import React, { useEffect, useLayoutEffect } from 'react';
 import { FrequencyDataResolver } from '@soundui/spectrogram-renderer';
 import { useSpectrogramRenderer } from '../../hooks/useSpectrogramRenderer';
 import { useImmutableRef } from 'src/hooks/useImmutableRef';
@@ -7,6 +7,7 @@ import { FrequencyRuler } from '../frequency-ruler';
 import { TimeRuler } from '../time-ruler';
 import { useControls } from './hooks/use-controls';
 import { DEFAULT_FREQUENCY_SCALE, FrequencyScale } from '@soundui/shared/constants';
+import { Nullable } from '@soundui/shared/utils/types';
 
 type SpectrogramProps = React.HTMLAttributes<HTMLDivElement> & {
   width: number,
@@ -38,6 +39,12 @@ type SpectrogramProps = React.HTMLAttributes<HTMLDivElement> & {
   onTimeWindowChange: (timeWindow: number) => void,
   onCurrentTimeChange: (currentTime: number) => void,
 }
+// const useControllableState = <T = any>(controlledValue: Nullable<T>, defaultValue: T) => {
+//   const [value, setValue] = React.useState<T>(defaultValue);
+//   useEffect(() => {
+
+//   }, [controlledValue]);
+// }
 
 export const Spectrogram = ({
   width,
@@ -127,7 +134,7 @@ export const Spectrogram = ({
     canvas,
     dataResolver,
     frequencyScale,
-  }, []);
+  }, [width, height]);
 
   useLayoutEffect(() => {
     setMinFrequency(minFrequency);
@@ -186,7 +193,7 @@ export const Spectrogram = ({
           height={canvasHeight}
           minFrequency={minFrequency}
           maxFrequency={maxFrequency}
-          // position={'offset'}
+          position={frequencyRulerPosition === 'start' ? 'inset' : 'offset'}
           frequencyScale={frequencyScale}
           style={{
             position: 'absolute',
@@ -202,9 +209,7 @@ export const Spectrogram = ({
           height={timeRulerSize}
           timeWindow={timeWindow}
           currentTime={currentTime}
-          position={'inset'}
-          backgroundColor={'rgba(0, 0, 0, 0.5)'}
-          color="#fff"
+          position={timeRulerPosition === 'start' ? 'inset' : 'offset'}
           style={{
             position: 'absolute',
             bottom: 0,
@@ -213,7 +218,7 @@ export const Spectrogram = ({
           }}
         />
       )}
-      {!timeRulerAsOverlay && !frequencyRulerAsOverlay && displayFrequencyRuler && displayTimeRuler && (
+      {/* {!timeRulerAsOverlay && !frequencyRulerAsOverlay && displayFrequencyRuler && displayTimeRuler && (
         <svg
           height={timeRulerSize}
           width={frequencyRulerSize}
@@ -231,7 +236,7 @@ export const Spectrogram = ({
             }}
           />
         </svg>
-      )}
+      )} */}
 
       {children && (
         <SpectrogramContext.Provider

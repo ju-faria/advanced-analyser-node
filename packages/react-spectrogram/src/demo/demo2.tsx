@@ -5,6 +5,7 @@ import ReactDOM from 'react-dom';
 import { useAsyncMemo } from '../hooks/useAsyncMemo';
 import { Spectrogram } from '../';
 import { DEFAULT_FREQUENCY_SCALE, FrequencyScale } from '@soundui/shared/constants';
+import { clamp } from 'lodash';
 
 export const App = () => {
   const audioRef = useRef<HTMLAudioElement>(null);

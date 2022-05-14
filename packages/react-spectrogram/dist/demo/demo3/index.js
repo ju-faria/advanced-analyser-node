@@ -18398,7 +18398,7 @@
 	    return (time - currentTime) / timeWindow;
 	};
 
-	var classnames$1 = {exports: {}};
+	var classnames = {exports: {}};
 
 	/*!
 	  Copyright (c) 2018 Jed Watson.
@@ -18454,9 +18454,9 @@
 			window.classNames = classNames;
 		}
 	}());
-	}(classnames$1));
+	}(classnames));
 
-	var classnames = classnames$1.exports;
+	var classNames = classnames.exports;
 
 	const generateTimeRuler = (timeWindow, width) => {
 	    const timeRuler = [];
@@ -18480,7 +18480,7 @@
 	    const startTime = Math.floor(currentTime / rulerStep) * rulerStep;
 	    const marksLength = 4;
 	    const fontSize = 12;
-	    return (React.createElement("div", { className: classnames("time-ruler", className), ref: ref, style: {
+	    return (React.createElement("div", { className: classNames("time-ruler", className), ref: ref, style: {
 	            width,
 	            height,
 	            ...style,
@@ -18493,7 +18493,7 @@
 	                if (i === 5) {
 	                    length = marksLength * 0.7;
 	                }
-	                return (React.createElement("line", { className: classnames('time-ruler-label-marks', {
+	                return (React.createElement("line", { className: classNames('time-ruler-label-marks', {
 	                        'time-ruler-label-marks-main': i === 0,
 	                        'time-ruler-label-marks-short': i !== 0 && i !== 5,
 	                        'time-ruler-label-marks-middle': i === 5,
@@ -19155,6 +19155,8 @@
 
 	const App = () => {
 	    const audioRef = react.exports.useRef(null);
+	    const [width, setWidth] = React.useState(window.innerWidth);
+	    const [height, setHeight] = React.useState(window.innerHeight);
 	    const [minFrequency, setMinFrequency] = React.useState(20);
 	    const [maxFrequency, setMaxFrequency] = React.useState(44100);
 	    const [timeWindow, setTimeWindow] = React.useState(10_000);
@@ -19164,7 +19166,19 @@
 	    const [frequencyRulerPosition, setFrequencyRulerPosition] = React.useState('start');
 	    const [timeRulerPosition, setTimeRulerPosition] = React.useState('start');
 	    const [frequencyScale, setFrequencyScale] = React.useState(constants.exports.DEFAULT_FREQUENCY_SCALE);
+	    const [displaySettings, setDisplaySettings] = React.useState(true);
+	    const [playheadPosition, setPlayheadPosition] = React.useState(0);
 	    const offlineCtx = react.exports.useMemo(() => new OfflineAudioContext(2, 44100 * 30, 44100), []);
+	    react.exports.useEffect(() => {
+	        const resize = () => {
+	            setWidth(window.innerWidth);
+	            setHeight(window.innerHeight);
+	        };
+	        window.addEventListener('resize', resize);
+	        return () => {
+	            window.removeEventListener('resize', resize);
+	        };
+	    }, []);
 	    const aaNode = useAsyncMemo(() => {
 	        if (!offlineCtx)
 	            return null;
@@ -19203,40 +19217,61 @@
 	            await offlineCtx.startRendering();
 	        })();
 	    }, [aaNode, dataResolver]);
+	    useAnimationFrame(() => {
+	        if (audioRef.current) {
+	            setPlayheadPosition(audioRef.current.currentTime * 1000);
+	        }
+	    });
 	    return (React.createElement("div", null,
-	        dataResolver && (React.createElement(Spectrogram, { width: 1024, height: 512, minFrequency: minFrequency, maxFrequency: maxFrequency, timeWindow: timeWindow, currentTime: currentTime, onMaxFrequencyChange: setMaxFrequency, onMinFrequencyChange: setMinFrequency, onTimeWindowChange: setTimeWindow, onCurrentTimeChange: setCurrentTime, dynamicRange: dynamicRange, dynamicRangeTop: dynamicRangeTop, onDynamicRangeChange: setDynamicRange, onDynamicRangeTopChange: setDynamicRangeTop, dataResolver: dataResolver, timeRulerAsOverlay: false, frequencyRulerAsOverlay: false, frequencyRulerPosition: frequencyRulerPosition, timeRulerPosition: timeRulerPosition, frequencyScale: frequencyScale })),
-	        React.createElement("select", { value: frequencyRulerPosition, onChange: (e) => {
-	                const value = e.currentTarget.value;
-	                setFrequencyRulerPosition(value);
-	            } },
-	            React.createElement("option", { value: "start" }, "Start"),
-	            React.createElement("option", { value: "end" }, "End")),
-	        React.createElement("select", { value: timeRulerPosition, onChange: (e) => {
-	                const value = e.currentTarget.value;
-	                setTimeRulerPosition(value);
-	            } },
-	            React.createElement("option", { value: "start" }, "Start"),
-	            React.createElement("option", { value: "end" }, "End")),
-	        React.createElement("audio", { ref: audioRef, src: "./niccolo-paganini_24-caprices-for-solo-violin_no2-in-B-minor.mp3", controls: true, style: { width: 1024 } }),
-	        React.createElement("br", null),
-	        React.createElement("label", null, "Dynamic Range:"),
-	        React.createElement("input", { type: "range", value: dynamicRange, min: 5, max: 200, onChange: (e) => {
-	                setDynamicRange(parseInt(e.target.value));
-	            } }),
-	        React.createElement("span", null, dynamicRange),
-	        React.createElement("br", null),
-	        React.createElement("label", null, "Dynamic Range Top: "),
-	        React.createElement("input", { type: "range", value: dynamicRangeTop, min: -50, max: 0, onChange: (e) => {
-	                setDynamicRangeTop(parseInt(e.target.value));
-	            } }),
-	        React.createElement("span", null, dynamicRangeTop),
-	        React.createElement("br", null),
-	        React.createElement("select", { value: frequencyScale, onChange: (e) => {
-	                const value = e.target.value;
-	                setFrequencyScale(value);
-	            } }, Object.values(constants.exports.FrequencyScale).map((value) => (React.createElement("option", { key: value, value: value }, value)))),
-	        React.createElement("hr", null),
-	        React.createElement("a", { href: "https://archive.org/details/cd_paganini-24-caprices_julia-fischer-niccol-paganini/disc1/02.+Niccol%C3%B2+Paganini+-+24+Caprices+for+Solo+Violin+-+No.+2+in+B+minor.flac", target: "_blank" }, "Niccol\u00F2 Paganini - 24 Caprices for Solo Violin: No. 2 in B minor")));
+	        dataResolver && (React.createElement(Spectrogram, { width: width, height: height - 20, minFrequency: minFrequency, maxFrequency: maxFrequency, timeWindow: timeWindow, currentTime: currentTime, onMaxFrequencyChange: setMaxFrequency, onMinFrequencyChange: setMinFrequency, onTimeWindowChange: setTimeWindow, onCurrentTimeChange: setCurrentTime, dynamicRange: dynamicRange, dynamicRangeTop: dynamicRangeTop, onDynamicRangeChange: setDynamicRange, onDynamicRangeTopChange: setDynamicRangeTop, dataResolver: dataResolver, timeRulerAsOverlay: false, frequencyRulerAsOverlay: false, frequencyRulerPosition: frequencyRulerPosition, timeRulerPosition: timeRulerPosition, frequencyScale: frequencyScale },
+	            React.createElement("span", { className: "playhead", style: {
+	                    display: playheadPosition > currentTime && playheadPosition < timeWindow + currentTime ? 'block' : 'none',
+	                    // transform: `translateX(${width * (playheadPosition / timeWindow)}px)`,
+	                    transform: `translateX(${(width - 50) * ((playheadPosition - currentTime) / timeWindow) + (frequencyRulerPosition === 'start' ? 50 : 0)}px)`,
+	                } }))),
+	        React.createElement("div", { className: classNames("settings", {
+	                "settings-is-visible": displaySettings
+	            }) },
+	            React.createElement("header", { className: "settings-header", onClick: () => setDisplaySettings(!displaySettings) },
+	                React.createElement("h1", null, "Settings")),
+	            displaySettings && (React.createElement("div", { className: "settings-content" },
+	                React.createElement("label", null, "Frequency Ruler Position:"),
+	                React.createElement("select", { value: frequencyRulerPosition, onChange: (e) => {
+	                        const value = e.currentTarget.value;
+	                        setFrequencyRulerPosition(value);
+	                    } },
+	                    React.createElement("option", { value: "start" }, "Start"),
+	                    React.createElement("option", { value: "end" }, "End")),
+	                React.createElement("label", null, "Time Ruler Position:"),
+	                React.createElement("select", { value: timeRulerPosition, onChange: (e) => {
+	                        const value = e.currentTarget.value;
+	                        setTimeRulerPosition(value);
+	                    } },
+	                    React.createElement("option", { value: "start" }, "Start"),
+	                    React.createElement("option", { value: "end" }, "End")),
+	                React.createElement("label", null,
+	                    "Dynamic Range: ",
+	                    dynamicRange,
+	                    "dB"),
+	                React.createElement("input", { type: "range", value: dynamicRange, min: 5, max: 200, onChange: (e) => {
+	                        setDynamicRange(parseInt(e.target.value));
+	                    } }),
+	                React.createElement("label", null,
+	                    "Dynamic Range Top: ",
+	                    dynamicRangeTop,
+	                    "dB"),
+	                React.createElement("input", { type: "range", value: dynamicRangeTop, min: -50, max: 0, onChange: (e) => {
+	                        setDynamicRangeTop(parseInt(e.target.value));
+	                    } }),
+	                React.createElement("label", null, "Frequency Scale:"),
+	                React.createElement("select", { value: frequencyScale, onChange: (e) => {
+	                        const value = e.target.value;
+	                        setFrequencyScale(value);
+	                    } }, Object.values(constants.exports.FrequencyScale).map((value) => (React.createElement("option", { key: value, value: value }, value)))),
+	                React.createElement("div", null),
+	                React.createElement("hr", null),
+	                React.createElement("a", { href: "https://archive.org/details/cd_paganini-24-caprices_julia-fischer-niccol-paganini/disc1/02.+Niccol%C3%B2+Paganini+-+24+Caprices+for+Solo+Violin+-+No.+2+in+B+minor.flac", target: "_blank" }, "Niccol\u00F2 Paganini - 24 Caprices for Solo Violin: No. 2 in B minor")))),
+	        React.createElement("audio", { className: "audio-player", ref: audioRef, src: "./niccolo-paganini_24-caprices-for-solo-violin_no2-in-B-minor.mp3", controls: true })));
 	};
 	const domContainer = document.querySelector('#root');
 	ReactDOM.render(React.createElement(App, null), domContainer);

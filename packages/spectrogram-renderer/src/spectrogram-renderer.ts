@@ -63,6 +63,10 @@ export class SpectrogramRenderer {
   private _dynamicRangeTop = DEFAULT_DYNAMIC_RANGE_TOP;
 
   private _frequencyScale = DEFAULT_FREQUENCY_SCALE;
+  
+  private _width:number;
+
+  private _height:number;
 
   private _colorRamp: [number, number, number][] = [
     [0, 0, 0],
@@ -169,6 +173,8 @@ export class SpectrogramRenderer {
     this._gl = canvas.getContext('webgl');
     this._dataResolver = dataResolver;
     this._frequencyScale = frequencyScale;
+    this._width = canvas.width;
+    this._height = canvas.height;
     this.currentTime = currentTime;
 
     this.initGl();
@@ -308,7 +314,25 @@ export class SpectrogramRenderer {
     this.currentTime = currentTime;
   }
 
+  private _resize(width: number, height: number) {
+    const gl = this._gl;
+    const textureWidth = width;
+    this._width = width;
+    this._height = height;
+
+    const textureHeight = this._dataResolver.frequencyBinCount;
+
+    this._textureBuffer = new Uint8Array(textureWidth * textureHeight);
+    gl.viewport(0, 0, width, height);
+
+    gl.uniform2f(this._glParams.uTextureSizeLocation, textureWidth, textureHeight);    
+    gl.uniform2f(this._glParams.uViewportSize, width, height);    
+  }
+
   draw() {
+    if (this._width === this._canvas.width || this._height === this._canvas.height) {
+      this._resize(this._canvas.width, this._canvas.height);
+    }
     const sampleRate = this._dataResolver.sampleRate;
     const frequencyBinCount = this._dataResolver.frequencyBinCount;
     const gl = this._gl;
@@ -319,7 +343,7 @@ export class SpectrogramRenderer {
     const firstVisibleTransform = getFirstVisibleTransform(currentTime, this._dataResolver.samplesBetweenTransforms, sampleRate);
 
     const timeXOffset = firstVisibleTransform % 1;
-    const textureWidth = this._canvas.width;
+    const textureWidth = this._width;
 
     let x = 0;
     let y = 0;
@@ -338,6 +362,7 @@ export class SpectrogramRenderer {
 
     gl.bindTexture(gl.TEXTURE_2D, this._glParams.fftTexture);
     gl.uniform1f (this._glParams.uXTransformOffsetLocation, timeXOffset);     
+    gl.pixelStorei( gl.UNPACK_ALIGNMENT, 1 );
 
     gl.texImage2D( 
       gl.TEXTURE_2D, 
@@ -350,6 +375,7 @@ export class SpectrogramRenderer {
       gl.UNSIGNED_BYTE,
       this._textureBuffer
     );
+
     gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
     gl.finish();
   }

@@ -7,7 +7,6 @@ export declare const TimeRuler: React.ForwardRefExoticComponent<{
     color?: string;
     backgroundColor?: string;
     dividers?: boolean;
-    orientation?: 'horizontal' | 'vertical';
     position?: 'inset' | 'offset';
     selfContained?: boolean;
 } & React.HTMLAttributes<HTMLDivElement> & React.RefAttributes<HTMLDivElement>>;

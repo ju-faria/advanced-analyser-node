@@ -133,6 +133,8 @@
       _dynamicRange = constants.exports.DEFAULT_DYNAMIC_RANGE;
       _dynamicRangeTop = constants.exports.DEFAULT_DYNAMIC_RANGE_TOP;
       _frequencyScale = constants.exports.DEFAULT_FREQUENCY_SCALE;
+      _width;
+      _height;
       _colorRamp = [
           [0, 0, 0],
           [0, 0, 200],
@@ -209,6 +211,8 @@
           this._gl = canvas.getContext('webgl');
           this._dataResolver = dataResolver;
           this._frequencyScale = frequencyScale;
+          this._width = canvas.width;
+          this._height = canvas.height;
           this.currentTime = currentTime;
           this.initGl();
       }
@@ -234,20 +238,6 @@
           gl.attachShader(program, vertexShader);
           gl.attachShader(program, fragmentShader);
           gl.linkProgram(program);
-          /*
-           * for debugging shaders
-           */
-          {
-              if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-                  console.error("ERROR linking program!", gl.getProgramInfoLog(program));
-                  return;
-              }
-              gl.validateProgram(program);
-              if (!gl.getProgramParameter(program, gl.VALIDATE_STATUS)) {
-                  console.error("ERROR validating program!", gl.getProgramInfoLog(program));
-                  return;
-              }
-          }
           /*
            * Creates quad to paint on
            */
@@ -305,7 +295,21 @@
       updatePlayheadPosition(currentTime) {
           this.currentTime = currentTime;
       }
+      _resize(width, height) {
+          const gl = this._gl;
+          const textureWidth = width;
+          this._width = width;
+          this._height = height;
+          const textureHeight = this._dataResolver.frequencyBinCount;
+          this._textureBuffer = new Uint8Array(textureWidth * textureHeight);
+          gl.viewport(0, 0, width, height);
+          gl.uniform2f(this._glParams.uTextureSizeLocation, textureWidth, textureHeight);
+          gl.uniform2f(this._glParams.uViewportSize, width, height);
+      }
       draw() {
+          if (this._width === this._canvas.width || this._height === this._canvas.height) {
+              this._resize(this._canvas.width, this._canvas.height);
+          }
           const sampleRate = this._dataResolver.sampleRate;
           const frequencyBinCount = this._dataResolver.frequencyBinCount;
           const gl = this._gl;
@@ -313,7 +317,7 @@
           const visibleTransforms = this.visibleTransforms;
           const firstVisibleTransform = getFirstVisibleTransform(currentTime, this._dataResolver.samplesBetweenTransforms, sampleRate);
           const timeXOffset = firstVisibleTransform % 1;
-          const textureWidth = this._canvas.width;
+          const textureWidth = this._width;
           let x = 0;
           let y = 0;
           let transformI = 0;
@@ -328,6 +332,7 @@
           }
           gl.bindTexture(gl.TEXTURE_2D, this._glParams.fftTexture);
           gl.uniform1f(this._glParams.uXTransformOffsetLocation, timeXOffset);
+          gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
           gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, textureWidth, frequencyBinCount, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, this._textureBuffer);
           gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
           gl.finish();

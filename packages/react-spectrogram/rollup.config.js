@@ -42,7 +42,7 @@ export default (commandLineArgs) => {
         ...(commandLineArgs.environment === 'dev' ? [serve('../')] : [])    
       ]
     },
-    ...['demo1', 'demo2'].map((filename) => ({
+    ...['demo1', 'demo2', 'demo3/index'].map((filename) => ({
       input: `src/demo/${filename}.tsx`,
       output: {
         file: `dist/demo/${filename}.js`,

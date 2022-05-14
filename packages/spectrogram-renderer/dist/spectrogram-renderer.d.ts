@@ -19,6 +19,8 @@ export declare class SpectrogramRenderer {
     private _dynamicRange;
     private _dynamicRangeTop;
     private _frequencyScale;
+    private _width;
+    private _height;
     private _colorRamp;
     set currentTime(value: number);
     get currentTime(): number;
@@ -41,6 +43,7 @@ export declare class SpectrogramRenderer {
     constructor({ canvas, dataResolver, currentTime, frequencyScale, }: SpectrogramRendererProperties);
     initGl(): void;
     updatePlayheadPosition(currentTime: number): void;
+    private _resize;
     draw(): void;
     isFrequencyBinVisible(frequencyBin: number): boolean;
 }
