@@ -1,18 +1,16 @@
 import React from 'react';
 import { FrequencyDataResolver } from '@soundui/spectrogram-renderer';
 import { FrequencyScale } from '@soundui/shared/constants';
-declare type SpectrogramProps = React.HTMLAttributes<HTMLDivElement> & {
+import { SpectrogramTransforms } from './types';
+declare type SpectrogramProps = Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> & {
     width: number;
     height: number;
-    minFrequency: number;
-    maxFrequency: number;
     frequencyScale?: FrequencyScale;
-    timeWindow: number;
-    currentTime: number;
     dynamicRange: number;
     dynamicRangeTop: number;
     modifierKeyCode?: string;
     dataResolver: FrequencyDataResolver;
+    transforms: SpectrogramTransforms;
     displayFrequencyRuler?: boolean;
     frequencyRulerAsOverlay?: boolean;
     frequencyRulerPosition?: 'start' | 'end';
@@ -23,10 +21,7 @@ declare type SpectrogramProps = React.HTMLAttributes<HTMLDivElement> & {
     timeRulerSize?: number;
     onDynamicRangeChange: (value: number) => void;
     onDynamicRangeTopChange: (value: number) => void;
-    onMaxFrequencyChange: (maxFrequency: number) => void;
-    onMinFrequencyChange: (minFrequency: number) => void;
-    onTimeWindowChange: (timeWindow: number) => void;
-    onCurrentTimeChange: (currentTime: number) => void;
+    onChange: (properties: SpectrogramTransforms) => void;
 };
-export declare const Spectrogram: ({ width, height, minFrequency, maxFrequency, frequencyScale, timeWindow, currentTime, dynamicRange, dynamicRangeTop, modifierKeyCode, dataResolver, displayFrequencyRuler, frequencyRulerAsOverlay, frequencyRulerPosition, frequencyRulerSize, displayTimeRuler, timeRulerAsOverlay, timeRulerPosition, timeRulerSize, onMaxFrequencyChange, onMinFrequencyChange, onTimeWindowChange, onCurrentTimeChange, children, ...props }: SpectrogramProps) => JSX.Element;
+export declare const Spectrogram: ({ width, height, frequencyScale, dynamicRange, dynamicRangeTop, modifierKeyCode, dataResolver, transforms, displayFrequencyRuler, frequencyRulerAsOverlay, frequencyRulerPosition, frequencyRulerSize, displayTimeRuler, timeRulerAsOverlay, timeRulerPosition, timeRulerSize, onChange, children, ...props }: SpectrogramProps) => JSX.Element;
 export {};

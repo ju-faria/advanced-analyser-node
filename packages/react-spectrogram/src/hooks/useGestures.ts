@@ -27,13 +27,11 @@ type GestureEvent = {
   pinchMagnitudeMovementX: number,
   pinchMagnitudeMovementY: number,
 
-
-
   movementX: number,
   movementY: number,
   pointerIds: number[],
-  // event: any
 }
+
 type Pointer = {
   x: number,
   y: number,
@@ -258,6 +256,7 @@ export const useGestures = (
     };
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault();
+      // console.log(event);
 
       const eventData:GestureEvent = {
         deltaX: 0,
@@ -284,8 +283,12 @@ export const useGestures = (
       };
 
       if (event.ctrlKey) {
+        console.timeEnd('trackpadPinch');
+        console.time('trackpadPinch');
         onTrackpadPinch && onTrackpadPinch(eventData);
       } else {
+        console.timeEnd('wheel');
+        console.time('wheel');
         onWheel && onWheel(eventData);
       }
     };
@@ -303,6 +306,6 @@ export const useGestures = (
       element.removeEventListener('wheel', handleWheel);
     };
 
-  }, [ref, onPanMove, onPanStart, onPanEnd, onPinchMove, onPinchStart, onPinchEnd]);
+  }, [ref, onPanMove, onPanStart, onPanEnd, onPinchMove, onPinchStart, onPinchEnd, onTrackpadPinch]);
 
 };

@@ -1,19 +1,14 @@
 import { Nullable } from "@soundui/shared/utils";
 import { FrequencyDataResolver, SpectrogramRenderer } from "@soundui/spectrogram-renderer";
 import React from "react";
+import { SpectrogramTransforms } from "../spectrogram/types";
 declare type SpectrogramContextTypes = {
     spectrogramRenderer: Nullable<SpectrogramRenderer>;
-    onMaxFrequencyChange: (maxFrequency: number) => void;
-    onMinFrequencyChange: (minFrequency: number) => void;
-    onTimeWindowChange: (timeWindow: number) => void;
-    onCurrentTimeChange: (currentTime: number) => void;
+    onChange: (properties: SpectrogramTransforms) => void;
+    transforms: SpectrogramTransforms;
     width: number;
     height: number;
     canvas: HTMLCanvasElement;
-    minFrequency: number;
-    maxFrequency: number;
-    timeWindow: number;
-    currentTime: number;
     dynamicRange: number;
     dynamicRangeTop: number;
     dataResolver: FrequencyDataResolver;

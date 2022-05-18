@@ -8,15 +8,12 @@ import { DEFAULT_FREQUENCY_SCALE, FrequencyScale } from '@soundui/shared/constan
 import { clamp } from 'lodash';
 import classNames from 'classnames';
 import { useAnimationFrame } from 'src/hooks/useAnimationFrame';
+import { SpectrogramTransforms } from 'src/components/spectrogram/types';
 
 export const App = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [width, setWidth] = React.useState(window.innerWidth);
   const [height, setHeight] = React.useState(window.innerHeight);
-  const [minFrequency, setMinFrequency] = React.useState(20);
-  const [maxFrequency, setMaxFrequency] = React.useState(44100);
-  const [timeWindow, setTimeWindow] = React.useState(10_000);
-  const [currentTime, setCurrentTime] = React.useState(0);
   const [dynamicRange, setDynamicRange] = React.useState(70);
   const [dynamicRangeTop, setDynamicRangeTop] = React.useState(-30);
   const [frequencyRulerPosition, setFrequencyRulerPosition] = React.useState<'start' | 'end'>('start');
@@ -24,7 +21,12 @@ export const App = () => {
   const [frequencyScale, setFrequencyScale] = React.useState(DEFAULT_FREQUENCY_SCALE);
   const [displaySettings, setDisplaySettings] = React.useState(true);
   const [playheadPosition, setPlayheadPosition] = React.useState(0);
-
+  const [spectrogramTransforms, setSpectrogramTransforms] = React.useState<SpectrogramTransforms>({
+    minFrequency: 20,
+    maxFrequency: 44100,
+    timeWindow: 10_000,
+    currentTime: 0,
+  });
   const offlineCtx = useMemo(() => new OfflineAudioContext(2, 44100*30, 44100), []);
 
   useEffect(() => {
@@ -88,14 +90,8 @@ export const App = () => {
         <Spectrogram
           width={width}
           height={height - 20}
-          minFrequency={minFrequency}
-          maxFrequency={maxFrequency}
-          timeWindow={timeWindow}
-          currentTime={currentTime}
-          onMaxFrequencyChange={setMaxFrequency}
-          onMinFrequencyChange={setMinFrequency}
-          onTimeWindowChange={setTimeWindow}
-          onCurrentTimeChange={setCurrentTime}
+          transforms={spectrogramTransforms}
+          onChange={setSpectrogramTransforms}
           dynamicRange={dynamicRange}
           dynamicRangeTop={dynamicRangeTop}
           onDynamicRangeChange={setDynamicRange}
@@ -110,11 +106,11 @@ export const App = () => {
           <span
             className="playhead"
             style={{
-              display: playheadPosition  > currentTime
-                && playheadPosition < timeWindow  + currentTime
+              display: playheadPosition  > spectrogramTransforms.currentTime
+                && playheadPosition < spectrogramTransforms.timeWindow + spectrogramTransforms.currentTime
                 ? 'block' : 'none',
               transform: `translateX(${
-                (width - 50) * ((playheadPosition - currentTime)/ timeWindow) + (frequencyRulerPosition === 'start' ? 50 : 0)
+                (width - 50) * ((playheadPosition - spectrogramTransforms.currentTime) / spectrogramTransforms.timeWindow) + (frequencyRulerPosition === 'start' ? 50 : 0)
               }px)`,
             }}
           />

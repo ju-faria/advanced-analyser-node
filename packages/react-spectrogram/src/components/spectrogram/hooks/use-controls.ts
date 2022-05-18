@@ -6,6 +6,7 @@ import { transformFn, composeTransforms, TransformProperties } from "src/compone
 import { useAnimationFrame } from "src/hooks/useAnimationFrame";
 import { useGestures } from "src/hooks/useGestures";
 import { useKey } from "src/hooks/useKey";
+import { SpectrogramTransforms } from "../types";
 
 
 type ControlsProperties = {
@@ -15,17 +16,11 @@ type ControlsProperties = {
   lockFrequencyScaling?: boolean,
   lockTimeWindowScaling?: boolean,
 
-  onMaxFrequencyChange: (maxFrequency: number) => void,
-  onMinFrequencyChange: (minFrequency: number) => void,
-  onTimeWindowChange: (timeWindow: number) => void,
-  onCurrentTimeChange: (currentTime: number) => void,
+  onChange: (properties: SpectrogramTransforms) => void,
   width: number,
   height: number,
   canvas: HTMLElement,
-  minFrequency: number,
-  maxFrequency: number,
-  timeWindow: number,
-  currentTime: number,
+  transforms: SpectrogramTransforms,
   frequencyScale?: FrequencyScale,
 }
 
@@ -36,19 +31,14 @@ export const useControls = ({
   lockFrequencyScaling = false,
   lockTimeWindowScaling = false,
 
-  onMaxFrequencyChange,
-  onMinFrequencyChange,
-  onTimeWindowChange,
-  onCurrentTimeChange,
+  onChange,
   width,
   height,
   canvas,
-  minFrequency,
-  maxFrequency,
-  timeWindow,
-  currentTime,
+  transforms,
   frequencyScale = DEFAULT_FREQUENCY_SCALE,
 }:ControlsProperties) => {
+  const {minFrequency, maxFrequency, currentTime, timeWindow} = transforms;
   const {
     translateFrequency,
     translateCurrentTime,
@@ -70,15 +60,7 @@ export const useControls = ({
     releaseVelocity?: { x: number, y: number },
   } | null>(null);
 
-  const updateChanges = useCallback((updated: TransformProperties) => {
-    if(updated.currentTime !== currentTime) onCurrentTimeChange(updated.currentTime);
-    if(updated.minFrequency !== minFrequency) onMinFrequencyChange(updated.minFrequency);
-    if(updated.maxFrequency !== maxFrequency) onMaxFrequencyChange(updated.maxFrequency);
-    if(updated.timeWindow !== timeWindow) onTimeWindowChange(updated.timeWindow);
-  }, []);
-
   const modifierIsPressed = useKey(modifierKeyCode);
-
 
   useGestures(canvas, {
     onPinchStart: () => {
@@ -120,7 +102,7 @@ export const useControls = ({
         currentTime: startTime,
         timeWindow: startTimeWindow,
       });
-      updateChanges(transformed);
+      onChange(transformed);
     },
     onPinchEnd: () => {
       setActivePinchEvent(null);
@@ -156,7 +138,7 @@ export const useControls = ({
             translateCurrentTime(width, e.x - e.startX),
           )(transformed);
         }
-        updateChanges(transformed);
+        onChange(transformed);
       }
     },
     onPanEnd: (e) => {
@@ -174,6 +156,7 @@ export const useControls = ({
       });
     },
     onWheel: (e) => {
+
       if (activePanEvent) setActivePanEvent(null);
       let transformed = {
         minFrequency,
@@ -205,7 +188,7 @@ export const useControls = ({
           scaleTimeWindow(delta, e.relativeX / width),
         )(transformed);
       }
-      updateChanges(transformed);
+      onChange(transformed);
     },
     onTrackpadPinch: (e) => {
       if (activePanEvent) setActivePanEvent(null);
@@ -216,6 +199,8 @@ export const useControls = ({
         timeWindow,
       };
       const delta = ((height + (e.deltaWheel * 3)) / height);
+
+
       if (!lockFrequencyScaling) {
         transformed = composeTransforms(
           scaleFrequencies(delta, e.relativeY / height),
@@ -227,7 +212,7 @@ export const useControls = ({
           scaleTimeWindow(delta, e.relativeX / width),
         )(transformed);
       }
-      updateChanges(transformed);
+      onChange(transformed);
     },
   });
 
@@ -273,7 +258,7 @@ export const useControls = ({
       )(transformed);
     }
 
-    updateChanges(transformed);
+    onChange(transformed);
 
     if (finalVelocity.x === 0 && finalVelocity.y === 0) {
       setActivePanEvent(null);

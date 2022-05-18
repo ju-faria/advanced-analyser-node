@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from "react";
 import { DataUpdateEvent, FrequencyDataResolver, SpectrogramRenderer } from "@soundui/spectrogram-renderer";
 import { Nullable } from '@soundui/shared/utils';
 import { FrequencyScale } from "@soundui/shared/constants";
+import { SpectrogramTransforms } from "src/components/spectrogram/types";
 
 export type SpectrogramRendererHookProperties = {
   canvas: Nullable<HTMLCanvasElement>,
@@ -55,24 +56,12 @@ export const useSpectrogramRenderer = (
     draw: () => {
       if(spectrogramRenderer) spectrogramRenderer.draw();
     },
-    setMinFrequency: (minFrequency: number) => {
-      if (!spectrogramRenderer) return;
-      spectrogramRenderer.minFrequency = minFrequency;
-      spectrogramRenderer.draw();
-    },
-    setMaxFrequency: (maxFrequency: number) => {
-      if (!spectrogramRenderer) return;
+    updateProperties: ({ maxFrequency, minFrequency, currentTime, timeWindow}: SpectrogramTransforms) => {
+      if(!spectrogramRenderer) return ;
       spectrogramRenderer.maxFrequency = maxFrequency;
-      spectrogramRenderer.draw();
-    },
-    setTimeWindow: (timeWindow: number) => {
-      if (!spectrogramRenderer) return;
-      spectrogramRenderer.timeWindow = timeWindow;
-      spectrogramRenderer.draw();
-    },
-    setCurrentTime: (currentTime: number) => {
-      if (!spectrogramRenderer) return;
+      spectrogramRenderer.minFrequency = minFrequency;
       spectrogramRenderer.currentTime = currentTime;
+      spectrogramRenderer.timeWindow = timeWindow;
       spectrogramRenderer.draw();
     },
     setDynamicRange: (dynamicRange: number) => {

@@ -8,20 +8,17 @@ import { TimeRuler } from '../time-ruler';
 import { useControls } from './hooks/use-controls';
 import { DEFAULT_FREQUENCY_SCALE, FrequencyScale } from '@soundui/shared/constants';
 import { Nullable } from '@soundui/shared/utils/types';
+import { SpectrogramTransforms } from './types';
 
-type SpectrogramProps = React.HTMLAttributes<HTMLDivElement> & {
+type SpectrogramProps = Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> & {
   width: number,
   height: number,
-  minFrequency: number,
-  maxFrequency: number,
   frequencyScale?: FrequencyScale,
-  timeWindow: number,
-  currentTime: number,
   dynamicRange: number,
   dynamicRangeTop: number,
   modifierKeyCode?: string,
   dataResolver: FrequencyDataResolver,
-
+  transforms: SpectrogramTransforms,
   displayFrequencyRuler?: boolean,
   frequencyRulerAsOverlay?: boolean,
   frequencyRulerPosition?: 'start' | 'end',
@@ -34,11 +31,9 @@ type SpectrogramProps = React.HTMLAttributes<HTMLDivElement> & {
 
   onDynamicRangeChange: (value: number) => void,
   onDynamicRangeTopChange: (value: number) => void,
-  onMaxFrequencyChange: (maxFrequency: number) => void,
-  onMinFrequencyChange: (minFrequency: number) => void,
-  onTimeWindowChange: (timeWindow: number) => void,
-  onCurrentTimeChange: (currentTime: number) => void,
+  onChange: (properties: SpectrogramTransforms) => void,
 }
+
 // const useControllableState = <T = any>(controlledValue: Nullable<T>, defaultValue: T) => {
 //   const [value, setValue] = React.useState<T>(defaultValue);
 //   useEffect(() => {
@@ -49,15 +44,12 @@ type SpectrogramProps = React.HTMLAttributes<HTMLDivElement> & {
 export const Spectrogram = ({
   width,
   height,
-  minFrequency,
-  maxFrequency,
   frequencyScale = DEFAULT_FREQUENCY_SCALE,
-  timeWindow,
-  currentTime,
   dynamicRange,
   dynamicRangeTop,
   modifierKeyCode = 'ShiftLeft',
   dataResolver,
+  transforms,
 
   displayFrequencyRuler = true,
   frequencyRulerAsOverlay = true,
@@ -68,10 +60,7 @@ export const Spectrogram = ({
   timeRulerAsOverlay = true,
   timeRulerPosition = 'end',
   timeRulerSize = 30,
-  onMaxFrequencyChange,
-  onMinFrequencyChange,
-  onTimeWindowChange,
-  onCurrentTimeChange,
+  onChange,
   children,
   ...props
 }:SpectrogramProps) => {
@@ -82,17 +71,10 @@ export const Spectrogram = ({
   const canvasWidth = frequencyRulerAsOverlay ? width : width - frequencyRulerSize;
   const canvasHeight = timeRulerAsOverlay ? height : height - timeRulerSize;
   const controlProps = {
-    onMaxFrequencyChange,
-    onMinFrequencyChange,
-    onTimeWindowChange,
-    onCurrentTimeChange,
-
+    onChange,
     width: canvasWidth,
     height: canvasHeight,
-    minFrequency,
-    maxFrequency,
-    timeWindow,
-    currentTime,
+    transforms,
     frequencyScale,
     modifierKeyCode,
   };
@@ -123,13 +105,10 @@ export const Spectrogram = ({
 
   const {
     spectrogramRenderer,
-    setMinFrequency,
-    setMaxFrequency,
-    setTimeWindow,
-    setCurrentTime,
     setDynamicRange,
     setDynamicRangeTop,
     setFrequencyScale,
+    updateProperties,
   } = useSpectrogramRenderer({
     canvas,
     dataResolver,
@@ -137,20 +116,8 @@ export const Spectrogram = ({
   }, [width, height]);
 
   useLayoutEffect(() => {
-    setMinFrequency(minFrequency);
-  }, [minFrequency, spectrogramRenderer]);
-
-  useLayoutEffect(() => {
-    setMaxFrequency(maxFrequency);
-  }, [maxFrequency, spectrogramRenderer]);
-
-  useLayoutEffect(() => {
-    setCurrentTime(currentTime);
-  }, [currentTime, spectrogramRenderer]);
-
-  useLayoutEffect(() => {
-    setTimeWindow(timeWindow);
-  }, [timeWindow, spectrogramRenderer]);
+    updateProperties(transforms);
+  }, [transforms, spectrogramRenderer]);
 
   useLayoutEffect(() => {
     setDynamicRange(dynamicRange);
@@ -191,8 +158,8 @@ export const Spectrogram = ({
           ref={frequencyRulerRef}
           width={frequencyRulerSize}
           height={canvasHeight}
-          minFrequency={minFrequency}
-          maxFrequency={maxFrequency}
+          minFrequency={transforms.minFrequency}
+          maxFrequency={transforms.maxFrequency}
           position={frequencyRulerPosition === 'start' ? 'inset' : 'offset'}
           frequencyScale={frequencyScale}
           style={{
@@ -207,8 +174,8 @@ export const Spectrogram = ({
           ref={timeRulerRef}
           width={canvasWidth}
           height={timeRulerSize}
-          timeWindow={timeWindow}
-          currentTime={currentTime}
+          timeWindow={transforms.timeWindow}
+          currentTime={transforms.currentTime}
           position={timeRulerPosition === 'start' ? 'inset' : 'offset'}
           style={{
             position: 'absolute',
@@ -218,41 +185,16 @@ export const Spectrogram = ({
           }}
         />
       )}
-      {/* {!timeRulerAsOverlay && !frequencyRulerAsOverlay && displayFrequencyRuler && displayTimeRuler && (
-        <svg
-          height={timeRulerSize}
-          width={frequencyRulerSize}
-          style={{
-            position: 'absolute',
-            [timeRulerPosition === 'start' ? 'top' : 'bottom']: 0,
-            [frequencyRulerPosition === 'start' ? 'left' : 'right']: 0,
-          }}
-        >
-          <rect
-            height={timeRulerSize}
-            width={frequencyRulerSize}
-            style={{
-              fill: "rgba(0, 0, 0, 0.5)",
-            }}
-          />
-        </svg>
-      )} */}
 
       {children && (
         <SpectrogramContext.Provider
           value={{
             spectrogramRenderer,
-            onMaxFrequencyChange,
-            onMinFrequencyChange,
-            onTimeWindowChange,
-            onCurrentTimeChange,
+            onChange,
+            transforms,
             width,
             height,
             canvas,
-            minFrequency,
-            maxFrequency,
-            timeWindow,
-            currentTime,
             dynamicRange,
             dynamicRangeTop,
             dataResolver,

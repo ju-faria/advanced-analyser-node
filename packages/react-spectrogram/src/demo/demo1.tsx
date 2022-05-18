@@ -7,18 +7,21 @@ import { Spectrogram } from '../';
 import { useAnimationFrame } from 'src/hooks/useAnimationFrame';
 import { DEFAULT_FREQUENCY_SCALE } from '@soundui/shared/constants';
 import { FrequencyScale } from '@soundui/shared/constants';
+import { SpectrogramTransforms } from 'src/components/spectrogram/types';
 
 export const App = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [minFrequency, setMinFrequency] = React.useState(20);
-  const [maxFrequency, setMaxFrequency] = React.useState(44100);
-  const [timeWindow, setTimeWindow] = React.useState(10_000);
-  const [currentTime, setCurrentTime] = React.useState(0);
+
   const [dynamicRange, setDynamicRange] = React.useState(70);
   const [dynamicRangeTop, setDynamicRangeTop] = React.useState(-30);
   const [playheadPosition, setPlayheadPosition] = React.useState(0);
   const [frequencyScale, setFrequencyScale] = React.useState(DEFAULT_FREQUENCY_SCALE);
-
+  const [spectrogramTransforms, setSpectrogramTransforms] = React.useState<SpectrogramTransforms>({
+    minFrequency: 20,
+    maxFrequency: 44100,
+    timeWindow: 10_000,
+    currentTime: 0,
+  });
   const offlineCtx = useMemo(() => new OfflineAudioContext(2, 44100*30, 44100), []);
   const aaNode = useAsyncMemo(() => {
     if (!offlineCtx) return null;
@@ -53,7 +56,10 @@ export const App = () => {
       source.buffer = buffer;
       source.connect(aaNode);
       aaNode.connect(offlineCtx.destination);
-      setTimeWindow(buffer.duration * 1000);
+      setSpectrogramTransforms({
+        ...spectrogramTransforms,
+        timeWindow: buffer.duration * 1000
+      });
       source.start(0);
       await offlineCtx.startRendering();
     })();
@@ -70,14 +76,8 @@ export const App = () => {
       {dataResolver && (<Spectrogram
         width={1024}
         height={512}
-        minFrequency={minFrequency}
-        maxFrequency={maxFrequency}
-        timeWindow={timeWindow}
-        currentTime={currentTime}
-        onMaxFrequencyChange={setMaxFrequency}
-        onMinFrequencyChange={setMinFrequency}
-        onTimeWindowChange={setTimeWindow}
-        onCurrentTimeChange={setCurrentTime}
+        transforms={spectrogramTransforms}
+        onChange={setSpectrogramTransforms}
         dynamicRange={dynamicRange}
         dynamicRangeTop={dynamicRangeTop}
         onDynamicRangeChange={setDynamicRange}
@@ -95,7 +95,7 @@ export const App = () => {
             backgroundColor: 'red',
             display: 'block',
 
-            transform: `translateX(${1024 * (playheadPosition / timeWindow)}px)`,
+            transform: `translateX(${1024 * (playheadPosition / spectrogramTransforms.timeWindow)}px)`,
           }}
         />
       </Spectrogram>)}

@@ -1,21 +1,17 @@
+import { DEFAULT_MAX_FREQUENCY, DEFAULT_MAX_TIME_WINDOW, DEFAULT_MIN_FREQUENCY, DEFAULT_TIME_WINDOW } from "@soundui/shared/constants";
 import { Nullable } from "@soundui/shared/utils";
 import { FrequencyDataResolver, SpectrogramRenderer } from "@soundui/spectrogram-renderer";
 import { noop } from "lodash";
 import React from "react";
+import { SpectrogramTransforms } from "../spectrogram/types";
 
 type SpectrogramContextTypes = {
   spectrogramRenderer: Nullable<SpectrogramRenderer>,
-  onMaxFrequencyChange: (maxFrequency: number) => void,
-  onMinFrequencyChange: (minFrequency: number) => void,
-  onTimeWindowChange: (timeWindow: number) => void,
-  onCurrentTimeChange: (currentTime: number) => void,
+  onChange: (properties: SpectrogramTransforms) => void,
+  transforms: SpectrogramTransforms,
   width: number,
   height: number,
   canvas: HTMLCanvasElement,
-  minFrequency: number,
-  maxFrequency: number,
-  timeWindow: number,
-  currentTime: number,
   dynamicRange: number,
   dynamicRangeTop: number,
   dataResolver: FrequencyDataResolver,
@@ -23,17 +19,16 @@ type SpectrogramContextTypes = {
 
 export const SpectrogramContext = React.createContext<SpectrogramContextTypes>({
   spectrogramRenderer: null,
-  onMaxFrequencyChange: noop,
-  onMinFrequencyChange: noop,
-  onTimeWindowChange: noop,
-  onCurrentTimeChange: noop,
+  onChange: noop,
+  transforms: {
+    minFrequency: DEFAULT_MIN_FREQUENCY,
+    maxFrequency: DEFAULT_MAX_FREQUENCY,
+    timeWindow: DEFAULT_TIME_WINDOW,
+    currentTime: 0,
+  },
   width: 1024,
   height: 512,
   canvas: null,
-  minFrequency: 20,
-  maxFrequency: 44100,
-  timeWindow: 10_000,
-  currentTime: 0,
   dynamicRange: 70,
   dynamicRangeTop: -30,
   dataResolver: null,

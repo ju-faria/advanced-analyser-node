@@ -6,19 +6,25 @@ import { useAsyncMemo } from '../hooks/useAsyncMemo';
 import { Spectrogram } from '../';
 import { DEFAULT_FREQUENCY_SCALE, FrequencyScale } from '@soundui/shared/constants';
 import { clamp } from 'lodash';
+import { SpectrogramTransforms } from 'src/components/spectrogram/types';
 
 export const App = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const [minFrequency, setMinFrequency] = React.useState(20);
-  const [maxFrequency, setMaxFrequency] = React.useState(44100);
-  const [timeWindow, setTimeWindow] = React.useState(10_000);
-  const [currentTime, setCurrentTime] = React.useState(0);
+  // const [minFrequency, setMinFrequency] = React.useState(20);
+  // const [maxFrequency, setMaxFrequency] = React.useState(44100);
+  // const [timeWindow, setTimeWindow] = React.useState(10_000);
+  // const [currentTime, setCurrentTime] = React.useState(0);
   const [dynamicRange, setDynamicRange] = React.useState(70);
   const [dynamicRangeTop, setDynamicRangeTop] = React.useState(-30);
   const [frequencyRulerPosition, setFrequencyRulerPosition] = React.useState<'start' | 'end'>('start');
   const [timeRulerPosition, setTimeRulerPosition] = React.useState<'start' | 'end'>('start');
   const [frequencyScale, setFrequencyScale] = React.useState(DEFAULT_FREQUENCY_SCALE);
-
+  const [spectrogramTransforms, setSpectrogramTransforms] = React.useState<SpectrogramTransforms>({
+    minFrequency: 20,
+    maxFrequency: 44100,
+    timeWindow: 10_000,
+    currentTime: 0,
+  });
   const offlineCtx = useMemo(() => new OfflineAudioContext(2, 44100*30, 44100), []);
   const aaNode = useAsyncMemo(() => {
     if (!offlineCtx) return null;
@@ -64,14 +70,8 @@ export const App = () => {
         <Spectrogram
           width={1024}
           height={512}
-          minFrequency={minFrequency}
-          maxFrequency={maxFrequency}
-          timeWindow={timeWindow}
-          currentTime={currentTime}
-          onMaxFrequencyChange={setMaxFrequency}
-          onMinFrequencyChange={setMinFrequency}
-          onTimeWindowChange={setTimeWindow}
-          onCurrentTimeChange={setCurrentTime}
+          transforms={spectrogramTransforms}
+          onChange={setSpectrogramTransforms}
           dynamicRange={dynamicRange}
           dynamicRangeTop={dynamicRangeTop}
           onDynamicRangeChange={setDynamicRange}
@@ -82,9 +82,7 @@ export const App = () => {
           frequencyRulerPosition={frequencyRulerPosition}
           timeRulerPosition={timeRulerPosition}
           frequencyScale={frequencyScale}
-        >
-
-        </Spectrogram>
+        />
       )}
       <select
         value={frequencyRulerPosition}

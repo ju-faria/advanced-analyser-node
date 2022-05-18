@@ -998,30 +998,35 @@
 	            if (spectrogramRenderer)
 	                spectrogramRenderer.draw();
 	        },
-	        setMinFrequency: (minFrequency) => {
-	            if (!spectrogramRenderer)
-	                return;
-	            spectrogramRenderer.minFrequency = minFrequency;
-	            spectrogramRenderer.draw();
-	        },
-	        setMaxFrequency: (maxFrequency) => {
+	        updateProperties: ({ maxFrequency, minFrequency, currentTime, timeWindow }) => {
 	            if (!spectrogramRenderer)
 	                return;
 	            spectrogramRenderer.maxFrequency = maxFrequency;
-	            spectrogramRenderer.draw();
-	        },
-	        setTimeWindow: (timeWindow) => {
-	            if (!spectrogramRenderer)
-	                return;
+	            spectrogramRenderer.minFrequency = minFrequency;
+	            spectrogramRenderer.currentTime = currentTime;
 	            spectrogramRenderer.timeWindow = timeWindow;
 	            spectrogramRenderer.draw();
 	        },
-	        setCurrentTime: (currentTime) => {
-	            if (!spectrogramRenderer)
-	                return;
-	            spectrogramRenderer.currentTime = currentTime;
-	            spectrogramRenderer.draw();
-	        },
+	        // setMinFrequency: (minFrequency: number) => {
+	        //   if (!spectrogramRenderer) return;
+	        //   spectrogramRenderer.minFrequency = minFrequency;
+	        //   spectrogramRenderer.draw();
+	        // },
+	        // setMaxFrequency: (maxFrequency: number) => {
+	        //   if (!spectrogramRenderer) return;
+	        //   spectrogramRenderer.maxFrequency = maxFrequency;
+	        //   spectrogramRenderer.draw();
+	        // },
+	        // setTimeWindow: (timeWindow: number) => {
+	        //   if (!spectrogramRenderer) return;
+	        //   spectrogramRenderer.timeWindow = timeWindow;
+	        //   spectrogramRenderer.draw();
+	        // },
+	        // setCurrentTime: (currentTime: number) => {
+	        //   if (!spectrogramRenderer) return;
+	        //   spectrogramRenderer.currentTime = currentTime;
+	        //   spectrogramRenderer.draw();
+	        // },
 	        setDynamicRange: (dynamicRange) => {
 	            if (!spectrogramRenderer)
 	                return;
@@ -18256,17 +18261,24 @@
 
 	const SpectrogramContext = React.createContext({
 	    spectrogramRenderer: null,
-	    onMaxFrequencyChange: lodash.exports.noop,
-	    onMinFrequencyChange: lodash.exports.noop,
-	    onTimeWindowChange: lodash.exports.noop,
-	    onCurrentTimeChange: lodash.exports.noop,
+	    // onMaxFrequencyChange: noop,
+	    // onMinFrequencyChange: noop,
+	    // onTimeWindowChange: noop,
+	    // onCurrentTimeChange: noop,
+	    onChange: lodash.exports.noop,
+	    transforms: {
+	        minFrequency: constants.exports.DEFAULT_MIN_FREQUENCY,
+	        maxFrequency: constants.exports.DEFAULT_MAX_FREQUENCY,
+	        timeWindow: constants.exports.DEFAULT_TIME_WINDOW,
+	        currentTime: 0,
+	    },
 	    width: 1024,
 	    height: 512,
 	    canvas: null,
-	    minFrequency: 20,
-	    maxFrequency: 44100,
-	    timeWindow: 10_000,
-	    currentTime: 0,
+	    // minFrequency: 20,
+	    // maxFrequency: 44100,
+	    // timeWindow: 10_000,
+	    // currentTime: 0,
 	    dynamicRange: 70,
 	    dynamicRangeTop: -30,
 	    dataResolver: null,
@@ -18800,6 +18812,7 @@
 	        };
 	        const handleWheel = (event) => {
 	            event.preventDefault();
+	            // console.log(event);
 	            const eventData = {
 	                deltaX: 0,
 	                deltaY: 0,
@@ -18823,9 +18836,13 @@
 	                pointerIds: []
 	            };
 	            if (event.ctrlKey) {
+	                console.timeEnd('trackpadPinch');
+	                console.time('trackpadPinch');
 	                onTrackpadPinch && onTrackpadPinch(eventData);
 	            }
 	            else {
+	                console.timeEnd('wheel');
+	                console.time('wheel');
 	                onWheel && onWheel(eventData);
 	            }
 	        };
@@ -18841,7 +18858,7 @@
 	            element.removeEventListener('pointercancel', handlePointUp);
 	            element.removeEventListener('wheel', handleWheel);
 	        };
-	    }, [ref, onPanMove, onPanStart, onPanEnd, onPinchMove, onPinchStart, onPinchEnd]);
+	    }, [ref, onPanMove, onPanStart, onPanEnd, onPinchMove, onPinchStart, onPinchEnd, onTrackpadPinch]);
 	};
 
 	const useKey = (keyCode) => {
@@ -18867,20 +18884,27 @@
 	    return isPressed;
 	};
 
-	const useControls = ({ modifierKeyCode = 'ShiftLeft', lockFrequencyPanning = false, lockTimePanning = false, lockFrequencyScaling = false, lockTimeWindowScaling = false, onMaxFrequencyChange, onMinFrequencyChange, onTimeWindowChange, onCurrentTimeChange, width, height, canvas, minFrequency, maxFrequency, timeWindow, currentTime, frequencyScale = defaults.DEFAULT_FREQUENCY_SCALE, }) => {
+	const useControls = ({ modifierKeyCode = 'ShiftLeft', lockFrequencyPanning = false, lockTimePanning = false, lockFrequencyScaling = false, lockTimeWindowScaling = false, 
+	// onMaxFrequencyChange,
+	// onMinFrequencyChange,
+	// onTimeWindowChange,
+	// onCurrentTimeChange,
+	onChange, width, height, canvas, 
+	// minFrequency,
+	// maxFrequency,
+	// timeWindow,
+	// currentTime,
+	transforms, frequencyScale = defaults.DEFAULT_FREQUENCY_SCALE, }) => {
+	    const { minFrequency, maxFrequency, currentTime, timeWindow } = transforms;
 	    const { translateFrequency, translateCurrentTime, scaleFrequencies, scaleTimeWindow, } = transformFn[frequencyScale];
 	    const [activePinchEvent, setActivePinchEvent] = react.exports.useState(null);
 	    const [activePanEvent, setActivePanEvent] = react.exports.useState(null);
-	    const updateChanges = react.exports.useCallback((updated) => {
-	        if (updated.currentTime !== currentTime)
-	            onCurrentTimeChange(updated.currentTime);
-	        if (updated.minFrequency !== minFrequency)
-	            onMinFrequencyChange(updated.minFrequency);
-	        if (updated.maxFrequency !== maxFrequency)
-	            onMaxFrequencyChange(updated.maxFrequency);
-	        if (updated.timeWindow !== timeWindow)
-	            onTimeWindowChange(updated.timeWindow);
-	    }, []);
+	    // const updateChanges = useCallback((updated: TransformProperties) => {
+	    //   if(updated.currentTime !== currentTime) onCurrentTimeChange(updated.currentTime);
+	    //   if(updated.minFrequency !== minFrequency) onMinFrequencyChange(updated.minFrequency);
+	    //   if(updated.maxFrequency !== maxFrequency) onMaxFrequencyChange(updated.maxFrequency);
+	    //   if(updated.timeWindow !== timeWindow) onTimeWindowChange(updated.timeWindow);
+	    // }, []);
 	    const modifierIsPressed = useKey(modifierKeyCode);
 	    useGestures(canvas, {
 	        onPinchStart: () => {
@@ -18908,7 +18932,7 @@
 	                currentTime: startTime,
 	                timeWindow: startTimeWindow,
 	            });
-	            updateChanges(transformed);
+	            onChange(transformed);
 	        },
 	        onPinchEnd: () => {
 	            setActivePinchEvent(null);
@@ -18941,7 +18965,7 @@
 	                if (!lockTimePanning) {
 	                    transformed = composeTransforms(translateCurrentTime(width, e.x - e.startX))(transformed);
 	                }
-	                updateChanges(transformed);
+	                onChange(transformed);
 	            }
 	        },
 	        onPanEnd: (e) => {
@@ -18979,9 +19003,10 @@
 	                const delta = (width + (e.deltaWheel * -1)) / width;
 	                transformed = composeTransforms(scaleTimeWindow(delta, e.relativeX / width))(transformed);
 	            }
-	            updateChanges(transformed);
+	            onChange(transformed);
 	        },
 	        onTrackpadPinch: (e) => {
+	            // console.log(activePanEvent, e);
 	            if (activePanEvent)
 	                setActivePanEvent(null);
 	            let transformed = {
@@ -18997,7 +19022,7 @@
 	            if (!lockTimeWindowScaling) {
 	                transformed = composeTransforms(scaleTimeWindow(delta, e.relativeX / width))(transformed);
 	            }
-	            updateChanges(transformed);
+	            onChange(transformed);
 	        },
 	    });
 	    useAnimationFrame(() => {
@@ -19032,7 +19057,7 @@
 	        if (!lockFrequencyPanning) {
 	            transformed = composeTransforms(translateFrequency(height, releaseDeltaPosition.y + newDeltaPosition.y))(transformed);
 	        }
-	        updateChanges(transformed);
+	        onChange(transformed);
 	        if (finalVelocity.x === 0 && finalVelocity.y === 0) {
 	            setActivePanEvent(null);
 	            return;
@@ -19045,23 +19070,36 @@
 	//   useEffect(() => {
 	//   }, [controlledValue]);
 	// }
-	const Spectrogram = ({ width, height, minFrequency, maxFrequency, frequencyScale = constants.exports.DEFAULT_FREQUENCY_SCALE, timeWindow, currentTime, dynamicRange, dynamicRangeTop, modifierKeyCode = 'ShiftLeft', dataResolver, displayFrequencyRuler = true, frequencyRulerAsOverlay = true, frequencyRulerPosition = 'start', frequencyRulerSize = 50, displayTimeRuler = true, timeRulerAsOverlay = true, timeRulerPosition = 'end', timeRulerSize = 30, onMaxFrequencyChange, onMinFrequencyChange, onTimeWindowChange, onCurrentTimeChange, children, ...props }) => {
+	const Spectrogram = ({ width, height, 
+	// minFrequency,
+	// maxFrequency,
+	frequencyScale = constants.exports.DEFAULT_FREQUENCY_SCALE, 
+	// timeWindow,
+	// currentTime,
+	dynamicRange, dynamicRangeTop, modifierKeyCode = 'ShiftLeft', dataResolver, transforms, displayFrequencyRuler = true, frequencyRulerAsOverlay = true, frequencyRulerPosition = 'start', frequencyRulerSize = 50, displayTimeRuler = true, timeRulerAsOverlay = true, timeRulerPosition = 'end', timeRulerSize = 30, 
+	// onMaxFrequencyChange,
+	// onMinFrequencyChange,
+	// onTimeWindowChange,
+	// onCurrentTimeChange,
+	onChange, children, ...props }) => {
 	    const [canvasRef, canvas] = useImmutableRef(null);
 	    const [frequencyRulerRef, frequencyRuler] = useImmutableRef(null);
 	    const [timeRulerRef, timeRuler] = useImmutableRef(null);
 	    const canvasWidth = frequencyRulerAsOverlay ? width : width - frequencyRulerSize;
 	    const canvasHeight = timeRulerAsOverlay ? height : height - timeRulerSize;
 	    const controlProps = {
-	        onMaxFrequencyChange,
-	        onMinFrequencyChange,
-	        onTimeWindowChange,
-	        onCurrentTimeChange,
+	        // onMaxFrequencyChange,
+	        // onMinFrequencyChange,
+	        // onTimeWindowChange,
+	        // onCurrentTimeChange,
+	        onChange,
 	        width: canvasWidth,
 	        height: canvasHeight,
-	        minFrequency,
-	        maxFrequency,
-	        timeWindow,
-	        currentTime,
+	        transforms,
+	        // minFrequency,
+	        // maxFrequency,
+	        // timeWindow,
+	        // currentTime,
 	        frequencyScale,
 	        modifierKeyCode,
 	    };
@@ -19085,23 +19123,28 @@
 	        lockFrequencyPanning: true,
 	        modifierKeyCode: null,
 	    });
-	    const { spectrogramRenderer, setMinFrequency, setMaxFrequency, setTimeWindow, setCurrentTime, setDynamicRange, setDynamicRangeTop, setFrequencyScale, } = useSpectrogramRenderer({
+	    const { spectrogramRenderer, 
+	    // setMinFrequency,
+	    // setMaxFrequency,
+	    // setTimeWindow,
+	    // setCurrentTime,
+	    setDynamicRange, setDynamicRangeTop, setFrequencyScale, updateProperties, } = useSpectrogramRenderer({
 	        canvas,
 	        dataResolver,
 	        frequencyScale,
 	    }, [width, height]);
 	    react.exports.useLayoutEffect(() => {
-	        setMinFrequency(minFrequency);
-	    }, [minFrequency, spectrogramRenderer]);
-	    react.exports.useLayoutEffect(() => {
-	        setMaxFrequency(maxFrequency);
-	    }, [maxFrequency, spectrogramRenderer]);
-	    react.exports.useLayoutEffect(() => {
-	        setCurrentTime(currentTime);
-	    }, [currentTime, spectrogramRenderer]);
-	    react.exports.useLayoutEffect(() => {
-	        setTimeWindow(timeWindow);
-	    }, [timeWindow, spectrogramRenderer]);
+	        updateProperties(transforms);
+	    }, [transforms, spectrogramRenderer]);
+	    // useLayoutEffect(() => {
+	    //   setMaxFrequency(maxFrequency);
+	    // }, [maxFrequency, spectrogramRenderer]);
+	    // useLayoutEffect(() => {
+	    //   setCurrentTime(currentTime);
+	    // }, [currentTime, spectrogramRenderer]);
+	    // useLayoutEffect(() => {
+	    //   setTimeWindow(timeWindow);
+	    // }, [timeWindow, spectrogramRenderer]);
 	    react.exports.useLayoutEffect(() => {
 	        setDynamicRange(dynamicRange);
 	    }, [dynamicRange, spectrogramRenderer]);
@@ -19123,12 +19166,12 @@
 	                marginTop: canvasTopOffset,
 	                marginLeft: canvasLeftOffset,
 	            } }),
-	        displayFrequencyRuler && (React.createElement(FrequencyRuler, { ref: frequencyRulerRef, width: frequencyRulerSize, height: canvasHeight, minFrequency: minFrequency, maxFrequency: maxFrequency, position: frequencyRulerPosition === 'start' ? 'inset' : 'offset', frequencyScale: frequencyScale, style: {
+	        displayFrequencyRuler && (React.createElement(FrequencyRuler, { ref: frequencyRulerRef, width: frequencyRulerSize, height: canvasHeight, minFrequency: transforms.minFrequency, maxFrequency: transforms.maxFrequency, position: frequencyRulerPosition === 'start' ? 'inset' : 'offset', frequencyScale: frequencyScale, style: {
 	                position: 'absolute',
 	                top: canvasTopOffset,
 	                [frequencyRulerPosition === 'start' ? 'left' : 'right']: 0,
 	            } })),
-	        displayTimeRuler && (React.createElement(TimeRuler, { ref: timeRulerRef, width: canvasWidth, height: timeRulerSize, timeWindow: timeWindow, currentTime: currentTime, position: timeRulerPosition === 'start' ? 'inset' : 'offset', style: {
+	        displayTimeRuler && (React.createElement(TimeRuler, { ref: timeRulerRef, width: canvasWidth, height: timeRulerSize, timeWindow: transforms.timeWindow, currentTime: transforms.currentTime, position: timeRulerPosition === 'start' ? 'inset' : 'offset', style: {
 	                position: 'absolute',
 	                bottom: 0,
 	                left: canvasLeftOffset,
@@ -19136,17 +19179,19 @@
 	            } })),
 	        children && (React.createElement(SpectrogramContext.Provider, { value: {
 	                spectrogramRenderer,
-	                onMaxFrequencyChange,
-	                onMinFrequencyChange,
-	                onTimeWindowChange,
-	                onCurrentTimeChange,
+	                // onMaxFrequencyChange,
+	                // onMinFrequencyChange,
+	                // onTimeWindowChange,
+	                // onCurrentTimeChange,
+	                onChange,
+	                transforms,
 	                width,
 	                height,
 	                canvas,
-	                minFrequency,
-	                maxFrequency,
-	                timeWindow,
-	                currentTime,
+	                // minFrequency,
+	                // maxFrequency,
+	                // timeWindow,
+	                // currentTime,
 	                dynamicRange,
 	                dynamicRangeTop,
 	                dataResolver,
@@ -19155,15 +19200,21 @@
 
 	const App = () => {
 	    const audioRef = react.exports.useRef(null);
-	    const [minFrequency, setMinFrequency] = React.useState(20);
-	    const [maxFrequency, setMaxFrequency] = React.useState(44100);
-	    const [timeWindow, setTimeWindow] = React.useState(10_000);
-	    const [currentTime, setCurrentTime] = React.useState(0);
+	    // const [minFrequency, setMinFrequency] = React.useState(20);
+	    // const [maxFrequency, setMaxFrequency] = React.useState(44100);
+	    // const [timeWindow, setTimeWindow] = React.useState(10_000);
+	    // const [currentTime, setCurrentTime] = React.useState(0);
 	    const [dynamicRange, setDynamicRange] = React.useState(70);
 	    const [dynamicRangeTop, setDynamicRangeTop] = React.useState(-30);
 	    const [frequencyRulerPosition, setFrequencyRulerPosition] = React.useState('start');
 	    const [timeRulerPosition, setTimeRulerPosition] = React.useState('start');
 	    const [frequencyScale, setFrequencyScale] = React.useState(constants.exports.DEFAULT_FREQUENCY_SCALE);
+	    const [spectrogramTransforms, setSpectrogramTransforms] = React.useState({
+	        minFrequency: 20,
+	        maxFrequency: 44100,
+	        timeWindow: 10_000,
+	        currentTime: 0,
+	    });
 	    const offlineCtx = react.exports.useMemo(() => new OfflineAudioContext(2, 44100 * 30, 44100), []);
 	    const aaNode = useAsyncMemo(() => {
 	        if (!offlineCtx)
@@ -19204,7 +19255,16 @@
 	        })();
 	    }, [aaNode, dataResolver]);
 	    return (React.createElement("div", null,
-	        dataResolver && (React.createElement(Spectrogram, { width: 1024, height: 512, minFrequency: minFrequency, maxFrequency: maxFrequency, timeWindow: timeWindow, currentTime: currentTime, onMaxFrequencyChange: setMaxFrequency, onMinFrequencyChange: setMinFrequency, onTimeWindowChange: setTimeWindow, onCurrentTimeChange: setCurrentTime, dynamicRange: dynamicRange, dynamicRangeTop: dynamicRangeTop, onDynamicRangeChange: setDynamicRange, onDynamicRangeTopChange: setDynamicRangeTop, dataResolver: dataResolver, timeRulerAsOverlay: false, frequencyRulerAsOverlay: false, frequencyRulerPosition: frequencyRulerPosition, timeRulerPosition: timeRulerPosition, frequencyScale: frequencyScale })),
+	        dataResolver && (React.createElement(Spectrogram, { width: 1024, height: 512, 
+	            // minFrequency={minFrequency}
+	            // maxFrequency={maxFrequency}
+	            // timeWindow={timeWindow}
+	            // currentTime={currentTime}
+	            // onMaxFrequencyChange={setMaxFrequency}
+	            // onMinFrequencyChange={setMinFrequency}
+	            // onTimeWindowChange={setTimeWindow}
+	            // onCurrentTimeChange={setCurrentTime}
+	            transforms: spectrogramTransforms, onChange: setSpectrogramTransforms, dynamicRange: dynamicRange, dynamicRangeTop: dynamicRangeTop, onDynamicRangeChange: setDynamicRange, onDynamicRangeTopChange: setDynamicRangeTop, dataResolver: dataResolver, timeRulerAsOverlay: false, frequencyRulerAsOverlay: false, frequencyRulerPosition: frequencyRulerPosition, timeRulerPosition: timeRulerPosition, frequencyScale: frequencyScale })),
 	        React.createElement("select", { value: frequencyRulerPosition, onChange: (e) => {
 	                const value = e.currentTarget.value;
 	                setFrequencyRulerPosition(value);
