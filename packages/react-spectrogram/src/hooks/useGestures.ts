@@ -248,7 +248,14 @@ export const useGestures = (
       if (Object.keys(pointers).length === 1) {
         onPanEnd && onPanEnd(pointersToGestureEvent(pointers));
       } else if (Object.keys(pointers).length > 1) {
-        onPinchEnd && onPinchEnd(pointersToGestureEvent(pointers));
+        const pinchEndEvent = pointersToGestureEvent(pointers);
+        onPinchEnd && onPinchEnd(pinchEndEvent);
+        // reset pointers start
+        for (const pointerId in newPointers) {
+          const pointer = newPointers[pointerId];
+          pointer.startX = pointer.x;
+          pointer.startY = pointer.y;
+        }
         onPanStart && onPanStart(pointersToGestureEvent(newPointers));
       }
 
@@ -283,12 +290,8 @@ export const useGestures = (
       };
 
       if (event.ctrlKey) {
-        console.timeEnd('trackpadPinch');
-        console.time('trackpadPinch');
         onTrackpadPinch && onTrackpadPinch(eventData);
       } else {
-        console.timeEnd('wheel');
-        console.time('wheel');
         onWheel && onWheel(eventData);
       }
     };

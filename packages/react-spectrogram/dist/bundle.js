@@ -629,26 +629,6 @@
 	            spectrogramRenderer.timeWindow = timeWindow;
 	            spectrogramRenderer.draw();
 	        },
-	        // setMinFrequency: (minFrequency: number) => {
-	        //   if (!spectrogramRenderer) return;
-	        //   spectrogramRenderer.minFrequency = minFrequency;
-	        //   spectrogramRenderer.draw();
-	        // },
-	        // setMaxFrequency: (maxFrequency: number) => {
-	        //   if (!spectrogramRenderer) return;
-	        //   spectrogramRenderer.maxFrequency = maxFrequency;
-	        //   spectrogramRenderer.draw();
-	        // },
-	        // setTimeWindow: (timeWindow: number) => {
-	        //   if (!spectrogramRenderer) return;
-	        //   spectrogramRenderer.timeWindow = timeWindow;
-	        //   spectrogramRenderer.draw();
-	        // },
-	        // setCurrentTime: (currentTime: number) => {
-	        //   if (!spectrogramRenderer) return;
-	        //   spectrogramRenderer.currentTime = currentTime;
-	        //   spectrogramRenderer.draw();
-	        // },
 	        setDynamicRange: (dynamicRange) => {
 	            if (!spectrogramRenderer)
 	                return;
@@ -17883,10 +17863,6 @@
 
 	const SpectrogramContext = React.createContext({
 	    spectrogramRenderer: null,
-	    // onMaxFrequencyChange: noop,
-	    // onMinFrequencyChange: noop,
-	    // onTimeWindowChange: noop,
-	    // onCurrentTimeChange: noop,
 	    onChange: lodash.exports.noop,
 	    transforms: {
 	        minFrequency: constants.exports.DEFAULT_MIN_FREQUENCY,
@@ -17897,10 +17873,6 @@
 	    width: 1024,
 	    height: 512,
 	    canvas: null,
-	    // minFrequency: 20,
-	    // maxFrequency: 44100,
-	    // timeWindow: 10_000,
-	    // currentTime: 0,
 	    dynamicRange: 70,
 	    dynamicRangeTop: -30,
 	    dataResolver: null,
@@ -18427,7 +18399,14 @@
 	                onPanEnd && onPanEnd(pointersToGestureEvent(pointers));
 	            }
 	            else if (Object.keys(pointers).length > 1) {
-	                onPinchEnd && onPinchEnd(pointersToGestureEvent(pointers));
+	                const pinchEndEvent = pointersToGestureEvent(pointers);
+	                onPinchEnd && onPinchEnd(pinchEndEvent);
+	                // reset pointers start
+	                for (const pointerId in newPointers) {
+	                    const pointer = newPointers[pointerId];
+	                    pointer.startX = pointer.x;
+	                    pointer.startY = pointer.y;
+	                }
 	                onPanStart && onPanStart(pointersToGestureEvent(newPointers));
 	            }
 	            pointersRef.current = newPointers;
@@ -18458,13 +18437,9 @@
 	                pointerIds: []
 	            };
 	            if (event.ctrlKey) {
-	                console.timeEnd('trackpadPinch');
-	                console.time('trackpadPinch');
 	                onTrackpadPinch && onTrackpadPinch(eventData);
 	            }
 	            else {
-	                console.timeEnd('wheel');
-	                console.time('wheel');
 	                onWheel && onWheel(eventData);
 	            }
 	        };
@@ -18506,27 +18481,11 @@
 	    return isPressed;
 	};
 
-	const useControls = ({ modifierKeyCode = 'ShiftLeft', lockFrequencyPanning = false, lockTimePanning = false, lockFrequencyScaling = false, lockTimeWindowScaling = false, 
-	// onMaxFrequencyChange,
-	// onMinFrequencyChange,
-	// onTimeWindowChange,
-	// onCurrentTimeChange,
-	onChange, width, height, canvas, 
-	// minFrequency,
-	// maxFrequency,
-	// timeWindow,
-	// currentTime,
-	transforms, frequencyScale = defaults.DEFAULT_FREQUENCY_SCALE, }) => {
+	const useControls = ({ modifierKeyCode = 'ShiftLeft', lockFrequencyPanning = false, lockTimePanning = false, lockFrequencyScaling = false, lockTimeWindowScaling = false, onChange, width, height, canvas, transforms, frequencyScale = defaults.DEFAULT_FREQUENCY_SCALE, }) => {
 	    const { minFrequency, maxFrequency, currentTime, timeWindow } = transforms;
 	    const { translateFrequency, translateCurrentTime, scaleFrequencies, scaleTimeWindow, } = transformFn[frequencyScale];
 	    const [activePinchEvent, setActivePinchEvent] = react.exports.useState(null);
 	    const [activePanEvent, setActivePanEvent] = react.exports.useState(null);
-	    // const updateChanges = useCallback((updated: TransformProperties) => {
-	    //   if(updated.currentTime !== currentTime) onCurrentTimeChange(updated.currentTime);
-	    //   if(updated.minFrequency !== minFrequency) onMinFrequencyChange(updated.minFrequency);
-	    //   if(updated.maxFrequency !== maxFrequency) onMaxFrequencyChange(updated.maxFrequency);
-	    //   if(updated.timeWindow !== timeWindow) onTimeWindowChange(updated.timeWindow);
-	    // }, []);
 	    const modifierIsPressed = useKey(modifierKeyCode);
 	    useGestures(canvas, {
 	        onPinchStart: () => {
@@ -18628,7 +18587,6 @@
 	            onChange(transformed);
 	        },
 	        onTrackpadPinch: (e) => {
-	            // console.log(activePanEvent, e);
 	            if (activePanEvent)
 	                setActivePanEvent(null);
 	            let transformed = {
@@ -18692,36 +18650,17 @@
 	//   useEffect(() => {
 	//   }, [controlledValue]);
 	// }
-	const Spectrogram = ({ width, height, 
-	// minFrequency,
-	// maxFrequency,
-	frequencyScale = constants.exports.DEFAULT_FREQUENCY_SCALE, 
-	// timeWindow,
-	// currentTime,
-	dynamicRange, dynamicRangeTop, modifierKeyCode = 'ShiftLeft', dataResolver, transforms, displayFrequencyRuler = true, frequencyRulerAsOverlay = true, frequencyRulerPosition = 'start', frequencyRulerSize = 50, displayTimeRuler = true, timeRulerAsOverlay = true, timeRulerPosition = 'end', timeRulerSize = 30, 
-	// onMaxFrequencyChange,
-	// onMinFrequencyChange,
-	// onTimeWindowChange,
-	// onCurrentTimeChange,
-	onChange, children, ...props }) => {
+	const Spectrogram = ({ width, height, frequencyScale = constants.exports.DEFAULT_FREQUENCY_SCALE, dynamicRange, dynamicRangeTop, modifierKeyCode = 'ShiftLeft', dataResolver, transforms, displayFrequencyRuler = true, frequencyRulerAsOverlay = true, frequencyRulerPosition = 'start', frequencyRulerSize = 50, displayTimeRuler = true, timeRulerAsOverlay = true, timeRulerPosition = 'end', timeRulerSize = 30, onChange, children, ...props }) => {
 	    const [canvasRef, canvas] = useImmutableRef(null);
 	    const [frequencyRulerRef, frequencyRuler] = useImmutableRef(null);
 	    const [timeRulerRef, timeRuler] = useImmutableRef(null);
 	    const canvasWidth = frequencyRulerAsOverlay ? width : width - frequencyRulerSize;
 	    const canvasHeight = timeRulerAsOverlay ? height : height - timeRulerSize;
 	    const controlProps = {
-	        // onMaxFrequencyChange,
-	        // onMinFrequencyChange,
-	        // onTimeWindowChange,
-	        // onCurrentTimeChange,
 	        onChange,
 	        width: canvasWidth,
 	        height: canvasHeight,
 	        transforms,
-	        // minFrequency,
-	        // maxFrequency,
-	        // timeWindow,
-	        // currentTime,
 	        frequencyScale,
 	        modifierKeyCode,
 	    };
@@ -18745,12 +18684,7 @@
 	        lockFrequencyPanning: true,
 	        modifierKeyCode: null,
 	    });
-	    const { spectrogramRenderer, 
-	    // setMinFrequency,
-	    // setMaxFrequency,
-	    // setTimeWindow,
-	    // setCurrentTime,
-	    setDynamicRange, setDynamicRangeTop, setFrequencyScale, updateProperties, } = useSpectrogramRenderer({
+	    const { spectrogramRenderer, setDynamicRange, setDynamicRangeTop, setFrequencyScale, updateProperties, } = useSpectrogramRenderer({
 	        canvas,
 	        dataResolver,
 	        frequencyScale,
@@ -18758,15 +18692,6 @@
 	    react.exports.useLayoutEffect(() => {
 	        updateProperties(transforms);
 	    }, [transforms, spectrogramRenderer]);
-	    // useLayoutEffect(() => {
-	    //   setMaxFrequency(maxFrequency);
-	    // }, [maxFrequency, spectrogramRenderer]);
-	    // useLayoutEffect(() => {
-	    //   setCurrentTime(currentTime);
-	    // }, [currentTime, spectrogramRenderer]);
-	    // useLayoutEffect(() => {
-	    //   setTimeWindow(timeWindow);
-	    // }, [timeWindow, spectrogramRenderer]);
 	    react.exports.useLayoutEffect(() => {
 	        setDynamicRange(dynamicRange);
 	    }, [dynamicRange, spectrogramRenderer]);
@@ -18801,19 +18726,11 @@
 	            } })),
 	        children && (React.createElement(SpectrogramContext.Provider, { value: {
 	                spectrogramRenderer,
-	                // onMaxFrequencyChange,
-	                // onMinFrequencyChange,
-	                // onTimeWindowChange,
-	                // onCurrentTimeChange,
 	                onChange,
 	                transforms,
 	                width,
 	                height,
 	                canvas,
-	                // minFrequency,
-	                // maxFrequency,
-	                // timeWindow,
-	                // currentTime,
 	                dynamicRange,
 	                dynamicRangeTop,
 	                dataResolver,
